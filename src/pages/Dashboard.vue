@@ -1,14 +1,9 @@
-<script setup lang="ts">
-
-</script>
+<script setup lang="ts"></script>
 
 <template>
   <div>
-    <h1>Dashboard</h1>
-    <router-link to="/form">Go to Form</router-link>
+    <router-link to="/case">Go to Form</router-link>
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

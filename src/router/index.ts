@@ -5,7 +5,7 @@ import Form from '../pages/Form.vue'
 const routes = [
     { path: '/', component: Dashboard },
     { path: '/dashboard', redirect: '/' },
-    { path: '/form', component: Form },
+    { path: '/case', component: Form },
 ]
 
 export const router = createRouter({
