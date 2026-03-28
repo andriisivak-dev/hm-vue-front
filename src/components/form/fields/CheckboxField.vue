@@ -1,55 +1,116 @@
 <script setup lang="ts">
-
+import { computed } from 'vue'
 import type { GFField } from '../../../form-engine/types'
 import BaseField from './BaseField.vue'
 
 const props = defineProps<{
   field: GFField
-  modelValues: Record<string, any> // The whole values object from store
+  modelValues: Record<string, any>
   error?: string
 }>()
 
 const emit = defineEmits(['update:value'])
 
-// For checkboxes, we update individual sub-input IDs like 17.1, 17.2
+// Decode HTML entities like &amp; → &
+const decodeHTML = (str: string): string => {
+  const txt = document.createElement('textarea')
+  txt.innerHTML = str
+  return txt.value
+}
+
 const toggleValue = (inputId: string, text: string, isChecked: boolean) => {
-  // In GF, 'checked' usually means the value is the text of the checkbox choice
   emit('update:value', { id: inputId, value: isChecked ? text : '' })
+}
+
+// All checked = every input has a truthy value in the store
+const allChecked = computed(() => {
+  if (!props.field.choices || !props.field.inputs) return false
+  return props.field.inputs.every(input => !!props.modelValues[input.id])
+})
+
+const toggleAll = () => {
+  if (!props.field.choices || !props.field.inputs) return
+  const shouldCheck = !allChecked.value
+  props.field.choices.forEach((choice, idx) => {
+    const input = props.field.inputs![idx]
+    if (input) {
+      emit('update:value', { id: input.id, value: shouldCheck ? choice.text : '' })
+    }
+  })
 }
 </script>
 
 <template>
   <BaseField :field="field" :error="error">
-    <div class="gf-checkbox-group">
-      <label 
-        v-for="(choice, index) in field.choices" 
-        :key="index"
-        class="gf-checkbox-label"
-        :class="{ 'is-selected': !!modelValues[choice.inputId!] }"
+    <div class="gf-checkbox-wrapper">
+
+      <div class="gf-checkbox-group">
+        <label
+          v-for="(choice, index) in field.choices"
+          :key="index"
+          class="gf-checkbox-label"
+          :class="{ 'is-selected': !!modelValues[field.inputs?.[index]?.id ?? ''] }"
+        >
+          <input
+            type="checkbox"
+            :value="choice.value"
+            :checked="!!modelValues[field.inputs?.[index]?.id ?? '']"
+            @change="(e) => toggleValue(field.inputs?.[index]?.id ?? '', choice.text, (e.target as HTMLInputElement).checked)"
+            class="gf-checkbox-input"
+          />
+          <div class="gf-checkbox-indicator">
+            <svg width="12" height="10" viewBox="0 0 12 10" fill="none" v-if="!!modelValues[field.inputs?.[index]?.id ?? '']">
+               <path d="M1 5L4.5 8.5L10.5 1.5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <!-- decodeHTML fixes double-encoding like &amp;amp; → & -->
+          <span class="gf-checkbox-text">{{ decodeHTML(choice.text) }}</span>
+        </label>
+      </div>
+
+       <!-- Select All / Deselect All button -->
+      <button
+        v-if="field.choices && field.choices.length > 1"
+        type="button"
+        class="gf-select-all-btn"
+        @click="toggleAll"
       >
-        <input 
-          type="checkbox"
-          :value="choice.value"
-          :checked="!!modelValues[choice.inputId!]"
-          @change="(e) => toggleValue(choice.inputId!, choice.text, (e.target as HTMLInputElement).checked)"
-          class="gf-checkbox-input"
-        />
-        <div class="gf-checkbox-indicator">
-          <svg width="12" height="10" viewBox="0 0 12 10" fill="none" v-if="!!modelValues[choice.inputId!]">
-             <path d="M1 5L4.5 8.5L10.5 1.5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <span class="gf-checkbox-text">{{ choice.text }}</span>
-      </label>
+        {{ allChecked ? 'Deselect All' : 'Select All' }}
+      </button>
     </div>
   </BaseField>
 </template>
 
 <style scoped>
-.gf-checkbox-group {
+.gf-checkbox-wrapper {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.gf-select-all-btn {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #f8fafc;
+  color: var(--text-h);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gf-select-all-btn:hover {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.gf-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .gf-checkbox-label {
