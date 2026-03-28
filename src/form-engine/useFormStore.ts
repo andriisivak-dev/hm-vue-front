@@ -7,12 +7,21 @@ export const useCaseFormStore = defineStore('caseForm', {
   state: () => ({
     form: null as GFForm | null,
     values: {} as Record<string, any>,
+    readonlyFields: {} as Record<string, boolean>, // fieldId -> boolean
     currentStep: 1,
     isInitialized: false,
     isLoading: false,
   }),
 
   getters: {
+    /**
+     * Determine if a field is readonly (calculation OR manual)
+     */
+    isFieldReadonly: (state) => (fieldId: string | number) => {
+      const field = state.form?.fields.find((f) => String(f.id) === String(fieldId))
+      if (field?.calculation?.enableCalculation) return true
+      return !!state.readonlyFields[String(fieldId)]
+    },
     /**
      * Total number of pages in the form
      */
@@ -62,11 +71,19 @@ export const useCaseFormStore = defineStore('caseForm', {
 
   actions: {
     /**
+     * Set a field as manually readonly or not
+     */
+    setFieldReadonly(fieldId: string | number, isReadonly: boolean) {
+      this.readonlyFields[String(fieldId)] = isReadonly
+    },
+
+    /**
      * Initialize form schema and set default values
      */
     initialize(form: GFForm) {
       this.form = form
       const initialValues: Record<string, any> = {}
+      this.readonlyFields = {} // Reset on new form
 
       form.fields.forEach((field) => {
         // Initialize default values (prioritize field defaults)

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { GFField } from '../../../form-engine/types'
+import { useCaseFormStore } from '../../../form-engine/useFormStore'
 import BaseField from './BaseField.vue'
 
 const props = defineProps<{
@@ -9,6 +10,7 @@ const props = defineProps<{
   error?: string
 }>()
 
+const store = useCaseFormStore()
 const emit = defineEmits(['update:modelValue'])
 
 const value = computed({
@@ -17,7 +19,7 @@ const value = computed({
 })
 
 const isReadonly = computed(() => {
-  return props.field.calculation?.enableCalculation === true
+  return store.isFieldReadonly(props.field.id)
 })
 </script>
 
