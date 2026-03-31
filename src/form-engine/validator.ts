@@ -23,8 +23,8 @@ configure({
             required: 'This field is required',
             email: 'Please enter a valid email address',
             numeric: 'This field must be a number',
-            min_value: 'Value must be greater than or equal to {min}',
-            max_value: 'Value must be less than or equal to {max}'
+            min_value: 'Value must be greater than or equal to {0}',
+            max_value: 'Value must be less than or equal to {0}'
         }
     })
 });
