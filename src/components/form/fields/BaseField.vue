@@ -1,72 +1,69 @@
 <script setup lang="ts">
-import {computed} from 'vue'
-import type {GFField} from '../../../form-engine/types'
+import { computed } from 'vue';
+import type { GFField } from '../../../form-engine/types';
 
 const props = defineProps<{
-  field: GFField
-  error?: string
-}>()
+    field: GFField;
+    error?: string;
+}>();
 
-const isRequired = computed(() => props.field.isRequired)
+const isRequired = computed(() => props.field.isRequired);
 </script>
 
 <template>
-  <div
-      class="gf-field-wrapper"
-      :class="[field.cssClass, { 'has-error': error }]"
-  >
-    <label v-if="field.type !== 'section'" :for="`input_${field.id}`" class="gf-label">
-      {{ field.label }}
-      <span v-if="isRequired" class="gf-required">*</span>
-    </label>
+    <div class="gf-field-wrapper" :class="[field.cssClass, { 'has-error': error }]">
+        <label v-if="field.type !== 'section'" :for="`input_${field.id}`" class="gf-label">
+            {{ field.label }}
+            <span v-if="isRequired" class="gf-required">*</span>
+        </label>
 
-    <div class="gf-input-container">
-      <slot/>
+        <div class="gf-input-container">
+            <slot />
+        </div>
+
+        <p v-if="field.description" class="gf-description">{{ field.description }}</p>
+        <p v-if="error" class="gf-error-message">{{ error }}</p>
     </div>
-
-    <p v-if="field.description" class="gf-description">{{ field.description }}</p>
-    <p v-if="error" class="gf-error-message">{{ error }}</p>
-  </div>
 </template>
 
 <style scoped>
 .gf-field-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  text-align: left;
-  width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: left;
+    width: 100%;
 }
 
 .gf-label {
-  font-weight: 700;
-  font-size: 18px;
-  color: #262469;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+    font-weight: 700;
+    font-size: 18px;
+    color: #262469;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .gf-required {
-  color: #ef4444;
+    color: #ef4444;
 }
 
 .gf-description {
-  font-size: 0.85rem;
-  color: var(--text);
-  margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: var(--text);
+    margin-top: 0.25rem;
 }
 
 .gf-error-message {
-  font-size: 0.85rem;
-  color: #ef4444;
-  margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: #ef4444;
+    margin-top: 0.25rem;
 }
 
 .has-error :deep(input),
 .has-error :deep(select),
 .has-error :deep(textarea) {
-  border-color: #ef4444 !important;
-  background-color: #fef2f2;
+    border-color: #ef4444 !important;
+    background-color: #fef2f2;
 }
 </style>

@@ -1,7 +1,7 @@
-import { ref, onUnmounted, type Ref } from 'vue'
-import { ApiError } from '../core/httpClient'
-import { casesService } from '../services/casesService'
-import { formsService, usersService, notificationsService, dashboardService } from '../services'
+import { ref, onUnmounted, type Ref } from 'vue';
+import { ApiError } from '../core/httpClient';
+import { casesService } from '../services/casesService';
+import { formsService, usersService, notificationsService, dashboardService } from '../services';
 import type {
     CaseListItem,
     CaseDetail,
@@ -17,25 +17,25 @@ import type {
     DashboardStats,
     DashboardFilters,
     // PaginatedResult,
-    PaginationMeta,
-} from '../types'
+    PaginationMeta
+} from '../types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared composable primitives
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface AsyncState<T> {
-    data: Ref<T | null>
-    error: Ref<ApiError | null>
-    loading: Ref<boolean>
+    data: Ref<T | null>;
+    error: Ref<ApiError | null>;
+    loading: Ref<boolean>;
 }
 
 function createAsyncState<T>(): AsyncState<T> {
     return {
         data: ref(null),
         error: ref(null),
-        loading: ref(false),
-    }
+        loading: ref(false)
+    };
 }
 
 /**
@@ -43,9 +43,9 @@ function createAsyncState<T>(): AsyncState<T> {
  * calling component is unmounted.
  */
 function useAbortController(): AbortController {
-    const controller = new AbortController()
-    onUnmounted(() => controller.abort())
-    return controller
+    const controller = new AbortController();
+    onUnmounted(() => controller.abort());
+    return controller;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -53,144 +53,162 @@ function useAbortController(): AbortController {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function useCaseList() {
-    const state = createAsyncState<CaseListItem[]>()
-    const meta = ref<PaginationMeta | null>(null)
-    const controller = useAbortController()
+    const state = createAsyncState<CaseListItem[]>();
+    const meta = ref<PaginationMeta | null>(null);
+    const controller = useAbortController();
 
     async function fetch(params?: CaseListParams) {
-        state.loading.value = true
-        state.error.value = null
+        state.loading.value = true;
+        state.error.value = null;
         try {
-            const result = await casesService.list(params, { signal: controller.signal })
-            state.data.value = result.items
-            meta.value = result.meta
+            const result = await casesService.list(params, { signal: controller.signal });
+            state.data.value = result.items;
+            meta.value = result.meta;
         } catch (err) {
             if (err instanceof ApiError && !err.isAborted) {
-                state.error.value = err
+                state.error.value = err;
             }
         } finally {
-            state.loading.value = false
+            state.loading.value = false;
         }
     }
 
-    return { ...state, meta, fetch }
+    return { ...state, meta, fetch };
 }
 
 export function useCaseDetail() {
-    const state = createAsyncState<CaseDetail>()
-    const controller = useAbortController()
+    const state = createAsyncState<CaseDetail>();
+    const controller = useAbortController();
 
     async function fetch(id: number) {
-        state.loading.value = true
-        state.error.value = null
+        state.loading.value = true;
+        state.error.value = null;
         try {
-            state.data.value = await casesService.get(id, { signal: controller.signal })
+            state.data.value = await casesService.get(id, { signal: controller.signal });
         } catch (err) {
             if (err instanceof ApiError && !err.isAborted) {
-                state.error.value = err
+                state.error.value = err;
             }
         } finally {
-            state.loading.value = false
+            state.loading.value = false;
         }
     }
 
-    return { ...state, fetch }
+    return { ...state, fetch };
 }
 
 export function useCaseFormData() {
-    const state = createAsyncState<Record<string, unknown>>()
-    const saving = ref(false)
-    const saveError = ref<ApiError | null>(null)
-    const controller = useAbortController()
+    const state = createAsyncState<Record<string, unknown>>();
+    const saving = ref(false);
+    const saveError = ref<ApiError | null>(null);
+    const controller = useAbortController();
 
     async function fetch(id: number) {
-        state.loading.value = true
-        state.error.value = null
+        state.loading.value = true;
+        state.error.value = null;
         try {
-            state.data.value = await casesService.getFormData(id, { signal: controller.signal })
+            state.data.value = await casesService.getFormData(id, { signal: controller.signal });
         } catch (err) {
             if (err instanceof ApiError && !err.isAborted) {
-                state.error.value = err
+                state.error.value = err;
             }
         } finally {
-            state.loading.value = false
+            state.loading.value = false;
         }
     }
 
     async function save(id: number, body: UpdateFormDataBody): Promise<boolean> {
-        saving.value = true
-        saveError.value = null
+        saving.value = true;
+        saveError.value = null;
         try {
-            state.data.value = await casesService.updateFormData(id, body, { signal: controller.signal })
-            return true
+            state.data.value = await casesService.updateFormData(id, body, {
+                signal: controller.signal
+            });
+            return true;
         } catch (err) {
             if (err instanceof ApiError && !err.isAborted) {
-                saveError.value = err
+                saveError.value = err;
             }
-            return false
+            return false;
         } finally {
-            saving.value = false
+            saving.value = false;
         }
     }
 
-    return { ...state, saving, saveError, fetch, save }
+    return { ...state, saving, saveError, fetch, save };
 }
 
 export function useCaseMutations() {
-    const loading = ref(false)
-    const error = ref<ApiError | null>(null)
-    const controller = useAbortController()
+    const loading = ref(false);
+    const error = ref<ApiError | null>(null);
+    const controller = useAbortController();
 
     async function create(body: CreateCaseBody): Promise<CaseDetail | null> {
-        return run(() => casesService.create(body, { signal: controller.signal }))
+        return run(() => casesService.create(body, { signal: controller.signal }));
     }
 
     async function remove(id: number): Promise<boolean> {
-        const result = await run(() => casesService.delete(id, { signal: controller.signal }))
-        return result !== null
+        const result = await run(() => casesService.delete(id, { signal: controller.signal }));
+        return result !== null;
     }
 
     async function submit(id: number): Promise<boolean> {
-        const result = await run(() => casesService.submit(id, { signal: controller.signal }))
-        return result !== null
+        const result = await run(() => casesService.submit(id, { signal: controller.signal }));
+        return result !== null;
     }
 
     async function approve(id: number): Promise<boolean> {
-        const result = await run(() => casesService.approve(id, { signal: controller.signal }))
-        return result !== null
+        const result = await run(() => casesService.approve(id, { signal: controller.signal }));
+        return result !== null;
     }
 
     async function reject(id: number, message: string): Promise<boolean> {
-        const result = await run(() => casesService.reject(id, message, { signal: controller.signal }))
-        return result !== null
+        const result = await run(() =>
+            casesService.reject(id, message, { signal: controller.signal })
+        );
+        return result !== null;
     }
 
     async function returnForRevision(id: number, message: string): Promise<boolean> {
-        const result = await run(() => casesService.returnForRevision(id, message, { signal: controller.signal }))
-        return result !== null
+        const result = await run(() =>
+            casesService.returnForRevision(id, message, { signal: controller.signal })
+        );
+        return result !== null;
     }
 
     async function overrideStatus(id: number, body: OverrideStatusBody): Promise<boolean> {
-        const result = await run(() => casesService.overrideStatus(id, body, { signal: controller.signal }))
-        return result !== null
+        const result = await run(() =>
+            casesService.overrideStatus(id, body, { signal: controller.signal })
+        );
+        return result !== null;
     }
 
     async function run<T>(fn: () => Promise<T>): Promise<T | null> {
-        loading.value = true
-        error.value = null
+        loading.value = true;
+        error.value = null;
         try {
-            return await fn()
+            return await fn();
         } catch (err) {
             if (err instanceof ApiError && !err.isAborted) {
-                error.value = err
+                error.value = err;
             }
-            return null
+            return null;
         } finally {
-            loading.value = false
+            loading.value = false;
         }
     }
 
-    return { loading, error, create, remove, submit, approve, reject, returnForRevision, overrideStatus }
+    return {
+        loading,
+        error,
+        create,
+        remove,
+        submit,
+        approve,
+        reject,
+        returnForRevision,
+        overrideStatus
+    };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -198,24 +216,24 @@ export function useCaseMutations() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function useFormSchema() {
-    const state = createAsyncState<FormSchema>()
-    const controller = useAbortController()
+    const state = createAsyncState<FormSchema>();
+    const controller = useAbortController();
 
     async function fetch(formId: number) {
-        state.loading.value = true
-        state.error.value = null
+        state.loading.value = true;
+        state.error.value = null;
         try {
-            state.data.value = await formsService.getSchema(formId, { signal: controller.signal })
+            state.data.value = await formsService.getSchema(formId, { signal: controller.signal });
         } catch (err) {
             if (err instanceof ApiError && !err.isAborted) {
-                state.error.value = err
+                state.error.value = err;
             }
         } finally {
-            state.loading.value = false
+            state.loading.value = false;
         }
     }
 
-    return { ...state, fetch }
+    return { ...state, fetch };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -223,27 +241,27 @@ export function useFormSchema() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function useUserList() {
-    const state = createAsyncState<User[]>()
-    const meta = ref<PaginationMeta | null>(null)
-    const controller = useAbortController()
+    const state = createAsyncState<User[]>();
+    const meta = ref<PaginationMeta | null>(null);
+    const controller = useAbortController();
 
     async function fetch(params?: UserListParams) {
-        state.loading.value = true
-        state.error.value = null
+        state.loading.value = true;
+        state.error.value = null;
         try {
-            const result = await usersService.list(params, { signal: controller.signal })
-            state.data.value = result.items
-            meta.value = result.meta
+            const result = await usersService.list(params, { signal: controller.signal });
+            state.data.value = result.items;
+            meta.value = result.meta;
         } catch (err) {
             if (err instanceof ApiError && !err.isAborted) {
-                state.error.value = err
+                state.error.value = err;
             }
         } finally {
-            state.loading.value = false
+            state.loading.value = false;
         }
     }
 
-    return { ...state, meta, fetch }
+    return { ...state, meta, fetch };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -251,51 +269,53 @@ export function useUserList() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function useNotifications() {
-    const state = createAsyncState<Notification[]>()
-    const meta = ref<PaginationMeta | null>(null)
-    const unreadCount = ref<number>(0)
-    const controller = useAbortController()
+    const state = createAsyncState<Notification[]>();
+    const meta = ref<PaginationMeta | null>(null);
+    const unreadCount = ref<number>(0);
+    const controller = useAbortController();
 
     async function fetch(params?: NotificationListParams) {
-        state.loading.value = true
-        state.error.value = null
+        state.loading.value = true;
+        state.error.value = null;
         try {
-            const result = await notificationsService.list(params, { signal: controller.signal })
-            state.data.value = result.items
-            meta.value = result.meta
+            const result = await notificationsService.list(params, { signal: controller.signal });
+            state.data.value = result.items;
+            meta.value = result.meta;
         } catch (err) {
             if (err instanceof ApiError && !err.isAborted) {
-                state.error.value = err
+                state.error.value = err;
             }
         } finally {
-            state.loading.value = false
+            state.loading.value = false;
         }
     }
 
     async function fetchUnreadCount() {
         try {
-            unreadCount.value = await notificationsService.getUnreadCount({ signal: controller.signal })
+            unreadCount.value = await notificationsService.getUnreadCount({
+                signal: controller.signal
+            });
         } catch {
             // Silently fail for badge updates
         }
     }
 
     async function markAsRead(id: number): Promise<void> {
-        await notificationsService.markAsRead(id)
+        await notificationsService.markAsRead(id);
         if (state.data.value) {
-            const n = state.data.value.find((n) => n.id === id)
-            if (n) n.is_read = true
+            const n = state.data.value.find((n) => n.id === id);
+            if (n) n.is_read = true;
         }
-        unreadCount.value = Math.max(0, unreadCount.value - 1)
+        unreadCount.value = Math.max(0, unreadCount.value - 1);
     }
 
     async function markAllAsRead(): Promise<void> {
-        await notificationsService.markAllAsRead()
-        state.data.value?.forEach((n) => (n.is_read = true))
-        unreadCount.value = 0
+        await notificationsService.markAllAsRead();
+        state.data.value?.forEach((n) => (n.is_read = true));
+        unreadCount.value = 0;
     }
 
-    return { ...state, meta, unreadCount, fetch, fetchUnreadCount, markAsRead, markAllAsRead }
+    return { ...state, meta, unreadCount, fetch, fetchUnreadCount, markAsRead, markAllAsRead };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -303,35 +323,35 @@ export function useNotifications() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function useDashboard() {
-    const stats = ref<DashboardStats | null>(null)
-    const filters = ref<DashboardFilters | null>(null)
-    const loading = ref(false)
-    const error = ref<ApiError | null>(null)
-    const controller = useAbortController()
+    const stats = ref<DashboardStats | null>(null);
+    const filters = ref<DashboardFilters | null>(null);
+    const loading = ref(false);
+    const error = ref<ApiError | null>(null);
+    const controller = useAbortController();
 
     async function fetchStats() {
-        loading.value = true
-        error.value = null
+        loading.value = true;
+        error.value = null;
         try {
-            stats.value = await dashboardService.getStats({ signal: controller.signal })
+            stats.value = await dashboardService.getStats({ signal: controller.signal });
         } catch (err) {
-            if (err instanceof ApiError && !err.isAborted) error.value = err
+            if (err instanceof ApiError && !err.isAborted) error.value = err;
         } finally {
-            loading.value = false
+            loading.value = false;
         }
     }
 
     async function fetchFilters() {
         try {
-            filters.value = await dashboardService.getFilters({ signal: controller.signal })
+            filters.value = await dashboardService.getFilters({ signal: controller.signal });
         } catch (err) {
-            if (err instanceof ApiError && !err.isAborted) error.value = err
+            if (err instanceof ApiError && !err.isAborted) error.value = err;
         }
     }
 
     async function fetchAll() {
-        await Promise.all([fetchStats(), fetchFilters()])
+        await Promise.all([fetchStats(), fetchFilters()]);
     }
 
-    return { stats, filters, loading, error, fetchStats, fetchFilters, fetchAll }
+    return { stats, filters, loading, error, fetchStats, fetchFilters, fetchAll };
 }

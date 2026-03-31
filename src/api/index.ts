@@ -10,17 +10,17 @@
 
 // ── Setup ──────────────────────────────────────────────────────────────────
 
-import {createApiClient} from "./core/httpClient.ts";
+import { createApiClient } from './core/httpClient.ts';
 
-export { createApiClient, useHttpClient, ApiError, apiCache } from './core/httpClient'
-export type { ClientConfig, RequestOptions } from './core/httpClient'
+export { createApiClient, useHttpClient, ApiError, apiCache } from './core/httpClient';
+export type { ClientConfig, RequestOptions } from './core/httpClient';
 
 declare global {
     interface Window {
         HM_API?: {
-            baseUrl: string
-            nonce: string
-        }
+            baseUrl: string;
+            nonce: string;
+        };
     }
 }
 
@@ -29,20 +29,25 @@ declare global {
  * injected by WordPress via `wp_localize_script`.
  */
 export function setupApi(): void {
-    const config = window.HM_API
+    const config = window.HM_API;
     if (!config?.baseUrl || !config?.nonce) {
         console.error(
-            '[HM API] window.HM_API not found. Make sure wp_localize_script is enqueued correctly.',
-        )
-        return
+            '[HM API] window.HM_API not found. Make sure wp_localize_script is enqueued correctly.'
+        );
+        return;
     }
-    createApiClient({ baseUrl: config.baseUrl, nonce: config.nonce })
+    createApiClient({ baseUrl: config.baseUrl, nonce: config.nonce });
 }
 
 // ── Services (plain async functions — use in Pinia stores or tests) ────────
 
-export { casesService } from './services/casesService'
-export { formsService, usersService, notificationsService, dashboardService } from './services/index'
+export { casesService } from './services/casesService';
+export {
+    formsService,
+    usersService,
+    notificationsService,
+    dashboardService
+} from './services/index';
 
 // ── Composables (reactive Vue wrappers) ────────────────────────────────────
 
@@ -54,8 +59,8 @@ export {
     useFormSchema,
     useUserList,
     useNotifications,
-    useDashboard,
-} from './composables/index'
+    useDashboard
+} from './composables/index';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -97,5 +102,5 @@ export type {
     NotificationListParams,
     // Dashboard
     DashboardStats,
-    DashboardFilters,
-} from './types'
+    DashboardFilters
+} from './types';

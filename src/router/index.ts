@@ -1,14 +1,14 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import Dashboard from '../pages/Dashboard.vue'
-import Form from '../pages/Form.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import AppDashboard from '../pages/AppDashboard.vue';
+import AppForm from '../pages/AppForm.vue';
 
 const routes = [
-    { path: '/', component: Dashboard },
+    { path: '/', component: AppDashboard },
     { path: '/dashboard', redirect: '/' },
-    { path: '/case', component: Form },
-]
+    { path: '/case', component: AppForm }
+];
 
 export const router = createRouter({
     history: createWebHistory('/'),
-    routes,
-})
+    routes
+});
