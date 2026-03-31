@@ -183,6 +183,10 @@ export interface DashboardStats {
 export interface DashboardFilters {
     product_types: TaxonomyTerm[]
     industry_segments: TaxonomyTerm[]
+    machine_types: TaxonomyTerm[]
+    machine_makes: TaxonomyTerm[]
+    tool_brands: TaxonomyTerm[]
+    solution_types: TaxonomyTerm[]
     submitted_by: UserSupervisor[]
 }
 
