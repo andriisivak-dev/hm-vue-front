@@ -35,8 +35,35 @@ const component = computed(() => {
 
 const isVisible = computed(() => store.isFieldVisible(props.field.id))
 
-// Use ValidationAdapter for dynamic rules
-const validationRules = computed(() => ValidationAdapter.getRules(props.field))
+// Use ValidationAdapter for dynamic rules — but only when the field is actually visible.
+// Hidden fields (conditional logic) must NOT participate in validation or they block navigation.
+const validationRules = computed(() =>
+  isVisible.value ? ValidationAdapter.getRules(props.field) : ''
+)
+
+/**
+ * Checkbox fields store values in sub-input keys (e.g. "17.1", "17.2") rather than
+ * the parent key ("17"). We synthesise an aggreform-step-contentgate array so vee-validate can properly
+ * evaluate `required` (non-empty array = at least one checked).
+ */
+const checkboxAggregateValue = computed<string[]>(() => {
+  if (props.field.type !== 'checkbox' || !props.field.inputs) return []
+  return props.field.inputs
+    .map(input => store.values[input.id])
+    .filter(v => v !== '' && v !== null && v !== undefined)
+})
+
+/**
+ * The value that vee-validate `<Field>` should observe.
+ * – checkbox → aggregate array of selected sub-values
+ * – everything else → direct store value
+ */
+const fieldModelValue = computed(() =>
+  props.field.type === 'checkbox'
+    ? checkboxAggregateValue.value
+    : store.values[String(props.field.id)]
+)
+
 
 const onUpdate = (value: any) => {
   store.updateValue(props.field.id, value)
@@ -52,22 +79,31 @@ const onCheckboxUpdate = (payload: { id: string, value: any }) => {
     name="field-fade-slide"
     appear
   >
-    <div v-show="isVisible" class="gf-field-container">
+    <div
+        v-show="isVisible"
+        class="gf-field-container"
+        :class="[` gf-field--${field.size}`]"
+    >
       <template v-if="component">
-        <!-- Vee-validate Field Wrapper -->
-        <Field 
-          :name="String(field.id)" 
-          :rules="validationRules" 
-          v-model="store.values[String(field.id)]"
+        <!-- Vee-validate Field Wrapper
+             v-model is bound to fieldModelValue:
+             • checkbox → aggregate array of selected sub-inputs (for correct required check)
+             • others   → store.values[field.id] directly
+        -->
+        <Field
+          :name="String(field.id)"
+          :rules="validationRules"
+          :model-value="fieldModelValue"
+          @update:model-value="onUpdate"
           v-slot="{ errorMessage }"
         >
-          <component 
-            :is="component" 
+          <component
+            :is="component"
             :field="field"
             :model-value="store.values[String(field.id)]"
             :model-values="store.values"
             :error="errorMessage"
-          @update:model-value="onUpdate"
+            @update:model-value="onUpdate"
             @update:value="onCheckboxUpdate"
           />
         </Field>
@@ -91,7 +127,6 @@ const onCheckboxUpdate = (payload: { id: string, value: any }) => {
 <style scoped>
 .gf-field-container {
   width: 100%;
-  margin-bottom: 24px;
 }
 
 /* Field Level Transitions */
@@ -113,24 +148,37 @@ const onCheckboxUpdate = (payload: { id: string, value: any }) => {
 .gf-section {
   margin-top: 2rem;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgb(17, 35, 55);
   padding-bottom: 0.5rem;
 }
 
 .gf-section-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-h);
+  font-size: 1.75rem;
+  font-weight: 500;
+  color: rgb(17, 35, 55);
   margin: 0;
 }
 
 .gf-section-desc {
   font-size: 0.9rem;
-  color: var(--text);
+  color: rgb(17, 35, 55);
   margin-top: 4px;
 }
 
 .gf-html {
   margin: 1rem 0;
+}
+
+/* Sizes */
+.gf-field--small {
+  /*max-width: calc((100% / 3) - 2rem);*/
+}
+
+.gf-field--medium {
+  /*max-width: calc((100% / 2) - 1rem);*/
+}
+
+.gf-field--large {
+  /*max-width: 100%;*/
 }
 </style>

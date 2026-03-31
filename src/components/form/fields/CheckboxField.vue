@@ -102,9 +102,7 @@ const toggleAll = () => {
 }
 
 .gf-select-all-btn:hover {
-  background: var(--accent-bg);
-  border-color: var(--accent);
-  color: var(--accent);
+  color: rgb(17, 35, 55);
 }
 
 .gf-checkbox-group {
@@ -117,13 +115,7 @@ const toggleAll = () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .gf-checkbox-label:hover {

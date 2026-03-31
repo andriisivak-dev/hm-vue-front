@@ -11,6 +11,16 @@ export const useCaseFormStore = defineStore('caseForm', {
     currentStep: 1,
     isInitialized: false,
     isLoading: false,
+
+    // ── Case state ────────────────────────────────────────────────────────
+    /** ID of the WP case post currently being edited (null = not yet created) */
+    caseId: null as number | null,
+    /** True while an async save/submit is in flight */
+    isSaving: false,
+    /** Human-readable error from the last save attempt */
+    saveError: null as string | null,
+    /** True after the case has been successfully submitted (status = in_review) */
+    isSubmitted: false,
   }),
 
   getters: {
@@ -67,6 +77,21 @@ export const useCaseFormStore = defineStore('caseForm', {
       // Otherwise, evaluate conditional logic
       return LogicEngine.shouldShow(field.conditionalLogic, state.values)
     },
+
+    /**
+     * Flat snapshot of current values suitable for sending to the API.
+     * Only includes non-empty values; page-break fields are excluded.
+     */
+    formDataSnapshot: (state): Record<string, any> => {
+      const snapshot: Record<string, any> = {}
+      Object.entries(state.values).forEach(([k, v]) => {
+        // Skip page-break fields (they aren't real data)
+        const isPage = state.form?.fields.find(f => String(f.id) === k && f.type === 'page')
+        if (isPage) return
+        snapshot[k] = v
+      })
+      return snapshot
+    },
   },
 
   actions: {
@@ -78,7 +103,8 @@ export const useCaseFormStore = defineStore('caseForm', {
     },
 
     /**
-     * Initialize form schema and set default values
+     * Initialize form schema and set default values.
+     * Resets all case state.
      */
     initialize(form: GFForm) {
       this.form = form
@@ -105,24 +131,27 @@ export const useCaseFormStore = defineStore('caseForm', {
       this.values = initialValues
       this.isInitialized = true
       this.currentStep = 1
-      
+      this.saveError = null
+      this.isSubmitted = false
+      this.caseId = null  // will be set after creation or load
+
       // Initial calculation run
       this.recalculateAll()
     },
 
     /**
-     * Hydrate form with data from a specific entry
+     * Hydrate form with data from a specific GF entry (legacy path).
      */
     hydrate(entry: GFEntry) {
       if (!this.form) return
 
       // Use a consistent record of all form fields for initialization
       const allFieldIds = new Set(this.form.fields.map(f => String(f.id)))
-      
+
       // Also include sub-inputs for checkboxes/radio/etc.
       this.form.fields.forEach(f => {
         if (f.inputs) {
-            f.inputs.forEach(input => allFieldIds.add(input.id))
+          f.inputs.forEach(input => allFieldIds.add(input.id))
         }
       })
 
@@ -132,11 +161,11 @@ export const useCaseFormStore = defineStore('caseForm', {
 
         // 1. Handle JSON strings for file uploads/arrays
         if (typeof value === 'string' && (value.startsWith('[') || value.startsWith('{'))) {
-           try {
-             processedValue = JSON.parse(value)
-           } catch (e) {
-             // Not a JSON, keep as is
-           }
+          try {
+            processedValue = JSON.parse(value)
+          } catch (e) {
+            // Not a JSON, keep as is
+          }
         }
 
         // 2. Set value
@@ -148,11 +177,36 @@ export const useCaseFormStore = defineStore('caseForm', {
     },
 
     /**
+     * Hydrate form with data from `hm_form_data` (new path).
+     * The payload is a flat { field_id: value } map already decoded from JSON.
+     */
+    hydrateFromFormData(formData: Record<string, any>) {
+      if (!this.form) return
+
+      Object.entries(formData).forEach(([key, value]) => {
+        let processedValue = value
+
+        // Handle JSON strings for file uploads/arrays
+        if (typeof value === 'string' && (value.startsWith('[') || value.startsWith('{'))) {
+          try {
+            processedValue = JSON.parse(value)
+          } catch {
+            // keep as-is
+          }
+        }
+
+        this.values[key] = processedValue
+      })
+
+      this.recalculateAll()
+    },
+
+    /**
      * Update a single field value and trigger dependent logic
      */
     updateValue(fieldId: string | number, value: any) {
       this.values[String(fieldId)] = value
-      
+
       // Cascade: recalculate all formulas because they could depend on this value
       this.recalculateAll()
     },
@@ -170,7 +224,7 @@ export const useCaseFormStore = defineStore('caseForm', {
           this.values[String(field.id)] = result
         }
       })
-      
+
       // 2. Note: Visibility is handled by the getter 'isFieldVisible' so it's reactive.
     },
 
@@ -188,11 +242,20 @@ export const useCaseFormStore = defineStore('caseForm', {
         this.currentStep--
       }
     },
-    
+
     setStep(step: number) {
       if (step >= 1 && step <= this.totalPages) {
-          this.currentStep = step;
+        this.currentStep = step
       }
-    }
+    },
+
+    /** Store the WP case post ID after async creation */
+    setCaseId(id: number | null) {
+      this.caseId = id
+    },
+
+    clearSaveError() {
+      this.saveError = null
+    },
   },
 })

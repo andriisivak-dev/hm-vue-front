@@ -41,32 +41,30 @@ const isReadonly = computed(() => {
 
 <style scoped>
 .gf-input {
-  width: 100%;
-  padding: 10px 14px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 1rem;
-  color: var(--text-h);
+  border-radius: 5px;
+  background: linear-gradient(white, white) padding-box, linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
+  border: 1px solid transparent;
+  padding: 10px 15px;
+  min-height: 43px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  color: rgb(17, 35, 55);
 }
 
-.gf-input:focus {
+.gf-input:not(.gf-readonly):focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-bg);
+  box-shadow: 0 0 12px 0 rgba(111, 1, 255, 0.32);
 }
 
 .gf-readonly {
   background: #f1f5f9 !important;
-  border-color: #e2e8f0;
   cursor: not-allowed;
-  color: var(--text-soft);
+  color: rgb(100, 100, 100);
 }
 
 .gf-input::placeholder {
-  color: var(--text);
   opacity: 0.5;
+  color: rgb(17, 35, 55);
 }
 </style>

@@ -153,6 +153,18 @@ const closeDropdown = () => {
 </template>
 
 <style scoped>
+.gf-input {
+  border-radius: 5px;
+  background: linear-gradient(white, white) padding-box, linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
+  border: 1px solid transparent;
+  padding: 10px 15px;
+  min-height: 43px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  color: rgb(17, 35, 55);
+}
+
 .autocomplete-wrapper {
   position: relative;
 }
@@ -184,18 +196,18 @@ const closeDropdown = () => {
   left: 0;
   right: 0;
   z-index: 1000;
-  margin-top: 8px;
-  max-height: 250px;
+  padding: 0;
+  margin-top: 2px;
+  max-height: 350px;
   overflow-y: auto;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  padding: 8px;
+  border-radius: 6px;
+  background: linear-gradient(white, white) padding-box, linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
+  border: 1px solid transparent;
+  box-shadow: 0 0 12px 0 rgba(111, 1, 255, 0.32);
 }
 
 .dropdown-item {
-  padding: 10px 14px;
-  border-radius: 8px;
+  padding: 4px 10px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -203,8 +215,7 @@ const closeDropdown = () => {
 }
 
 .dropdown-item:hover {
-  background: var(--accent-bg);
-  color: var(--accent);
+  background: #d1d1d1;
 }
 
 .company {

@@ -60,13 +60,12 @@ const value = computed({
 
 .gf-select {
   width: 100%;
-  padding: 10px 14px;
-  padding-right: 40px;
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: linear-gradient(white, white) padding-box, linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
+  border: 1px solid transparent;
+  padding: 10px 40px 10px 14px;
   border-radius: 8px;
   font-size: 1rem;
-  color: var(--text-h);
+  color: #262469;
   appearance: none;
   transition: all 0.2s;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -75,8 +74,7 @@ const value = computed({
 
 .gf-select:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-bg);
+  box-shadow: 0 0 12px 0 rgba(111, 1, 255, 0.32);
 }
 
 .gf-select:disabled {

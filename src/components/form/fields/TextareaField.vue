@@ -32,27 +32,25 @@ const value = computed({
 
 <style scoped>
 .gf-textarea {
-  width: 100%;
-  padding: 10px 14px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 1rem;
-  color: var(--text-h);
+  border-radius: 5px;
+  background: linear-gradient(white, white) padding-box, linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
+  border: 1px solid transparent;
+  padding: 10px 15px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  color: rgb(17, 35, 55);
   resize: vertical;
   min-height: 100px;
 }
 
 .gf-textarea:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-bg);
+  box-shadow: 0 0 12px 0 rgba(111, 1, 255, 0.32);
 }
 
 .gf-textarea::placeholder {
-  color: var(--text);
+  color: rgb(17, 35, 55);
   opacity: 0.5;
 }
 </style>

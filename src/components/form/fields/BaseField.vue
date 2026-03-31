@@ -13,7 +13,7 @@ const isRequired = computed(() => props.field.isRequired)
 <template>
   <div
       class="gf-field-wrapper"
-      :class="[field.cssClass, `gf-field--${field.size}`, { 'has-error': error }]"
+      :class="[field.cssClass, { 'has-error': error }]"
   >
     <label v-if="field.type !== 'section'" :for="`input_${field.id}`" class="gf-label">
       {{ field.label }}
@@ -31,7 +31,6 @@ const isRequired = computed(() => props.field.isRequired)
 
 <style scoped>
 .gf-field-wrapper {
-  margin-bottom: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -40,9 +39,9 @@ const isRequired = computed(() => props.field.isRequired)
 }
 
 .gf-label {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--text-h);
+  font-weight: 700;
+  font-size: 18px;
+  color: #262469;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -62,19 +61,6 @@ const isRequired = computed(() => props.field.isRequired)
   font-size: 0.85rem;
   color: #ef4444;
   margin-top: 0.25rem;
-}
-
-/* Sizes */
-.gf-field--small {
-  max-width: 300px;
-}
-
-.gf-field--medium {
-  max-width: 600px;
-}
-
-.gf-field--large {
-  max-width: 100%;
 }
 
 .has-error :deep(input),

@@ -72,9 +72,8 @@ const getStatus = (num: number) => {
   top: 0;
   left: 0;
   height: 4px;
-  background: var(--accent);
+  background: rgb(15 56 103);
   transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 0 10px var(--accent-bg);
 }
 
 .steps-container {
