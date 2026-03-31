@@ -54,7 +54,7 @@ const validationRules = computed(() =>
  * the parent key ("17"). We synthesise an aggreform-step-contentgate array so vee-validate can properly
  * evaluate `required` (non-empty array = at least one checked).
  */
-const checkboxAggregateValue = computed<string[]>(() => {
+const checkboxAggregateValue = computed(() => {
     if (props.field.type !== 'checkbox' || !props.field.inputs) return [];
     return props.field.inputs
         .map((input) => store.values[input.id])
@@ -66,7 +66,7 @@ const checkboxAggregateValue = computed<string[]>(() => {
  * – checkbox → aggregate array of selected sub-values
  * – everything else → direct store value
  */
-const fieldModelValue = computed<FieldValue | string[]>(() =>
+const fieldModelValue = computed(() =>
     props.field.type === 'checkbox'
         ? checkboxAggregateValue.value
         : store.values[String(props.field.id)]
