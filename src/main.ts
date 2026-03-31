@@ -4,6 +4,7 @@ import App from './App.vue'
 import { router } from './router'
 import { createPinia } from 'pinia'
 import './form-engine/validator'
+import { setupApi } from './api'
 
 const app = createApp(App)
 
@@ -14,5 +15,6 @@ const mountTarget = document.querySelector<HTMLElement>('#hm-app')
     ?? document.querySelector<HTMLElement>('.app-main#main')
 
 if (mountTarget) {
+    setupApi()
     app.mount(mountTarget)
 }
