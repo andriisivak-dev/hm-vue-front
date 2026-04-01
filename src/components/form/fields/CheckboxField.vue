@@ -67,7 +67,7 @@ const toggleAll = () => {
                         >
                             <path
                                 d="M1 5L4.5 8.5L10.5 1.5"
-                                stroke="white"
+                                stroke="#262469"
                                 stroke-width="2.5"
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
@@ -95,47 +95,42 @@ const toggleAll = () => {
 .gf-checkbox-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 12px;
 }
 
 .gf-select-all-btn {
+    font-size: 14px;
+    min-height: 35px;
+    padding: 0 12px;
+    color: #fff;
+    background-color: #262469;
+    border-radius: 5px;
     align-self: flex-start;
-    padding: 6px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: #f8fafc;
-    color: var(--text-h);
-    font-size: 0.85rem;
-    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    border: none;
 }
 
 .gf-select-all-btn:hover {
-    color: rgb(17, 35, 55);
 }
 
 .gf-checkbox-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 12px;
 }
 
 .gf-checkbox-label {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     cursor: pointer;
 }
 
 .gf-checkbox-label:hover {
-    background: #f8fafc;
-    border-color: var(--accent-border);
 }
 
 .gf-checkbox-label.is-selected {
-    border-color: var(--accent);
-    background: var(--accent-bg);
 }
 
 .gf-checkbox-input {
@@ -148,24 +143,24 @@ const toggleAll = () => {
 .gf-checkbox-indicator {
     width: 20px;
     height: 20px;
-    border: 2px solid var(--border);
-    border-radius: 6px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    background: #fff;
+    background:
+        linear-gradient(white, white) padding-box,
+        linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
+    border: 1px solid transparent;
     transition: all 0.2s;
 }
 
 .gf-checkbox-label.is-selected .gf-checkbox-indicator {
-    border-color: var(--accent);
-    background: var(--accent);
 }
 
 .gf-checkbox-text {
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: var(--text-h);
+    font-size: 14px;
+    font-weight: 400;
+    color: #262469;
 }
 </style>
