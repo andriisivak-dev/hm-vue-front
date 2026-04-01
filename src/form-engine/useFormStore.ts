@@ -20,7 +20,9 @@ export const useCaseFormStore = defineStore('caseForm', {
         /** Human-readable error from the last save attempt */
         saveError: null as string | null,
         /** True after the case has been successfully submitted (status = in_review) */
-        isSubmitted: false
+        isSubmitted: false,
+        /** Flag to prevent infinite loops during VC/RPM mutual calculations */
+        isUpdatingVCRPM: false
     }),
 
     getters: {
@@ -139,6 +141,7 @@ export const useCaseFormStore = defineStore('caseForm', {
 
             // Initial calculation run
             this.recalculateAll();
+            this.initVCRPMCalculations();
         },
 
         /**
@@ -176,6 +179,7 @@ export const useCaseFormStore = defineStore('caseForm', {
 
             // Recalculate visibility and formulas after hydrate
             this.recalculateAll();
+            this.initVCRPMCalculations();
         },
 
         /**
@@ -201,6 +205,7 @@ export const useCaseFormStore = defineStore('caseForm', {
             });
 
             this.recalculateAll();
+            this.initVCRPMCalculations();
         },
 
         /**
@@ -209,8 +214,84 @@ export const useCaseFormStore = defineStore('caseForm', {
         updateValue(fieldId: string | number, value: unknown) {
             this.values[String(fieldId)] = value;
 
+            // Trigger VC/RPM mathematical mutual dependency calculation
+            this.handleVCRPMCalculation(String(fieldId));
+
             // Cascade: recalculate all formulas because they could depend on this value
             this.recalculateAll();
+        },
+
+        /**
+         * Initialize VC/RPM mutual calculation on data load
+         */
+        initVCRPMCalculations() {
+            if (this.values['28'] !== undefined && this.values['28'] !== '') {
+                this.handleVCRPMCalculation('28');
+            }
+            if (this.values['141'] !== undefined && this.values['141'] !== '') {
+                this.handleVCRPMCalculation('141');
+            }
+        },
+
+        /**
+         * Handle custom mutual calculation for VC and RPM specific fields
+         */
+        handleVCRPMCalculation(fieldId: string) {
+            if (this.isUpdatingVCRPM) return;
+
+            // Existing operation
+            const existVc = '34',
+                existRpm = '35',
+                existDia = '28';
+            if ([existVc, existRpm, existDia].includes(fieldId)) {
+                this.isUpdatingVCRPM = true;
+                this.calculateVCRPMGroup(existVc, existRpm, existDia, fieldId);
+                this.isUpdatingVCRPM = false;
+            }
+
+            // Suggested operation
+            const sugVc = '148',
+                sugRpm = '149',
+                sugDia = '141';
+            if ([sugVc, sugRpm, sugDia].includes(fieldId)) {
+                this.isUpdatingVCRPM = true;
+                this.calculateVCRPMGroup(sugVc, sugRpm, sugDia, fieldId);
+                this.isUpdatingVCRPM = false;
+            }
+        },
+
+        /**
+         * Perform VC / RPM physics calculation for the given group
+         */
+        calculateVCRPMGroup(vcId: string, rpmId: string, diaId: string, triggerId: string) {
+            const PI = Math.PI;
+
+            let vcRaw = this.values[vcId];
+            let rpmRaw = this.values[rpmId];
+            let diaRaw = this.values[diaId];
+
+            let dia = parseFloat(String(diaRaw)) || 1;
+            if (dia <= 0) dia = 1;
+
+            if (triggerId === vcId) {
+                let vc = parseFloat(String(vcRaw)) || 0;
+                let rpm = (vc * 1000) / (PI * dia);
+                this.values[rpmId] = rpm.toFixed(1);
+            } else if (triggerId === rpmId) {
+                let rpm = parseFloat(String(rpmRaw)) || 0;
+                let vc = (rpm * PI * dia) / 1000;
+                this.values[vcId] = vc.toFixed(2);
+            } else if (triggerId === diaId) {
+                if (vcRaw !== '' && vcRaw !== undefined && vcRaw !== null) {
+                    let vc = parseFloat(String(vcRaw)) || 0;
+                    let rpm = (vc * 1000) / (PI * dia);
+                    this.values[rpmId] = rpm.toFixed(1);
+                } else if (rpmRaw !== '' && rpmRaw !== undefined && rpmRaw !== null) {
+                    let rpm = parseFloat(String(rpmRaw)) || 0;
+                    let vc = (rpm * PI * dia) / 1000;
+                    this.values[vcId] = vc.toFixed(2);
+                }
+            }
         },
 
         /**
