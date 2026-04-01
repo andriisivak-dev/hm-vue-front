@@ -32,7 +32,7 @@ const isReadonly = computed(() => {
             :class="{ 'gf-readonly': isReadonly }"
             :placeholder="field.placeholder"
             :type="field.inputType || 'text'"
-            :required="field.isRequired"
+            :required="field.is_required"
             :readonly="isReadonly"
             :tabindex="isReadonly ? -1 : 0"
         />

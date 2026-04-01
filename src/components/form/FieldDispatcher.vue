@@ -32,7 +32,7 @@ const componentMap: Record<string, Component> = {
 
 const component = computed<Component | null>(() => {
     // Specialized components by class
-    const cssClass = props.field.cssClass || '';
+    const cssClass = props.field.css_class || '';
     if (cssClass.includes('csp-client-autocomplete')) {
         return defineAsyncComponent(() => import('./fields/ClientAutocompleteField.vue'));
     }

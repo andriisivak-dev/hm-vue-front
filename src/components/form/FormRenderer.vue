@@ -8,7 +8,7 @@ import FieldSkeleton from './FieldSkeleton.vue';
 import FieldDispatcher from './FieldDispatcher.vue';
 import FormStepper from './FormStepper.vue';
 import { ChevronRight, ChevronLeft, Check, AlertCircle, Loader2 } from 'lucide-vue-next';
-import type { GFForm } from '../../form-engine/types';
+import type { GFField, GFForm } from '../../form-engine/types';
 
 // -- Types & Interfaces -------------------------------------------------------
 
@@ -31,9 +31,6 @@ interface RawSchema {
     title?: string;
     steps?: RawStep[];
 }
-
-// Extract field type from GFForm's fields array
-type GFField = GFForm['fields'][number];
 
 const props = defineProps<{
     /** GF form ID (schema to load) */
@@ -83,32 +80,27 @@ onMounted(async () => {
 
     try {
         const rawSchema = (await formsService.getSchema(props.formId)) as RawSchema;
-        const gfForm = {
-            form_id: rawSchema.form_id || rawSchema.id,
-            form_title: rawSchema.form_title || rawSchema.title,
-            field_count: 0,
-            fields: []
-        } as import('../../form-engine/types').GFForm;
-
-        if (rawSchema.steps && Array.isArray(rawSchema.steps)) {
-            rawSchema.steps.forEach((step: RawStep, idx: number) => {
-                if (idx > 0) {
-                    gfForm.fields.push({ id: `page_${idx}`, type: 'page' } as unknown as GFField);
-                }
-                if (step.fields && Array.isArray(step.fields)) {
-                    step.fields.forEach((f: RawField) => {
-                        gfForm.fields.push({
+        const gfForm: GFForm = {
+            form_id: rawSchema.form_id ?? rawSchema.id ?? 0,
+            form_title: rawSchema.form_title ?? rawSchema.title ?? '',
+            total_steps: rawSchema.steps?.length ?? 0,
+            non_data_field_types: [],
+            steps: (rawSchema.steps ?? []).map((step, idx) => ({
+                step_number: idx + 1,
+                label: '',
+                fields: (step.fields ?? []).map(
+                    (f) =>
+                        ({
                             ...f,
-                            isRequired: f.is_required,
-                            isHidden: f.is_hidden,
-                            conditionalLogic: f.conditional_logic || null,
-                            cssClass: f.css_class || ''
-                        } as unknown as GFField);
-                    });
-                }
-            });
-            gfForm.field_count = gfForm.fields.length;
-        }
+                            is_required: f.is_required ?? false,
+                            is_hidden: f.is_hidden ?? false,
+                            visibility: f.is_hidden ? 'hidden' : 'visible',
+                            conditionalLogic: f.conditional_logic ?? null,
+                            css_class: f.css_class ?? ''
+                        }) as unknown as GFField
+                )
+            }))
+        };
 
         store.initialize(gfForm);
 

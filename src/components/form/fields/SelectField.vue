@@ -24,7 +24,7 @@ const value = computed({
                 :id="`input_${field.id}`"
                 v-model="value"
                 class="gf-select"
-                :required="field.isRequired"
+                :required="field.is_required"
             >
                 <option v-if="field.placeholder" value="" disabled selected>
                     {{ field.placeholder }}

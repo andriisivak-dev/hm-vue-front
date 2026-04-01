@@ -52,6 +52,12 @@ export interface GFCalculation {
     referencedFields: string[];
 }
 
+export interface GFStep {
+    step_number: number;
+    label: string;
+    fields: GFField[];
+}
+
 export interface GFField {
     id: number | string;
     type: string;
@@ -59,9 +65,9 @@ export interface GFField {
     label: string;
     adminLabel?: string;
     description?: string;
-    cssClass?: string;
-    isRequired: boolean;
-    isHidden: boolean;
+    css_class?: string;
+    is_required: boolean;
+    is_hidden: boolean;
     visibility: 'visible' | 'hidden';
     size: 'small' | 'medium' | 'large';
     placeholder?: string;
@@ -82,8 +88,9 @@ export interface GFField {
 export interface GFForm {
     form_id: number;
     form_title: string;
-    field_count: number;
-    fields: GFField[];
+    total_steps: number;
+    steps: GFStep[];
+    non_data_field_types: string[];
 }
 
 export interface GFEntry {

@@ -2,10 +2,13 @@ import { defineStore } from 'pinia';
 import type { GFForm, GFField, GFEntry } from './types';
 import { LogicEngine } from './LogicEngine';
 import { FormulaEngine } from './FormulaEngine';
+import { FIELD_IDS } from '../stores/constants.ts';
 
 export const useCaseFormStore = defineStore('caseForm', {
     state: () => ({
         form: null as GFForm | null,
+        _allFields: [] as GFField[],
+        _fieldMap: new Map<string, GFField>() as Map<string, GFField>,
         values: {} as Record<string, unknown>,
         readonlyFields: {} as Record<string, boolean>, // fieldId -> boolean
         currentStep: 1,
@@ -30,7 +33,7 @@ export const useCaseFormStore = defineStore('caseForm', {
          * Determine if a field is readonly (calculation OR manual)
          */
         isFieldReadonly: (state) => (fieldId: string | number) => {
-            const field = state.form?.fields.find((f) => String(f.id) === String(fieldId));
+            const field = state._allFields.find((f) => String(f.id) === String(fieldId));
             if (field?.calculation?.enableCalculation) return true;
             return !!state.readonlyFields[String(fieldId)];
         },
@@ -39,8 +42,7 @@ export const useCaseFormStore = defineStore('caseForm', {
          */
         totalPages: (state) => {
             if (!state.form) return 0;
-            const pageFields = state.form.fields.filter((f) => f.type === 'page');
-            return pageFields.length + 1; // +1 for the last page
+            return state.form.total_steps;
         },
 
         /**
@@ -48,19 +50,8 @@ export const useCaseFormStore = defineStore('caseForm', {
          */
         currentStepFields: (state) => {
             if (!state.form) return [];
-            let stepCounter = 1;
-            const stepFields: GFField[] = [];
-
-            for (const field of state.form.fields) {
-                if (field.type === 'page') {
-                    stepCounter++;
-                    continue;
-                }
-                if (stepCounter === state.currentStep) {
-                    stepFields.push(field);
-                }
-            }
-            return stepFields;
+            const step = state.form.steps.find((s) => s.step_number === state.currentStep);
+            return step?.fields ?? [];
         },
 
         /**
@@ -72,11 +63,9 @@ export const useCaseFormStore = defineStore('caseForm', {
          * Get field visibility by ID (reactive)
          */
         isFieldVisible: (state) => (fieldId: string | number) => {
-            const field = state.form?.fields.find((f) => String(f.id) === String(fieldId));
+            const field = state._fieldMap.get(String(fieldId));
             if (!field) return false;
-            // If visibility prop is already hidden by GF, then respect it
             if (field.visibility === 'hidden') return false;
-            // Otherwise, evaluate conditional logic
             return LogicEngine.shouldShow(field.conditionalLogic, state.values);
         },
 
@@ -87,8 +76,7 @@ export const useCaseFormStore = defineStore('caseForm', {
         formDataSnapshot: (state): Record<string, unknown> => {
             const snapshot: Record<string, unknown> = {};
             Object.entries(state.values).forEach(([k, v]) => {
-                // Skip page-break fields (they aren't real data)
-                const isPage = state.form?.fields.find(
+                const isPage = state._allFields.find(
                     (f) => String(f.id) === k && f.type === 'page'
                 );
                 if (isPage) return;
@@ -105,7 +93,7 @@ export const useCaseFormStore = defineStore('caseForm', {
             (state) =>
             (field: GFField): string => {
                 const rawLabel = field.label || '';
-                const mode = String(state.values['20'] || '').trim();
+                const mode = String(state.values[FIELD_IDS.TOOL_MODE] || '').trim();
 
                 if (mode === 'New Development' && rawLabel.includes('(Suggested)')) {
                     // Accurately strip "(Suggested)" with its parentheses and any surrounding spaces
@@ -130,16 +118,15 @@ export const useCaseFormStore = defineStore('caseForm', {
          */
         initialize(form: GFForm) {
             this.form = form;
+            this._allFields = form.steps.flatMap((s) => s.fields);
+            this._fieldMap = new Map(this._allFields.map((f) => [String(f.id), f]));
             const initialValues: Record<string, unknown> = {};
-            this.readonlyFields = {}; // Reset on new form
+            this.readonlyFields = {};
 
-            form.fields.forEach((field) => {
-                // Initialize default values (prioritize field defaults)
+            this._allFields.forEach((field) => {
                 if (field.defaultValue !== undefined) {
                     initialValues[String(field.id)] = field.defaultValue;
                 } else if (field.type === 'checkbox') {
-                    // Checkboxes might have sub-inputs. In GF, truthy means the label text.
-                    // But here, we'll store them by their specific checkbox input IDs like 17.1.
                     if (field.inputs) {
                         field.inputs.forEach((input) => {
                             initialValues[input.id] = '';
@@ -155,9 +142,8 @@ export const useCaseFormStore = defineStore('caseForm', {
             this.currentStep = 1;
             this.saveError = null;
             this.isSubmitted = false;
-            this.caseId = null; // will be set after creation or load
+            this.caseId = null;
 
-            // Initial calculation run
             this.recalculateAll();
             this.initVCRPMCalculations();
         },
@@ -168,21 +154,18 @@ export const useCaseFormStore = defineStore('caseForm', {
         hydrate(entry: GFEntry) {
             if (!this.form) return;
 
-            // Use a consistent record of all form fields for initialization
-            const allFieldIds = new Set(this.form.fields.map((f) => String(f.id)));
+            // const allFields = this.form.steps.flatMap((s) => s.fields);
+            // const allFieldIds = new Set(allFields.map((f) => String(f.id)));
+            //
+            // allFields.forEach((f) => {
+            //     if (f.inputs) {
+            //         f.inputs.forEach((input) => allFieldIds.add(input.id));
+            //     }
+            // });
 
-            // Also include sub-inputs for checkboxes/radio/etc.
-            this.form.fields.forEach((f) => {
-                if (f.inputs) {
-                    f.inputs.forEach((input) => allFieldIds.add(input.id));
-                }
-            });
-
-            // Entry fields are keyed by string ID like "10" or "17.1"
             Object.entries(entry.fields).forEach(([key, value]) => {
                 let processedValue = value;
 
-                // 1. Handle JSON strings for file uploads/arrays
                 if (typeof value === 'string' && (value.startsWith('[') || value.startsWith('{'))) {
                     try {
                         processedValue = JSON.parse(value);
@@ -191,11 +174,9 @@ export const useCaseFormStore = defineStore('caseForm', {
                     }
                 }
 
-                // 2. Set value
                 this.values[key] = processedValue;
             });
 
-            // Recalculate visibility and formulas after hydrate
             this.recalculateAll();
             this.initVCRPMCalculations();
         },
@@ -243,11 +224,17 @@ export const useCaseFormStore = defineStore('caseForm', {
          * Initialize VC/RPM mutual calculation on data load
          */
         initVCRPMCalculations() {
-            if (this.values['28'] !== undefined && this.values['28'] !== '') {
-                this.handleVCRPMCalculation('28');
+            if (
+                this.values[FIELD_IDS.EXIST_DIA] !== undefined &&
+                this.values[FIELD_IDS.EXIST_DIA] !== ''
+            ) {
+                this.handleVCRPMCalculation(FIELD_IDS.EXIST_DIA);
             }
-            if (this.values['141'] !== undefined && this.values['141'] !== '') {
-                this.handleVCRPMCalculation('141');
+            if (
+                this.values[FIELD_IDS.SUG_DIA] !== undefined &&
+                this.values[FIELD_IDS.SUG_DIA] !== ''
+            ) {
+                this.handleVCRPMCalculation(FIELD_IDS.SUG_DIA);
             }
         },
 
@@ -258,9 +245,10 @@ export const useCaseFormStore = defineStore('caseForm', {
             if (this.isUpdatingVCRPM) return;
 
             // Existing operation
-            const existVc = '34',
-                existRpm = '35',
-                existDia = '28';
+            const existVc = FIELD_IDS.EXIST_VC,
+                existRpm = FIELD_IDS.EXIST_RPM,
+                existDia = FIELD_IDS.EXIST_DIA;
+
             if ([existVc, existRpm, existDia].includes(fieldId)) {
                 this.isUpdatingVCRPM = true;
                 this.calculateVCRPMGroup(existVc, existRpm, existDia, fieldId);
@@ -268,9 +256,10 @@ export const useCaseFormStore = defineStore('caseForm', {
             }
 
             // Suggested operation
-            const sugVc = '148',
-                sugRpm = '149',
-                sugDia = '141';
+            const sugVc = FIELD_IDS.SUG_VC,
+                sugRpm = FIELD_IDS.SUG_RPM,
+                sugDia = FIELD_IDS.SUG_DIA;
+
             if ([sugVc, sugRpm, sugDia].includes(fieldId)) {
                 this.isUpdatingVCRPM = true;
                 this.calculateVCRPMGroup(sugVc, sugRpm, sugDia, fieldId);
@@ -318,15 +307,12 @@ export const useCaseFormStore = defineStore('caseForm', {
         recalculateAll() {
             if (!this.form) return;
 
-            // 1. Recalculate Formulas
-            this.form.fields.forEach((field) => {
-                if (field.calculation && field.calculation.enableCalculation) {
+            this._allFields.forEach((field) => {
+                if (field.calculation?.enableCalculation) {
                     const result = FormulaEngine.calculate(field.calculation, this.values);
                     this.values[String(field.id)] = result;
                 }
             });
-
-            // 2. Note: Visibility is handled by the getter 'isFieldVisible' so it's reactive.
         },
 
         /**

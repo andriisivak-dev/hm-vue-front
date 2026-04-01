@@ -24,7 +24,7 @@ const value = computed({
             v-model="value"
             class="gf-textarea"
             :placeholder="field.placeholder"
-            :required="field.isRequired"
+            :required="field.is_required"
             rows="4"
         ></textarea>
     </BaseField>

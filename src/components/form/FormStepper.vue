@@ -8,28 +8,11 @@ const store = useCaseFormStore();
 const steps = computed(() => {
     if (!store.form) return [];
 
-    // Step 1 title from form title or hardcoded
-    const stepsList = [
-        {
-            id: 0,
-            number: 1,
-            label: 'Customer Details'
-        }
-    ];
-
-    // Find all page-type fields and extract the labels
-    let counter = 2;
-    store.form.fields.forEach((field) => {
-        if (field.type === 'page') {
-            stepsList.push({
-                id: Number(field.id),
-                number: counter++,
-                label: field.label || `Step ${counter - 1}`
-            });
-        }
-    });
-
-    return stepsList;
+    return store.form.steps.map((step) => ({
+        id: step.step_number,
+        number: Number(step.step_number),
+        label: step.label
+    }));
 });
 
 const getStatus = (num: number) => {
@@ -41,10 +24,10 @@ const getStatus = (num: number) => {
 
 <template>
     <div class="stepper-wrapper">
-        <div
-            class="stepper-progress"
-            :style="{ width: `${(store.currentStep / store.totalPages) * 100}%` }"
-        ></div>
+        <p class="steps-form-title">Case Study</p>
+        <p class="steps-require-note">
+            "<span style="color: #c02b0a">*</span>" indicates required fields
+        </p>
 
         <div class="steps-container">
             <div
