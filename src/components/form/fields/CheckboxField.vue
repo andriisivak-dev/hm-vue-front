@@ -11,13 +11,6 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:value']);
 
-// Decode HTML entities like &amp; -> &
-const decodeHTML = (str: string): string => {
-    const txt = document.createElement('textarea');
-    txt.innerHTML = str;
-    return txt.value;
-};
-
 const toggleValue = (inputId: string, text: string, isChecked: boolean) => {
     emit('update:value', { id: inputId, value: isChecked ? text : '' });
 };
@@ -81,8 +74,7 @@ const toggleAll = () => {
                             />
                         </svg>
                     </div>
-                    <!-- decodeHTML fixes double-encoding like &amp;amp; → & -->
-                    <span class="gf-checkbox-text">{{ decodeHTML(choice.text) }}</span>
+                    <span class="gf-checkbox-text" v-html="choice.text"></span>
                 </label>
             </div>
 

@@ -29,9 +29,12 @@ const value = computed({
                 <option v-if="field.placeholder" value="" disabled selected>
                     {{ field.placeholder }}
                 </option>
-                <option v-for="choice in field.choices" :key="choice.value" :value="choice.value">
-                    {{ choice.text }}
-                </option>
+                <option
+                    v-for="choice in field.choices"
+                    :key="choice.value"
+                    :value="choice.value"
+                    v-html="choice.text"
+                ></option>
             </select>
         </div>
     </BaseField>

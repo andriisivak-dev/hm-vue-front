@@ -34,7 +34,7 @@ const value = computed({
                     class="gf-radio-input"
                 />
                 <div class="gf-radio-indicator"></div>
-                <span class="gf-radio-text">{{ choice.text }}</span>
+                <span class="gf-radio-text" v-html="choice.text"></span>
             </label>
         </div>
     </BaseField>
