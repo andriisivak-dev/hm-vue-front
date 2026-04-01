@@ -41,6 +41,13 @@ export class ValidationAdapter {
             }
         }
 
+        if (
+            typeof field.cssClass === 'string' &&
+            field.cssClass.includes('require-positive-integer')
+        ) {
+            rules.push('positive_integer');
+        }
+
         // Return joined rules string
         return rules.join('|');
     }
