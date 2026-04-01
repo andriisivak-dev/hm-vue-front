@@ -21,6 +21,8 @@ interface RawField {
 }
 
 interface RawStep {
+    step_number?: number;
+    label?: string;
     fields?: RawField[];
 }
 
@@ -86,8 +88,8 @@ onMounted(async () => {
             total_steps: rawSchema.steps?.length ?? 0,
             non_data_field_types: [],
             steps: (rawSchema.steps ?? []).map((step, idx) => ({
-                step_number: idx + 1,
-                label: '',
+                step_number: step.step_number ?? idx + 1,
+                label: step.label ?? '',
                 fields: (step.fields ?? []).map(
                     (f) =>
                         ({
