@@ -1,19 +1,28 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { GFField } from '../../../form-engine/types';
+import { useCaseFormStore } from '../../../form-engine/useFormStore';
 
 const props = defineProps<{
     field: GFField;
     error?: string;
 }>();
 
+const store = useCaseFormStore();
+
 const isRequired = computed(() => props.field.isRequired);
+const displayedLabel = computed(() => store.getFormattedLabel(props.field));
+const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)'));
 </script>
 
 <template>
-    <div class="gf-field-wrapper" :class="[field.cssClass, { 'has-error': error }]">
+    <div
+        class="gf-field-wrapper"
+        :class="[field.cssClass, { 'has-error': error }]"
+        :data-is-suggested="isSuggestedField"
+    >
         <label v-if="field.type !== 'section'" :for="`input_${field.id}`" class="gf-label">
-            {{ field.label }}
+            {{ displayedLabel }}
             <span v-if="isRequired" class="gf-required">*</span>
         </label>
 

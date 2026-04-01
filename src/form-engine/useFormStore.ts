@@ -95,7 +95,25 @@ export const useCaseFormStore = defineStore('caseForm', {
                 snapshot[k] = v;
             });
             return snapshot;
-        }
+        },
+
+        /**
+         * Get formatting for field labels based on form logic
+         * Specific rule: remove "(Suggested)" if field 20 strictly equals "New Development"
+         */
+        getFormattedLabel:
+            (state) =>
+            (field: GFField): string => {
+                const rawLabel = field.label || '';
+                const mode = String(state.values['20'] || '').trim();
+
+                if (mode === 'New Development' && rawLabel.includes('(Suggested)')) {
+                    // Accurately strip "(Suggested)" with its parentheses and any surrounding spaces
+                    return rawLabel.replace(/\s*\(\s*Suggested\s*\)\s*/i, ' ').trim();
+                }
+
+                return rawLabel;
+            }
     },
 
     actions: {
@@ -266,29 +284,29 @@ export const useCaseFormStore = defineStore('caseForm', {
         calculateVCRPMGroup(vcId: string, rpmId: string, diaId: string, triggerId: string) {
             const PI = Math.PI;
 
-            let vcRaw = this.values[vcId];
-            let rpmRaw = this.values[rpmId];
-            let diaRaw = this.values[diaId];
+            const vcRaw = this.values[vcId];
+            const rpmRaw = this.values[rpmId];
+            const diaRaw = this.values[diaId];
 
             let dia = parseFloat(String(diaRaw)) || 1;
             if (dia <= 0) dia = 1;
 
             if (triggerId === vcId) {
-                let vc = parseFloat(String(vcRaw)) || 0;
-                let rpm = (vc * 1000) / (PI * dia);
+                const vc = parseFloat(String(vcRaw)) || 0;
+                const rpm = (vc * 1000) / (PI * dia);
                 this.values[rpmId] = rpm.toFixed(1);
             } else if (triggerId === rpmId) {
-                let rpm = parseFloat(String(rpmRaw)) || 0;
-                let vc = (rpm * PI * dia) / 1000;
+                const rpm = parseFloat(String(rpmRaw)) || 0;
+                const vc = (rpm * PI * dia) / 1000;
                 this.values[vcId] = vc.toFixed(2);
             } else if (triggerId === diaId) {
                 if (vcRaw !== '' && vcRaw !== undefined && vcRaw !== null) {
-                    let vc = parseFloat(String(vcRaw)) || 0;
-                    let rpm = (vc * 1000) / (PI * dia);
+                    const vc = parseFloat(String(vcRaw)) || 0;
+                    const rpm = (vc * 1000) / (PI * dia);
                     this.values[rpmId] = rpm.toFixed(1);
                 } else if (rpmRaw !== '' && rpmRaw !== undefined && rpmRaw !== null) {
-                    let rpm = parseFloat(String(rpmRaw)) || 0;
-                    let vc = (rpm * PI * dia) / 1000;
+                    const rpm = parseFloat(String(rpmRaw)) || 0;
+                    const vc = (rpm * PI * dia) / 1000;
                     this.values[vcId] = vc.toFixed(2);
                 }
             }
