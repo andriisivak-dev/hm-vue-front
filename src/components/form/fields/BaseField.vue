@@ -59,7 +59,7 @@ const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)
 
 .gf-description {
     font-size: 0.85rem;
-    color: var(--text);
+    color: #585e6a;
     margin-top: 0.25rem;
 }
 
@@ -71,8 +71,10 @@ const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)
 
 .has-error :deep(input),
 .has-error :deep(select),
+.has-error :deep(.gf-checkbox-indicator),
+.has-error :deep(.gf-radio-indicator),
 .has-error :deep(textarea) {
-    border-color: #ef4444 !important;
-    background-color: #fef2f2;
+    border-color: #ef4444;
+    background: #fef2f2;
 }
 </style>
