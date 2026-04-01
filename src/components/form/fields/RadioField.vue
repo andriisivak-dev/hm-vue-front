@@ -43,32 +43,18 @@ const value = computed({
 <style scoped>
 .gf-radio-group {
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+    gap: 20px;
 }
 
 .gf-radio-label {
+    min-width: 180px;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 16px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.gf-radio-label:hover {
-    background: #f8fafc;
-    border-color: var(--accent-border);
 }
 
 .gf-radio-label.is-selected {
-    border-color: var(--accent);
-    background: var(--accent-bg);
-    box-shadow: 0 0 0 1px var(--accent);
 }
 
 .gf-radio-input {
@@ -81,16 +67,17 @@ const value = computed({
 .gf-radio-indicator {
     width: 20px;
     height: 20px;
-    border: 2px solid var(--border);
+    background:
+        linear-gradient(white, white) padding-box,
+        linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
+    border: 1px solid transparent;
     border-radius: 50%;
     position: relative;
     flex-shrink: 0;
-    background: #fff;
     transition: all 0.2s;
 }
 
 .gf-radio-label.is-selected .gf-radio-indicator {
-    border-color: var(--accent);
 }
 
 .gf-radio-indicator::after {
@@ -99,9 +86,9 @@ const value = computed({
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0);
-    width: 10px;
-    height: 10px;
-    background: var(--accent);
+    width: 8px;
+    height: 8px;
+    background-color: #262469;
     border-radius: 50%;
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -111,8 +98,8 @@ const value = computed({
 }
 
 .gf-radio-text {
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: var(--text-h);
+    font-size: 14px;
+    font-weight: 400;
+    color: #112337;
 }
 </style>
