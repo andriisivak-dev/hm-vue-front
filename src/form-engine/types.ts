@@ -31,7 +31,7 @@ export interface GFConditionalLogic {
 export interface GFChoice {
     text: string;
     value: string;
-    isSelected: boolean;
+    isSelected?: boolean; // optional
     price?: string;
     inputId?: string; // only for checkboxes
 }
@@ -72,10 +72,12 @@ export interface GFField {
     size: 'small' | 'medium' | 'large';
     placeholder?: string;
     defaultValue?: string;
-    conditionalLogic?: GFConditionalLogic | null;
+    conditional_logic?: GFConditionalLogic | null | '' | string;
     inputs?: GFInput[] | null;
-    choices?: GFChoice[] | null;
+    choices?: GFChoice[] | null | '' | string;
     calculation?: GFCalculation | null;
+    enableCalculation?: boolean;
+    numberFormat?: 'decimal_dot' | 'decimal_comma';
     validation: GFValidation;
     // Type-specific extras
     content?: string; // for html field
