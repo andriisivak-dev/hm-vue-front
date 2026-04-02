@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref } from 'vue';
+import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue';
 import { useForm } from 'vee-validate';
 import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
 import { useFileUploadQueue } from '@/composables/useFileUploadQueue';
@@ -74,6 +74,30 @@ function formatApiError(err: unknown): string {
     if (err instanceof ApiError) return err.message;
     if (err instanceof Error) return err.message;
     return 'An unexpected error occurred.';
+}
+
+async function scrollToFirstError(errors: Partial<Record<string, string | undefined>>) {
+    await nextTick();
+    const errorIds = Object.keys(errors).map((id) => `field_wrapper_${id}`);
+
+    let firstElement: HTMLElement | null = null;
+    let minTop = Infinity;
+
+    errorIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+            const rect = el.getBoundingClientRect();
+            if (rect.top < minTop) {
+                minTop = rect.top;
+                firstElement = el;
+            }
+        }
+    });
+
+    if (firstElement) {
+        const y = (firstElement as HTMLElement).getBoundingClientRect().top + window.scrollY - 100;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+    }
 }
 
 // ── Mount logic ───────────────────────────────────────────────────────────────
@@ -158,7 +182,10 @@ onBeforeUnmount(() => clearAll());
 const nextStep = async () => {
     // Client-side validation first
     const result = await validate();
-    if (!result.valid) return;
+    if (!result.valid) {
+        await scrollToFirstError(result.errors);
+        return;
+    }
 
     // Persist data + completed step number to API
     const saved = await saveFormData(store.currentStep);
@@ -208,31 +235,36 @@ async function saveFormData(completedStep?: number): Promise<boolean> {
 
 // ── Final submit ──────────────────────────────────────────────────────────────
 
-const onFinalSubmit = handleSubmit(async () => {
-    if (!store.caseId) {
-        store.saveError = 'Case ID is missing. Please reload the page.';
-        return;
+const onFinalSubmit = handleSubmit(
+    async () => {
+        if (!store.caseId) {
+            store.saveError = 'Case ID is missing. Please reload the page.';
+            return;
+        }
+
+        // 1. Save latest form data
+        const saved = await saveFormData();
+        if (!saved) return;
+
+        // 2. Transition status -> in_review
+        store.isSaving = true;
+        store.saveError = null;
+
+        try {
+            await casesService.submit(store.caseId);
+            store.isSubmitted = true;
+            emit('case-submitted', store.caseId);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (err) {
+            store.saveError = formatApiError(err);
+        } finally {
+            store.isSaving = false;
+        }
+    },
+    async ({ errors }) => {
+        await scrollToFirstError(errors);
     }
-
-    // 1. Save latest form data
-    const saved = await saveFormData();
-    if (!saved) return;
-
-    // 2. Transition status -> in_review
-    store.isSaving = true;
-    store.saveError = null;
-
-    try {
-        await casesService.submit(store.caseId);
-        store.isSubmitted = true;
-        emit('case-submitted', store.caseId);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (err) {
-        store.saveError = formatApiError(err);
-    } finally {
-        store.isSaving = false;
-    }
-});
+);
 </script>
 
 <template>

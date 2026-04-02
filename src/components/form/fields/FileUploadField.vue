@@ -315,7 +315,7 @@ const updateModelValue = () => {
 </script>
 
 <template>
-    <div class="gf-field" :class="{ 'gf-field--error': error }">
+    <div :id="`field_wrapper_${field.id}`" class="gf-field" :class="{ 'gf-field--error': error }">
         <label class="gf-label">
             {{ field.label }}
             <span v-if="field.is_required" class="gf-required">*</span>

@@ -17,6 +17,7 @@ const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)
 
 <template>
     <div
+        :id="`field_wrapper_${field.id}`"
         class="gf-field-wrapper"
         :class="[field.cssClass, { 'has-error': error }]"
         :data-is-suggested="isSuggestedField"
