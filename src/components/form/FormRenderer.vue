@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, onBeforeUnmount, ref } from 'vue';
 import { useForm } from 'vee-validate';
 import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
+import { useFileUploadQueue } from '@/composables/useFileUploadQueue';
 import { formsService, casesService, ApiError } from '@/api';
 import '../../assets/form-design.css';
 import FieldSkeleton from './FieldSkeleton.vue';
@@ -60,6 +61,7 @@ const emit = defineEmits<{
 
 const store = useCaseFormStore();
 const { handleSubmit, validate, setValues } = useForm();
+const { flushQueue, clearAll } = useFileUploadQueue();
 
 // ── Local state ───────────────────────────────────────────────────────────────
 
@@ -145,6 +147,11 @@ onMounted(async () => {
     }
 });
 
+// ── Cleanup ────────────────────────────────────────────────────────────────────
+
+// Revoke any remaining pending file blob URLs if the user navigates away
+onBeforeUnmount(() => clearAll());
+
 // ── Navigation actions ────────────────────────────────────────────────────────
 
 /** Save current step data to the API, then advance to next step. */
@@ -182,6 +189,10 @@ async function saveFormData(completedStep?: number): Promise<boolean> {
     store.saveError = null;
 
     try {
+        // flush pending file uploads so their URLs land in store.values
+        await flushQueue();
+
+        // persist form data (now includes uploaded file URLs)
         await casesService.updateFormData(store.caseId, {
             fields: store.formDataSnapshot,
             current_step: completedStep ?? store.currentStep

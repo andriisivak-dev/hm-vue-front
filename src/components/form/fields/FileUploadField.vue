@@ -1,61 +1,147 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import type { GFField } from '@/form-engine/types.ts';
 import { X, UploadCloud, File as FileIcon } from 'lucide-vue-next';
+import { useFileUploadQueue, type PendingFile } from '@/composables/useFileUploadQueue';
+
+type FileStatus = 'pending' | 'uploaded' | 'error';
 
 interface LocalFile {
     id: string;
-    file: File;
+    /** The raw File object — null for 'uploaded' entries loaded from modelValue */
+    file: File | null;
+    /** Blob URL (pending/image) or remote URL (uploaded image) — null for non-images */
     previewUrl: string | null;
     progress: number;
-    hasError: boolean;
+    status: FileStatus;
     errorMessage?: string;
-    isUploaded: boolean;
+    /** Remote URL — set once uploaded */
+    uploadedUrl?: string;
 }
 
 const props = defineProps<{
     field: GFField;
-    modelValue?: File[];
+    modelValue?: string | string[];
     error?: string;
 }>();
 
 const emit = defineEmits<{
-    (e: 'update:model-value', value: File[] | null): void;
+    (e: 'update:model-value', value: string | string[] | null): void;
 }>();
+
+const fieldId = String(props.field.id);
+const { enqueuePending, dequeuePending, resolvedMap } = useFileUploadQueue();
 
 const files = ref<LocalFile[]>([]);
 const uploadWarnings = ref<string[]>([]);
 const isDragging = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
 
-const triggerFileSelect = () => {
-    fileInput.value?.click();
-};
+const progressTimers = new Map<string, ReturnType<typeof setInterval>>();
+
+/**
+ * Tracks setTimeout IDs for the 400ms status-transition delay.
+ * Cleared on file removal and unmount to avoid mutating a removed file.
+ */
+const statusTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+/**
+ * Sync watcher on resolvedMap[fieldId]
+ */
+watch(
+    () => resolvedMap[fieldId],
+    (resolved) => {
+        if (!resolved) return;
+        Object.entries(resolved).forEach(([localId, url]) => {
+            const f = files.value.find((f) => f.id === localId);
+            if (f && !f.uploadedUrl) {
+                f.uploadedUrl = url;
+                f.progress = 100;
+                statusTimers.delete(localId);
+            }
+        });
+    },
+    { deep: true, flush: 'sync' }
+);
+
+// ── Hydrate from modelValue (pre-filled data from existing case) ────────────────
+
+const isRemoteUrl = (url: string): boolean =>
+    !url.startsWith('blob:') && !url.startsWith('pending:');
+
+watch(
+    () => props.modelValue,
+    (newVal) => {
+        if (!newVal) return;
+
+        let urls: string[] = [];
+        if (Array.isArray(newVal)) {
+            urls = newVal as string[];
+        } else if (typeof newVal === 'string') {
+            try {
+                const parsed = JSON.parse(newVal);
+                urls = Array.isArray(parsed) ? parsed : [newVal];
+            } catch {
+                urls = [newVal];
+            }
+        }
+
+        urls.forEach((url) => {
+            if (typeof url !== 'string') return;
+            if (!isRemoteUrl(url)) return;
+
+            const exists = files.value.some((f) => f.uploadedUrl === url);
+            if (!exists) {
+                const extMatch = url.split('.').pop()?.toLowerCase();
+                const isImg =
+                    !!extMatch && ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extMatch);
+
+                files.value.push({
+                    id: crypto.randomUUID(),
+                    file: null,
+                    previewUrl: isImg ? url : null,
+                    progress: 100,
+                    status: 'uploaded',
+                    uploadedUrl: url
+                });
+            }
+        });
+    },
+    { immediate: true }
+);
+
+onBeforeUnmount(() => {
+    progressTimers.forEach(clearInterval);
+    progressTimers.clear();
+    statusTimers.forEach(clearTimeout);
+    statusTimers.clear();
+    // Revoke any remaining blob URLs that weren't flushed
+    files.value.forEach((f) => {
+        if (f.previewUrl && f.status === 'pending') {
+            URL.revokeObjectURL(f.previewUrl);
+        }
+    });
+});
+
+const triggerFileSelect = () => fileInput.value?.click();
 
 const onDragEnter = (e: DragEvent) => {
     e.preventDefault();
     isDragging.value = true;
 };
-
 const onDragLeave = (e: DragEvent) => {
     e.preventDefault();
     isDragging.value = false;
 };
-
 const onDrop = (e: DragEvent) => {
     e.preventDefault();
     isDragging.value = false;
-    if (e.dataTransfer?.files) {
-        handleFiles(Array.from(e.dataTransfer.files));
-    }
+    if (e.dataTransfer?.files) handleFiles(Array.from(e.dataTransfer.files));
 };
-
 const onFileSelect = (e: Event) => {
     const input = e.target as HTMLInputElement;
-    if (input.files) {
-        handleFiles(Array.from(input.files));
-    }
-    input.value = ''; // Reset input to allow selecting same file again
+    if (input.files) handleFiles(Array.from(input.files));
+    input.value = ''; // allow re-selecting the same file
 };
 
 const allowedExtensionsList = computed(() => {
@@ -66,23 +152,23 @@ const allowedExtensionsList = computed(() => {
         .filter((ext) => ext.length > 0);
 });
 
-const isFileAllowed = (file: File): { valid: boolean; error?: string } => {
-    // 1. Max File Size Validation
+const acceptTypes = computed(() => {
+    if (allowedExtensionsList.value.length > 0) {
+        return allowedExtensionsList.value.map((ext) => `.${ext}`).join(',');
+    }
+    return 'image/*,video/*';
+});
+
+const validateFile = (file: File): { valid: boolean; error?: string } => {
     if (props.field.maxFileSize) {
-        // limit is provided in MB
         const limitMB = parseFloat(String(props.field.maxFileSize));
-        if (!isNaN(limitMB) && limitMB > 0) {
-            const limitBytes = limitMB * 1024 * 1024;
-            if (file.size > limitBytes) {
-                return { valid: false, error: `File size exceeds ${limitMB} MB` };
-            }
+        if (!isNaN(limitMB) && limitMB > 0 && file.size > limitMB * 1024 * 1024) {
+            return { valid: false, error: `File size exceeds ${limitMB} MB` };
         }
     }
 
-    // 2. Extensions Validation
     const extensions = allowedExtensionsList.value;
     if (extensions.length > 0) {
-        // get extension
         const extMatch = file.name.split('.').pop();
         const ext = extMatch ? extMatch.toLowerCase() : '';
         if (!extensions.includes(ext)) {
@@ -93,131 +179,138 @@ const isFileAllowed = (file: File): { valid: boolean; error?: string } => {
     return { valid: true };
 };
 
-const acceptTypes = computed(() => {
-    if (allowedExtensionsList.value.length > 0) {
-        return allowedExtensionsList.value.map((ext) => `.${ext}`).join(',');
-    }
-    return 'image/*,video/*';
-});
-
 const handleFiles = (newFiles: File[]) => {
     uploadWarnings.value = [];
 
-    // If not multiple, limit to 1
+    // Single-file field guard
     if (!props.field.multipleFiles && files.value.length > 0) {
         uploadWarnings.value.push('Only one file is allowed.');
         return;
     }
 
-    // Identify duplicates
-    const duplicateFiles = newFiles.filter((newFile) => {
-        return files.value.some(
-            (existing) => existing.file.name === newFile.name && existing.file.size === newFile.size
-        );
-    });
-
-    if (duplicateFiles.length > 0) {
-        uploadWarnings.value.push(
-            `File(s) already added: ${duplicateFiles.map((f) => f.name).join(', ')}`
-        );
+    // Duplicate detection (by name + size within local list)
+    const duplicates = newFiles.filter((f) =>
+        files.value.some((ex) => ex.file && ex.file.name === f.name && ex.file.size === f.size)
+    );
+    if (duplicates.length > 0) {
+        uploadWarnings.value.push(`Already added: ${duplicates.map((f) => f.name).join(', ')}`);
     }
 
-    // Filter out duplicates (same name and size)
-    const uniqueFiles = newFiles.filter((newFile) => {
-        return !files.value.some(
-            (existing) => existing.file.name === newFile.name && existing.file.size === newFile.size
-        );
-    });
+    const unique = newFiles.filter(
+        (f) =>
+            !files.value.some((ex) => ex.file && ex.file.name === f.name && ex.file.size === f.size)
+    );
+    if (unique.length === 0) return;
 
-    if (uniqueFiles.length === 0) return;
-
-    // Check max files limit
+    // Max-files cap
     const maxFiles = parseInt(String(props.field.maxFiles || '0'), 10);
-    let allowedCount = uniqueFiles.length;
+    let allowedCount = unique.length;
     if (maxFiles > 0) {
         const remaining = maxFiles - files.value.length;
-        allowedCount = Math.min(uniqueFiles.length, Math.max(0, remaining));
-        if (uniqueFiles.length > remaining) {
-            uploadWarnings.value.push(
-                `You can only upload up to ${maxFiles} files. Some files were skipped.`
-            );
+        allowedCount = Math.min(unique.length, Math.max(0, remaining));
+        if (unique.length > remaining) {
+            uploadWarnings.value.push(`Max ${maxFiles} file(s) allowed. Some files were skipped.`);
         }
     }
 
-    const filesToProcess = uniqueFiles.slice(0, allowedCount);
+    const toProcess = unique.slice(0, allowedCount);
 
-    const newLocalFiles = filesToProcess.map((file) => {
-        const id = Math.random().toString(36).substring(7);
+    toProcess.forEach((file) => {
+        const localId = crypto.randomUUID();
         const isImage = file.type.startsWith('image/');
+        const validation = validateFile(file);
 
-        let hasError = false;
-        let errorMsg = '';
-        const validation = isFileAllowed(file);
-
-        if (!validation.valid) {
-            hasError = true;
-            errorMsg = validation.error || '';
-        }
-
-        return {
-            id,
+        const localFile: LocalFile = {
+            id: localId,
             file,
             previewUrl: isImage ? URL.createObjectURL(file) : null,
             progress: 0,
-            hasError,
-            errorMessage: errorMsg,
-            isUploaded: false
+            status: validation.valid ? 'pending' : 'error',
+            errorMessage: validation.valid ? undefined : validation.error
         };
-    });
 
-    files.value.push(...newLocalFiles);
+        files.value.push(localFile);
 
-    // Simulate upload progress
-    newLocalFiles.forEach((localFile) => {
-        if (!localFile.hasError) {
-            simulateUpload(localFile.id);
+        // Register in the upload queue only if the file passed validation.
+        // The actual HTTP request will happen when FormRenderer calls flushQueue().
+        if (validation.valid) {
+            const pending: PendingFile = {
+                localId,
+                file,
+                previewUrl: localFile.previewUrl
+            };
+            enqueuePending(fieldId, pending);
+
+            const animateTo100 = setInterval(() => {
+                const f = files.value.find((f) => f.id === localId);
+                if (!f) {
+                    clearInterval(animateTo100);
+                    return;
+                }
+
+                f.progress = Math.min(f.progress + Math.random() * 15 + 10, 100);
+
+                if (f.progress >= 100) {
+                    clearInterval(animateTo100);
+                    progressTimers.delete(localId);
+                    f.progress = 100;
+                    f.status = 'uploaded';
+                }
+            }, 50);
+            progressTimers.set(localId, animateTo100);
         }
     });
-};
 
-const simulateUpload = (id: string) => {
-    let progress = 0;
-    const interval = setInterval(() => {
-        const fileRef = files.value.find((f) => f.id === id);
-        if (!fileRef) {
-            clearInterval(interval);
-            return;
-        }
-
-        progress += Math.random() * 20;
-        if (progress >= 100) {
-            fileRef.progress = 100;
-            fileRef.isUploaded = true;
-            clearInterval(interval);
-            updateModelValue();
-        } else {
-            fileRef.progress = progress;
-        }
-    }, 200);
+    updateModelValue();
 };
 
 const removeFile = (id: string) => {
     const index = files.value.findIndex((f) => f.id === id);
-    if (index !== -1) {
-        const localFile = files.value[index];
-        if (localFile.previewUrl) {
-            URL.revokeObjectURL(localFile.previewUrl);
+    if (index === -1) return;
+
+    const localFile = files.value[index];
+
+    if (localFile.status === 'pending') {
+        // Clear fake progress timer before dequeuing
+        const timer = progressTimers.get(localFile.id);
+        if (timer) {
+            clearInterval(timer);
+            progressTimers.delete(localFile.id);
         }
-        files.value.splice(index, 1);
-        updateModelValue();
+        // Cancel any pending status-transition timeout
+        const st = statusTimers.get(localFile.id);
+        if (st) {
+            clearTimeout(st);
+            statusTimers.delete(localFile.id);
+        }
+        // Dequeue from upload queue (also revokes blob URL)
+        dequeuePending(fieldId, localFile.id);
     }
+
+    files.value.splice(index, 1);
+    updateModelValue();
 };
 
+/**
+ * Emits the current logical value for vee-validate / the form store.
+ */
 const updateModelValue = () => {
-    // Collect valid uploaded files to emit.
-    // In actual implementation, we might emit IDs or URLs returned from the API.
-    const validFiles = files.value.filter((f) => f.isUploaded && !f.hasError).map((f) => f.file);
-    emit('update:model-value', validFiles.length > 0 ? validFiles : null);
+    const values = files.value
+        .filter((f) => f.status !== 'error')
+        .map((f) => {
+            if (f.status === 'uploaded' && f.uploadedUrl) return f.uploadedUrl;
+            // Provisional: keeps vee-validate happy until flushQueue() resolves
+            return f.previewUrl ?? (f.file ? `pending:${f.file.name}` : null);
+        })
+        .filter((v): v is string => v !== null);
+
+    if (values.length === 0) {
+        emit('update:model-value', null);
+    } else if (props.field.multipleFiles === false) {
+        emit('update:model-value', values[0]);
+    } else {
+        emit('update:model-value', values);
+    }
 };
 </script>
 
@@ -250,21 +343,18 @@ const updateModelValue = () => {
                 <UploadCloud class="upload-icon" :size="32" />
                 <p class="drop-text">Drag & drop files here or <span>browse</span></p>
                 <p class="drop-hint">
-                    {{
-                        field.allowedExtensions
-                            ? `Allowed file extensions: ${field.allowedExtensions}. `
-                            : ''
-                    }}
+                    {{ field.allowedExtensions ? `Allowed: ${field.allowedExtensions}. ` : '' }}
                     {{
                         field.maxFileSize
-                            ? `Max file size: ${field.maxFileSize}MB.`
-                            : 'Max file size: 10MB.'
+                            ? `Max size: ${field.maxFileSize} MB.`
+                            : 'Max size: 10 MB.'
                     }}
                     {{ field.maxFiles ? `(Max files: ${field.maxFiles})` : '' }}
                 </p>
             </div>
         </div>
 
+        <!-- Warnings (duplicates, cap exceeded) -->
         <transition-group name="upload-list">
             <div
                 v-for="(warning, idx) in uploadWarnings"
@@ -275,30 +365,53 @@ const updateModelValue = () => {
             </div>
         </transition-group>
 
+        <!-- File list -->
         <div v-if="files.length > 0" class="file-list">
             <transition-group name="upload-list">
-                <div v-for="file in files" :key="file.id" class="file-item">
+                <div
+                    v-for="file in files"
+                    :key="file.id"
+                    class="file-item"
+                    :class="{ 'file-item--error': file.status === 'error' }"
+                >
                     <div class="preview-box">
                         <img v-if="file.previewUrl" :src="file.previewUrl" class="preview-img" />
                         <FileIcon v-else class="fallback-icon" :size="24" />
                     </div>
 
                     <div class="file-info">
-                        <span class="file-name" :title="file.file.name">{{ file.file.name }}</span>
+                        <span
+                            class="file-name"
+                            :title="file.file ? file.file.name : file.uploadedUrl || 'File'"
+                        >
+                            {{ file.file ? file.file.name : file.uploadedUrl?.split('/').pop() }}
+                        </span>
 
                         <div
-                            v-if="!file.isUploaded && !file.hasError"
-                            class="progress-bar-container"
+                            v-if="file.status === 'pending' || file.status === 'uploaded'"
+                            class="progress-bar-wrapper"
                         >
-                            <div class="progress-bar" :style="{ width: file.progress + '%' }"></div>
+                            <div class="progress-bar-container">
+                                <div
+                                    class="progress-bar"
+                                    :class="{ 'progress-bar--done': file.status === 'uploaded' }"
+                                    :style="{ width: Math.max(file.progress, 3) + '%' }"
+                                ></div>
+                            </div>
+                            <div
+                                class="progress-label"
+                                :class="file.status === 'uploaded' ? 'progress-label--done' : ''"
+                            >
+                                <template v-if="file.status === 'uploaded'">
+                                    Uploaded{{
+                                        file.file
+                                            ? ` (${(file.file.size / 1024 / 1024).toFixed(1)} MB)`
+                                            : ''
+                                    }}
+                                </template>
+                                <template v-else> {{ Math.round(file.progress) }}% </template>
+                            </div>
                         </div>
-
-                        <span v-else-if="file.hasError" class="file-error"
-                            >Error: {{ file.errorMessage || 'Upload failed' }}</span
-                        >
-                        <span v-else class="file-success"
-                            >Uploaded ({{ (file.file.size / 1024 / 1024).toFixed(1) }} MB)</span
-                        >
                     </div>
 
                     <button
@@ -434,6 +547,11 @@ const updateModelValue = () => {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
+.file-item--error {
+    border-color: #fca5a5;
+    background: #fef2f2;
+}
+
 .preview-box {
     width: 48px;
     height: 48px;
@@ -488,16 +606,43 @@ const updateModelValue = () => {
     transition: width 0.1s linear;
 }
 
-.file-success {
+/* Status badges */
+.file-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     font-size: 0.75rem;
-    color: #10b981;
     font-weight: 500;
 }
 
-.file-error {
+.file-status--pending {
+    color: #f59e0b;
+}
+
+.progress-bar-wrapper {
+    width: 100%;
+}
+
+.progress-bar--done {
+    background: #10b981;
+    width: 100% !important;
+}
+
+.progress-label {
+    margin-top: 10px;
     font-size: 0.75rem;
-    color: #ef4444;
     font-weight: 500;
+    white-space: nowrap;
+    color: #64748b;
+    min-width: 32px;
+}
+
+.progress-label--done {
+    color: #10b981;
+}
+
+.file-status--error {
+    color: #ef4444;
 }
 
 .remove-btn {

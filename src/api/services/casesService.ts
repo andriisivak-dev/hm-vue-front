@@ -140,6 +140,65 @@ export const casesService = {
         return result;
     },
 
+    /**
+     * POST /wp/v2/media
+     * Uploads a file natively to the WP Media library.
+     *
+     * NOTE: Prefer calling this only from useFileUploadQueue.flushQueue() so
+     * that uploads are deferred until the user actually saves a step.  Direct
+     * calls from UI components lead to orphaned media when the user removes a
+     * file before submitting the form.
+     */
+    async uploadMedia(
+        file: File,
+        onProgress?: (percent: number) => void
+    ): Promise<{ id: number; source_url: string }> {
+        const client = useHttpClient();
+        const { baseUrl, nonce } = client as unknown as { baseUrl: string; nonce: string };
+        const wpApiUrl = baseUrl.replace('/csp/v1', '/wp/v2/media');
+
+        return new Promise((resolve, reject) => {
+            /**
+             * use xhr instead of fetch because fetch doesn't support progress events
+             */
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', wpApiUrl);
+            xhr.setRequestHeader('X-WP-Nonce', nonce);
+            xhr.setRequestHeader(
+                'Content-Disposition',
+                `attachment; filename="${encodeURIComponent(file.name)}"`
+            );
+
+            // FormData is easiest and prevents issues
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable && onProgress) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    onProgress(percent);
+                }
+            });
+
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        resolve(response);
+                    } catch {
+                        reject(new Error('Invalid JSON response from WP API'));
+                    }
+                } else {
+                    reject(new Error(`Upload failed: ${xhr.statusText}`));
+                }
+            };
+
+            xhr.onerror = () => reject(new Error('Network error during file upload'));
+
+            // XHR with FormData
+            const formData = new FormData();
+            formData.append('file', file);
+            xhr.send(formData);
+        });
+    },
+
     // ── Status transitions ────────────────────────────────────────────────────
 
     /**
