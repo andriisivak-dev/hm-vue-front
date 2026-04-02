@@ -3,6 +3,7 @@ import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import type { GFField } from '@/form-engine/types.ts';
 import { X, UploadCloud, File as FileIcon } from 'lucide-vue-next';
 import { useFileUploadQueue, type PendingFile } from '@/composables/useFileUploadQueue';
+import BaseField from './BaseField.vue';
 
 type FileStatus = 'pending' | 'uploaded' | 'error';
 
@@ -315,12 +316,7 @@ const updateModelValue = () => {
 </script>
 
 <template>
-    <div :id="`field_wrapper_${field.id}`" class="gf-field" :class="{ 'gf-field--error': error }">
-        <label class="gf-label">
-            {{ field.label }}
-            <span v-if="field.is_required" class="gf-required">*</span>
-        </label>
-
+    <BaseField :field="field" :error="error">   
         <div
             class="fileupload-container"
             :class="{ 'is-dragging': isDragging }"
@@ -425,31 +421,10 @@ const updateModelValue = () => {
                 </div>
             </transition-group>
         </div>
-
-        <p v-if="error" class="gf-error-message">{{ error }}</p>
-    </div>
+    </BaseField>
 </template>
 
 <style scoped>
-.gf-field {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 1rem;
-}
-
-.gf-label {
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: rgb(17, 35, 55);
-    margin-bottom: 8px;
-    display: inline-block;
-}
-
-.gf-required {
-    color: #ef4444;
-    margin-left: 2px;
-}
-
 /* Drag & Drop Area */
 .fileupload-container {
     border: 2px dashed #cbd5e1;
