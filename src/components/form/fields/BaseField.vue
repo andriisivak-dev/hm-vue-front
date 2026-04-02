@@ -10,7 +10,7 @@ const props = defineProps<{
 
 const store = useCaseFormStore();
 
-const isRequired = computed(() => props.field.isRequired);
+const isRequired = computed(() => props.field.is_required);
 const displayedLabel = computed(() => store.getFormattedLabel(props.field));
 const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)'));
 </script>
@@ -55,7 +55,8 @@ const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)
 }
 
 .gf-required {
-    color: #ef4444;
+    color: #262469;
+    font-weight: 500;
 }
 
 .gf-description {
