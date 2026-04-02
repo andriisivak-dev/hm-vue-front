@@ -28,7 +28,8 @@ const componentMap: Record<string, Component> = {
     checkbox: defineAsyncComponent(() => import('./fields/CheckboxField.vue')),
     textarea: defineAsyncComponent(() => import('./fields/TextareaField.vue')),
     fileupload: defineAsyncComponent(() => import('./fields/FileUploadField.vue')),
-    calculation: defineAsyncComponent(() => import('./fields/TextField.vue')) // Read-only text field
+    calculation: defineAsyncComponent(() => import('./fields/TextField.vue')), // Read-only text field
+    html: defineAsyncComponent(() => import('./fields/HtmlField.vue'))
 };
 
 const component = computed<Component | null>(() => {
@@ -116,10 +117,6 @@ const onCheckboxUpdate = (payload: { id: string; value: CheckboxPayload }) => {
                     <h3 class="gf-section-title">{{ field.label }}</h3>
                     <p v-if="field.description" class="gf-section-desc">{{ field.description }}</p>
                 </div>
-            </template>
-
-            <template v-else-if="field.type === 'html'">
-                <div class="gf-html" v-html="field.content"></div>
             </template>
         </div>
     </transition>
