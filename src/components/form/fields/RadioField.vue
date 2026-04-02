@@ -20,22 +20,23 @@ const value = computed({
 <template>
     <BaseField :field="field" :error="error">
         <div class="gf-radio-group">
-            <label
-                v-for="(choice, index) in field.choices"
-                :key="index"
-                class="gf-radio-label"
-                :class="{ 'is-selected': value === choice.value }"
-            >
-                <input
-                    type="radio"
-                    :name="String(field.id)"
-                    :value="choice.value"
-                    v-model="value"
-                    class="gf-radio-input"
-                />
-                <div class="gf-radio-indicator"></div>
-                <span class="gf-radio-text" v-html="choice.text"></span>
-            </label>
+            <template v-for="(choice, index) in field.choices" :key="index">
+                <label
+                    v-if="typeof choice !== 'string'"
+                    class="gf-radio-label"
+                    :class="{ 'is-selected': value === choice.value }"
+                >
+                    <input
+                        type="radio"
+                        :name="String(field.id)"
+                        :value="choice.value"
+                        v-model="value"
+                        class="gf-radio-input"
+                    />
+                    <div class="gf-radio-indicator"></div>
+                    <span class="gf-radio-text" v-html="choice.text"></span>
+                </label>
+            </template>
         </div>
     </BaseField>
 </template>

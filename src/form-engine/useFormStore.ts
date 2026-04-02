@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { GFForm, GFField, GFEntry } from './types';
+import type { GFForm, GFField, GFEntry, GFConditionalLogic } from './types';
 import { LogicEngine } from './LogicEngine';
 import { FormulaEngine } from './FormulaEngine';
 import { FIELD_IDS } from '../stores/constants.ts';
@@ -66,7 +66,10 @@ export const useCaseFormStore = defineStore('caseForm', {
             const field = state._fieldMap.get(String(fieldId));
             if (!field) return false;
             if (field.visibility === 'hidden') return false;
-            return LogicEngine.shouldShow(field.conditionalLogic, state.values);
+            return LogicEngine.shouldShow(
+                field.conditional_logic as GFConditionalLogic,
+                state.values
+            );
         },
 
         /**

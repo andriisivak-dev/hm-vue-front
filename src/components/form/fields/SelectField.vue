@@ -29,12 +29,13 @@ const value = computed({
                 <option v-if="field.placeholder" value="" disabled selected>
                     {{ field.placeholder }}
                 </option>
-                <option
-                    v-for="choice in field.choices"
-                    :key="choice.value"
-                    :value="choice.value"
-                    v-html="choice.text"
-                ></option>
+                <template v-for="(choice, index) in field.choices" :key="index">
+                    <option
+                        v-if="typeof choice !== 'string'"
+                        :value="choice.value"
+                        v-html="choice.text"
+                    />
+                </template>
             </select>
         </div>
     </BaseField>

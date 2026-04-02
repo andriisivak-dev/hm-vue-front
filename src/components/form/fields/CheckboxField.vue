@@ -22,7 +22,8 @@ const allChecked = computed(() => {
 });
 
 const toggleAll = () => {
-    if (!props.field.choices || !props.field.inputs) return;
+    if (!props.field.choices || !props.field.inputs || typeof props.field.choices === 'string')
+        return;
     const shouldCheck = !allChecked.value;
     props.field.choices.forEach((choice, idx) => {
         const input = props.field.inputs![idx];
@@ -37,45 +38,46 @@ const toggleAll = () => {
     <BaseField :field="field" :error="error">
         <div class="gf-checkbox-wrapper">
             <div class="gf-checkbox-group">
-                <label
-                    v-for="(choice, index) in field.choices"
-                    :key="index"
-                    class="gf-checkbox-label"
-                    :class="{ 'is-selected': !!modelValues[field.inputs?.[index]?.id ?? ''] }"
-                >
-                    <input
-                        type="checkbox"
-                        :value="choice.value"
-                        :checked="!!modelValues[field.inputs?.[index]?.id ?? '']"
-                        @change="
-                            (e) =>
-                                toggleValue(
-                                    field.inputs?.[index]?.id ?? '',
-                                    choice.text,
-                                    (e.target as HTMLInputElement).checked
-                                )
-                        "
-                        class="gf-checkbox-input"
-                    />
-                    <div class="gf-checkbox-indicator">
-                        <svg
-                            width="12"
-                            height="10"
-                            viewBox="0 0 12 10"
-                            fill="none"
-                            v-if="!!modelValues[field.inputs?.[index]?.id ?? '']"
-                        >
-                            <path
-                                d="M1 5L4.5 8.5L10.5 1.5"
-                                stroke="#262469"
-                                stroke-width="2.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                            />
-                        </svg>
-                    </div>
-                    <span class="gf-checkbox-text" v-html="choice.text"></span>
-                </label>
+                <template v-for="(choice, index) in field.choices" :key="index">
+                    <label
+                        v-if="typeof choice !== 'string'"
+                        class="gf-checkbox-label"
+                        :class="{ 'is-selected': !!modelValues[field.inputs?.[index]?.id ?? ''] }"
+                    >
+                        <input
+                            type="checkbox"
+                            :value="choice.value"
+                            :checked="!!modelValues[field.inputs?.[index]?.id ?? '']"
+                            @change="
+                                (e) =>
+                                    toggleValue(
+                                        field.inputs?.[index]?.id ?? '',
+                                        choice.text,
+                                        (e.target as HTMLInputElement).checked
+                                    )
+                            "
+                            class="gf-checkbox-input"
+                        />
+                        <div class="gf-checkbox-indicator">
+                            <svg
+                                width="12"
+                                height="10"
+                                viewBox="0 0 12 10"
+                                fill="none"
+                                v-if="!!modelValues[field.inputs?.[index]?.id ?? '']"
+                            >
+                                <path
+                                    d="M1 5L4.5 8.5L10.5 1.5"
+                                    stroke="#262469"
+                                    stroke-width="2.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                        </div>
+                        <span class="gf-checkbox-text" v-html="choice.text"></span>
+                    </label>
+                </template>
             </div>
 
             <!-- Select All / Deselect All button -->
