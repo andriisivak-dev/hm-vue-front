@@ -1,19 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useCaseFormStore } from '../../form-engine/useFormStore';
+import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
 import { Check } from 'lucide-vue-next';
 
 const store = useCaseFormStore();
-
-const steps = computed(() => {
-    if (!store.form) return [];
-
-    return store.form.steps.map((step) => ({
-        id: step.step_number,
-        number: Number(step.step_number),
-        label: step.label
-    }));
-});
 
 const getStatus = (num: number) => {
     if (store.currentStep === num) return 'active';
@@ -30,19 +19,25 @@ const getStatus = (num: number) => {
         </p>
 
         <div class="steps-container">
-            <div
-                v-for="step in steps"
-                :key="step.number"
-                class="step-item"
-                :class="getStatus(step.number)"
-                @click="store.setStep(step.number)"
-            >
-                <div class="step-badge">
-                    <Check v-if="getStatus(step.number) === 'completed'" :size="14" />
-                    <span v-else>{{ step.number }}</span>
+            <template v-if="store.form?.steps">
+                <div
+                    v-for="step in store.form?.steps"
+                    :key="step.step_number"
+                    class="step-item"
+                    :class="getStatus(step.step_number)"
+                    @click="store.setStep(step.step_number)"
+                >
+                    <div class="step-badge">
+                        <Check
+                            v-if="getStatus(step.step_number) === 'completed'"
+                            class="step-completed-icon"
+                            :size="14"
+                        />
+                        <span>{{ step.step_number }}</span>
+                    </div>
+                    <div class="step-label">{{ step.label }}</div>
                 </div>
-                <div class="step-label">{{ step.label }}</div>
-            </div>
+            </template>
         </div>
     </div>
 </template>
@@ -50,89 +45,84 @@ const getStatus = (num: number) => {
 <style scoped>
 .stepper-wrapper {
     position: relative;
-    background: #f8fafc;
-    border-bottom: 1px solid var(--border);
-    padding: 1.5rem 0;
+    padding: 18px 18px 0;
 }
 
-.stepper-progress {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 4px;
-    background: rgb(15 56 103);
-    transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+.steps-form-title {
+    letter-spacing: -0.24px;
+    margin: 0 0 8px;
+    font-size: 24px;
+    line-height: 118%;
+    font-family: var(--heading);
+    font-weight: 500;
 }
 
 .steps-container {
+    margin-top: 10px;
     display: flex;
     justify-content: space-between;
-    max-width: 90%;
-    margin: 0 auto;
-    gap: 1rem;
+    gap: 8px 24px;
 }
 
 .step-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     flex: 1;
     cursor: pointer;
     transition: all 0.3s;
 }
 
 .step-badge {
-    width: 32px;
-    height: 32px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
-    background: #fff;
-    border: 2px solid var(--border);
+    background:
+        linear-gradient(white, white) padding-box,
+        linear-gradient(225deg, #f7931d 0%, #262469 100%) border-box;
+    border: 1px solid transparent;
+    color: #262469;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.85rem;
-    color: #64748b;
+    font-size: 20px;
     transition: all 0.3s;
     z-index: 10;
+    position: relative;
 }
 
 .step-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #64748b;
+    color: #262469;
+    font-weight: 300;
+    font-size: 14px;
     text-align: center;
-    max-width: 80px;
     transition: all 0.3s;
+    text-transform: uppercase;
 }
 
 /* States */
 .step-item.active .step-badge {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-bg);
-    box-shadow: 0 0 0 4px var(--accent-bg);
-    transform: scale(1.1);
+    background: linear-gradient(225deg, #f7931d 0%, #262469 100%) border-box;
+    border: none;
+    color: #fff;
 }
 
-.step-item.active .step-label {
-    color: var(--accent);
+.step-completed-icon {
+    position: absolute;
+    display: block;
+    z-index: 20;
+    color: #fff;
+    background-color: #204ce5;
+    width: 32px;
+    height: 32px;
+    top: -4px;
+    left: -16px;
+    border-radius: 50%;
+    padding: 4px 8px;
 }
 
 .step-item.completed .step-badge {
-    background: #10b981;
-    border-color: #10b981;
-    color: white;
-}
-
-.step-item.completed .step-label {
-    color: #10b981;
-}
-
-@media (max-width: 768px) {
-    .step-label {
-        display: none;
-    }
 }
 </style>
