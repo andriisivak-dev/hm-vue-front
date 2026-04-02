@@ -80,6 +80,10 @@ export interface GFField {
     numberFormat?: 'decimal_dot' | 'decimal_comma';
     validation: GFValidation;
     // Type-specific extras
+    multipleFiles?: boolean;
+    maxFiles?: number | string;
+    maxFileSize?: number | string;
+    allowedExtensions?: string;
     content?: string; // for html field
     nextButton?: { text: string } | null;
     previousButton?: { text: string } | null;

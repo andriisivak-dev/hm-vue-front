@@ -27,6 +27,7 @@ const componentMap: Record<string, Component> = {
     radio: defineAsyncComponent(() => import('./fields/RadioField.vue')),
     checkbox: defineAsyncComponent(() => import('./fields/CheckboxField.vue')),
     textarea: defineAsyncComponent(() => import('./fields/TextareaField.vue')),
+    fileupload: defineAsyncComponent(() => import('./fields/FileUploadField.vue')),
     calculation: defineAsyncComponent(() => import('./fields/TextField.vue')) // Read-only text field
 };
 
