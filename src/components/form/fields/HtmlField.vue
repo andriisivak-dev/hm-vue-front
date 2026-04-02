@@ -3,7 +3,7 @@ import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import type { GFField } from '@/form-engine/types.ts';
 import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
 import Chart from 'chart.js/auto';
-import type { ChartOptions, TooltipItem } from 'chart.js';
+import type { ChartOptions, TooltipItem, ChartData } from 'chart.js';
 
 defineProps<{
     field: GFField;
@@ -12,9 +12,9 @@ defineProps<{
 const store = useCaseFormStore();
 const htmlContainer = ref<HTMLElement | null>(null);
 
-let toolLifeChart: Chart | null = null;
-let costChart: Chart | null = null;
-let cycleTimeChart: Chart | null = null;
+let toolLifeChart: Chart<'bar'> | null = null;
+let costChart: Chart<'bar'> | null = null;
+let cycleTimeChart: Chart<'bar'> | null = null;
 
 function parseGFNumber(val: unknown): number {
     if (val === null || val === undefined || val === '') return 0;
@@ -69,7 +69,7 @@ function updateToolLifeChart() {
         if (existingWarning) existingWarning.remove();
     }
 
-    const chartData = {
+    const chartData: ChartData<'bar'> = {
         labels: [labelEx, labelSug],
         datasets: [
             {
@@ -95,9 +95,9 @@ function updateToolLifeChart() {
             legend: { display: false },
             tooltip: {
                 callbacks: {
-                    label: (ctx: TooltipItem<'bar'>) => {
+                    label: function (ctx: TooltipItem<'bar'>) {
                         const unit = ctx.dataIndex === 0 ? getUnitLabel(uEx) : getUnitLabel(uSug);
-                        return ` ${ctx.parsed.y.toLocaleString('en-IN')} ${unit}`;
+                        return ` ${(ctx.parsed.y ?? 0).toLocaleString('en-IN')} ${unit}`;
                     }
                 }
             }
@@ -106,7 +106,11 @@ function updateToolLifeChart() {
             y: {
                 beginAtZero: true,
                 title: { display: true, text: yLabel },
-                ticks: { callback: (val: string | number) => val.toLocaleString('en-IN') }
+                ticks: {
+                    callback: function (val: string | number) {
+                        return val.toLocaleString('en-IN');
+                    }
+                }
             },
             x: { grid: { display: false } }
         }
@@ -134,7 +138,7 @@ function updateCostSavingChart() {
     const valBefore = parseGFNumber(store.values['116']);
     const valAfter = parseGFNumber(store.values['188']);
 
-    const chartData = {
+    const chartData: ChartData<'bar'> = {
         labels: ['Before (Existing)', 'After (Suggested)'],
         datasets: [
             {
@@ -160,11 +164,12 @@ function updateCostSavingChart() {
             legend: { display: false },
             tooltip: {
                 callbacks: {
-                    label: (ctx: TooltipItem<'bar'>) =>
-                        ` INR ${ctx.parsed.y.toLocaleString('en-IN', {
+                    label: function (ctx: TooltipItem<'bar'>) {
+                        return ` INR ${(ctx.parsed.y ?? 0).toLocaleString('en-IN', {
                             minimumFractionDigits: 1,
                             maximumFractionDigits: 1
-                        })}`
+                        })}`;
+                    }
                 }
             }
         },
@@ -172,7 +177,11 @@ function updateCostSavingChart() {
             y: {
                 beginAtZero: true,
                 title: { display: true, text: 'Cost (INR)' },
-                ticks: { callback: (val: string | number) => val.toLocaleString('en-IN') }
+                ticks: {
+                    callback: function (val: string | number) {
+                        return val.toLocaleString('en-IN');
+                    }
+                }
             },
             x: { grid: { display: false } }
         }
@@ -200,7 +209,7 @@ function updateCycleTimeChart() {
     const valBefore = parseGFNumber(store.values['56']);
     const valAfter = parseGFNumber(store.values['170']);
 
-    const chartData = {
+    const chartData: ChartData<'bar'> = {
         labels: ['Before (Existing)', 'After (Suggested)'],
         datasets: [
             {
@@ -226,8 +235,9 @@ function updateCycleTimeChart() {
             legend: { display: false },
             tooltip: {
                 callbacks: {
-                    label: (ctx: TooltipItem<'bar'>) =>
-                        ` ${ctx.parsed.y.toLocaleString('en-IN')} min`
+                    label: function (ctx: TooltipItem<'bar'>) {
+                        return ` ${(ctx.parsed.y ?? 0).toLocaleString('en-IN')} min`;
+                    }
                 }
             }
         },
@@ -235,7 +245,11 @@ function updateCycleTimeChart() {
             y: {
                 beginAtZero: true,
                 title: { display: true, text: 'Time (min)' },
-                ticks: { callback: (val: string | number) => val.toLocaleString('en-IN') }
+                ticks: {
+                    callback: function (val: string | number) {
+                        return val.toLocaleString('en-IN');
+                    }
+                }
             },
             x: { grid: { display: false } }
         }
