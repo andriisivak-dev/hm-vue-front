@@ -147,6 +147,8 @@ onMounted(async () => {
             // Restore the step the user last reached:
             // current_step stores the last completed step, so resume at current_step + 1.
             if (caseData.current_step > 0) {
+                // Unlock all steps up to and including the resume point
+                store.setHighestReachedStep(caseData.current_step + 1);
                 store.setStep(caseData.current_step + 1);
             }
 

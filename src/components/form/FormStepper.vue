@@ -9,6 +9,8 @@ const getStatus = (num: number) => {
     if (store.currentStep > num) return 'completed';
     return 'pending';
 };
+
+const isLocked = (num: number) => num > store.highestReachedStep;
 </script>
 
 <template>
@@ -24,7 +26,7 @@ const getStatus = (num: number) => {
                     v-for="step in store.form?.steps"
                     :key="step.step_number"
                     class="step-item"
-                    :class="getStatus(step.step_number)"
+                    :class="[getStatus(step.step_number), { locked: isLocked(step.step_number) }]"
                     @click="store.setStep(step.step_number)"
                 >
                     <div class="step-badge">
@@ -91,6 +93,7 @@ const getStatus = (num: number) => {
     transition: all 0.3s;
     z-index: 10;
     position: relative;
+    user-select: none;
 }
 
 .step-label {
@@ -123,6 +126,8 @@ const getStatus = (num: number) => {
     padding: 4px 8px;
 }
 
-.step-item.completed .step-badge {
+.step-item.locked {
+    cursor: not-allowed;
+    opacity: 0.85;
 }
 </style>

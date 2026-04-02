@@ -12,6 +12,8 @@ export const useCaseFormStore = defineStore('caseForm', {
         values: {} as Record<string, unknown>,
         readonlyFields: {} as Record<string, boolean>, // fieldId -> boolean
         currentStep: 1,
+        /** The farthest step the user has legitimately reached via Next-button flow */
+        highestReachedStep: 1,
         isInitialized: false,
         isLoading: false,
 
@@ -143,6 +145,7 @@ export const useCaseFormStore = defineStore('caseForm', {
             this.values = initialValues;
             this.isInitialized = true;
             this.currentStep = 1;
+            this.highestReachedStep = 1;
             this.saveError = null;
             this.isSubmitted = false;
             this.caseId = null;
@@ -211,10 +214,18 @@ export const useCaseFormStore = defineStore('caseForm', {
         },
 
         /**
-         * Update a single field value and trigger dependent logic
+         * Update a single field value and trigger dependent logic.
+         * If the user edits a field while on a step *below* the highest
+         * reached step, the forward-progress watermark is rolled back to
+         * the current step — forcing re-validation of all subsequent steps.
          */
         updateValue(fieldId: string | number, value: unknown) {
             this.values[String(fieldId)] = value;
+
+            // Roll back progress watermark if the user is editing a past step
+            if (this.currentStep < this.highestReachedStep) {
+                this.highestReachedStep = this.currentStep;
+            }
 
             // Trigger VC/RPM mathematical mutual dependency calculation
             this.handleVCRPMCalculation(String(fieldId));
@@ -324,6 +335,10 @@ export const useCaseFormStore = defineStore('caseForm', {
         nextStep() {
             if (this.currentStep < this.totalPages) {
                 this.currentStep++;
+                // Advance the watermark when the user reaches a new step
+                if (this.currentStep > this.highestReachedStep) {
+                    this.highestReachedStep = this.currentStep;
+                }
             }
         },
 
@@ -333,9 +348,24 @@ export const useCaseFormStore = defineStore('caseForm', {
             }
         },
 
+        /**
+         * Navigate to an arbitrary step.
+         * Forward jumps are only allowed up to highestReachedStep.
+         * Backward jumps are always permitted.
+         */
         setStep(step: number) {
+            if (step < 1 || step > this.totalPages) return;
+            if (step > this.highestReachedStep) return; // blocked — not yet reached
+            this.currentStep = step;
+        },
+
+        /**
+         * Called when loading an existing case to restore progress state.
+         * Allows the store to reflect the watermark gathered from the backend.
+         */
+        setHighestReachedStep(step: number) {
             if (step >= 1 && step <= this.totalPages) {
-                this.currentStep = step;
+                this.highestReachedStep = step;
             }
         },
 
