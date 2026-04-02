@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useForm } from 'vee-validate';
-import { useCaseFormStore } from '../../form-engine/useFormStore';
-import { formsService, casesService, ApiError } from '../../api';
+import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
+import { formsService, casesService, ApiError } from '@/api';
 import '../../assets/form-design.css';
 import FieldSkeleton from './FieldSkeleton.vue';
 import FieldDispatcher from './FieldDispatcher.vue';
 import FormStepper from './FormStepper.vue';
 import { ChevronRight, ChevronLeft, Check, AlertCircle, Loader2 } from 'lucide-vue-next';
-import type { GFField, GFForm } from '../../form-engine/types';
+import type { GFField, GFForm } from '@/form-engine/types.ts';
 
 // -- Types & Interfaces -------------------------------------------------------
 

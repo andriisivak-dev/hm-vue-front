@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import FormRenderer from '../components/form/FormRenderer.vue';
+import FormRenderer from '@/components/form/FormRenderer.vue';
 
 const route = useRoute();
 const router = useRouter();

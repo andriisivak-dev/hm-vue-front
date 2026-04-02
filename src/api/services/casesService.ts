@@ -1,4 +1,4 @@
-import { useHttpClient, type RequestOptions, apiCache } from '../core/httpClient';
+import { useHttpClient, type RequestOptions, apiCache } from '@/api';
 import type {
     CaseListItem,
     CaseDetail,
@@ -10,7 +10,7 @@ import type {
     OverrideStatusBody,
     PaginationMeta,
     ApiSuccessResponse
-} from '../types';
+} from '@/api';
 
 // Cache TTL constants (ms)
 const CASE_DETAIL_TTL = 60_000; // 1min

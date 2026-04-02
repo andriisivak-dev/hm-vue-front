@@ -1,4 +1,4 @@
-import type { ApiEnvelope, ApiErrorResponse, ErrorCode } from '../types';
+import type { ApiEnvelope, ApiErrorResponse, ErrorCode } from '@/api';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Configuration

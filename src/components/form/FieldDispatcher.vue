@@ -2,9 +2,9 @@
 import { defineAsyncComponent, computed } from 'vue';
 import type { Component } from 'vue';
 import { Field } from 'vee-validate';
-import type { GFField } from '../../form-engine/types';
-import { useCaseFormStore } from '../../form-engine/useFormStore';
-import { ValidationAdapter } from '../../form-engine/ValidationAdapter';
+import type { GFField } from '@/form-engine/types.ts';
+import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
+import { ValidationAdapter } from '@/form-engine/ValidationAdapter.ts';
 
 type FieldValue = string | number | boolean | null | undefined | string[];
 

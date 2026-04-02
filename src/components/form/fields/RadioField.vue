@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { GFField } from '../../../form-engine/types';
+import type { GFField } from '@/form-engine/types.ts';
 import BaseField from './BaseField.vue';
 
 const props = defineProps<{

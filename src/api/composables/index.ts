@@ -1,7 +1,7 @@
 import { ref, onUnmounted, type Ref } from 'vue';
-import { ApiError } from '../core/httpClient';
-import { casesService } from '../services/casesService';
-import { formsService, usersService, notificationsService, dashboardService } from '../services';
+import { ApiError } from '@/api';
+import { casesService } from '@/api';
+import { formsService, usersService, notificationsService, dashboardService } from '@/api';
 import type {
     CaseListItem,
     CaseDetail,
@@ -18,7 +18,7 @@ import type {
     DashboardFilters,
     // PaginatedResult,
     PaginationMeta
-} from '../types';
+} from '@/api/types';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared composable primitives

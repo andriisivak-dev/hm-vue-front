@@ -1,4 +1,4 @@
-import { useHttpClient, apiCache, type RequestOptions } from '../core/httpClient';
+import { useHttpClient, apiCache, type RequestOptions } from '@/api';
 import type {
     FormSchema,
     User,
@@ -8,7 +8,7 @@ import type {
     DashboardStats,
     DashboardFilters,
     PaginatedResult
-} from '../types';
+} from '@/api';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Forms service
