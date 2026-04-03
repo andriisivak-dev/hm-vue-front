@@ -42,8 +42,8 @@ export class ValidationAdapter {
         }
 
         if (
-            typeof field.cssClass === 'string' &&
-            field.cssClass.includes('require-positive-integer')
+            typeof field.css_class === 'string' &&
+            field.css_class.includes('require-positive-integer')
         ) {
             rules.push('positive_integer');
         }
