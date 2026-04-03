@@ -43,6 +43,22 @@ export const usersService = {
             cacheTtl: 60_000, // 1 min
             ...options
         });
+    },
+
+    /**
+     * POST /profile/avatar
+     * Upload user avatar using FormData
+     */
+    async updateAvatar(
+        formData: FormData,
+        options?: RequestOptions
+    ): Promise<{ updated: boolean; avatar_id: number; avatar_url: string }> {
+        const client = useHttpClient();
+        return client.post<{ updated: boolean; avatar_id: number; avatar_url: string }>(
+            '/profile/avatar',
+            formData,
+            options
+        );
     }
 };
 
