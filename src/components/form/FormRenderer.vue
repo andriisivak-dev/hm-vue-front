@@ -480,18 +480,18 @@ const onFinalSubmit = handleSubmit(
 .success-state h3 {
     font-size: 1.75rem;
     font-weight: 700;
-    color: #1e293b;
+    color: #262469;
 }
 
 .success-state p {
-    color: #64748b;
+    color: #262469;
     max-width: 400px;
     line-height: 1.6;
 }
 
 .case-id-note {
     font-size: 0.9rem;
-    color: #94a3b8;
+    color: #262469;
 }
 
 .case-id-note strong {
