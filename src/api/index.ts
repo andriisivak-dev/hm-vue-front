@@ -20,6 +20,25 @@ declare global {
         HM_API?: {
             baseUrl: string;
             nonce: string;
+            siteUrl: string;
+            logoutUrl: string;
+            isLoggedIn: boolean;
+            user?: {
+                id: number;
+                name: string;
+                email: string;
+                avatar: string;
+                memberSince: string;
+                role: string;
+                permissions: {
+                    canCreateCases: boolean;
+                    canEditOwnCases: boolean;
+                    canEditOthersCases: boolean;
+                    canDeleteCases: boolean;
+                    canPublishCases: boolean;
+                    canViewPrivate: boolean;
+                };
+            } | null;
         };
     }
 }

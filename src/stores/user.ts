@@ -22,11 +22,8 @@ export const useUserStore = defineStore('user', {
         const apiData = window.HM_API;
 
         return {
-            // @ts-ignore
             user: apiData?.user || null,
-            // @ts-ignore
             isLoggedIn: apiData?.isLoggedIn || false,
-            // @ts-ignore
             logoutUrl: apiData?.logoutUrl || '/logout'
         };
     },
