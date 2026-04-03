@@ -2,6 +2,9 @@
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import FormRenderer from '@/components/form/FormRenderer.vue';
+import AppLayout from '@/components/common/AppLayout.vue';
+import AppHeader from '@/components/common/AppHeader.vue';
+import AppFooter from '@/components/common/AppFooter.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -36,18 +39,26 @@ function onCaseSubmitted(_id: number) {
 </script>
 
 <template>
-    <div class="form-page">
-        <div class="header-section">
-            <h1>Case Study</h1>
+    <AppLayout>
+        <AppHeader />
+
+        <div class="app-main">
+            <div class="form-page">
+                <div class="header-section">
+                    <h1>Case Study</h1>
+                </div>
+
+                <FormRenderer
+                    :form-id="FORM_ID"
+                    :case-id="caseId"
+                    @case-created="onCaseCreated"
+                    @case-submitted="onCaseSubmitted"
+                />
+            </div>
         </div>
 
-        <FormRenderer
-            :form-id="FORM_ID"
-            :case-id="caseId"
-            @case-created="onCaseCreated"
-            @case-submitted="onCaseSubmitted"
-        />
-    </div>
+        <AppFooter />
+    </AppLayout>
 </template>
 
 <style scoped>
