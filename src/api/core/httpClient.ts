@@ -186,21 +186,32 @@ export class HttpClient {
             : timeoutController.signal;
 
         try {
-            const response = await fetch(url.toString(), {
+            const fetchOptions: RequestInit = {
                 method,
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-WP-Nonce': this.nonce
                 },
-                body: body !== undefined ? JSON.stringify(body) : undefined,
                 signal
-            });
+            };
+
+            if (body !== undefined) {
+                if (body instanceof FormData) {
+                    fetchOptions.body = body;
+                    // Note: Browser will automatically set Content-Type to multipart/form-data with the correct boundary
+                } else {
+                    (fetchOptions.headers as Record<string, string>)['Content-Type'] =
+                        'application/json';
+                    fetchOptions.body = JSON.stringify(body);
+                }
+            }
+
+            const response = await fetch(url.toString(), fetchOptions);
 
             clearTimeout(timeoutId);
 
             const envelope: ApiEnvelope<T> = await response.json();
 
-            if (envelope.success === false) {
+            if (!envelope.success) {
                 const err = envelope as ApiErrorResponse;
                 throw new ApiError(err.code, err.message, response.status, err.data);
             }
