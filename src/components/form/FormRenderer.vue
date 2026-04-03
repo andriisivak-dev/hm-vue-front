@@ -427,11 +427,10 @@ const onFinalSubmit = handleSubmit(
 }
 
 .form-step-content {
-    /*display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;*/
     display: grid;
-    gap: 1rem;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.5rem;
+    align-items: start;
 }
 
 .form-step-content .gf-field-container:first-child {

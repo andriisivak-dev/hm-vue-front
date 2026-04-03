@@ -316,7 +316,7 @@ const updateModelValue = () => {
 </script>
 
 <template>
-    <BaseField :field="field" :error="error">   
+    <BaseField :field="field" :error="error">
         <div
             class="fileupload-container"
             :class="{ 'is-dragging': isDragging }"

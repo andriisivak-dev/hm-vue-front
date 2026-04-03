@@ -5,6 +5,7 @@ import { Field } from 'vee-validate';
 import type { GFField } from '@/form-engine/types.ts';
 import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
 import { ValidationAdapter } from '@/form-engine/ValidationAdapter.ts';
+import FieldLayoutWrapper from './FieldLayoutWrapper.vue';
 
 type FieldValue = string | number | boolean | null | undefined | string[];
 
@@ -85,13 +86,13 @@ const onCheckboxUpdate = (payload: { id: string; value: CheckboxPayload }) => {
 
 <template>
     <transition name="field-fade-slide" appear>
-        <div v-show="isVisible" class="gf-field-container" :class="[` gf-field--${field.size}`]">
+        <FieldLayoutWrapper :layout="field.layout" :is-visible="isVisible">
             <template v-if="component">
                 <!-- Vee-validate Field Wrapper
-             v-model is bound to fieldModelValue:
-             • checkbox → aggregate array of selected sub-inputs (for correct required check)
-             • others   → store.values[field.id] directly
-        -->
+                   v-model is bound to fieldModelValue:
+                   • checkbox → aggregate array of selected sub-inputs (for correct required check)
+                   • others   → store.values[field.id] directly
+                -->
                 <Field
                     :name="String(field.id)"
                     :rules="validationRules"
@@ -115,18 +116,16 @@ const onCheckboxUpdate = (payload: { id: string; value: CheckboxPayload }) => {
             <template v-else-if="field.type === 'section'">
                 <div class="gf-section">
                     <h3 class="gf-section-title">{{ field.label }}</h3>
-                    <p v-if="field.description" class="gf-section-desc">{{ field.description }}</p>
+                    <p v-if="field.description" class="gf-section-desc">
+                        {{ field.description }}
+                    </p>
                 </div>
             </template>
-        </div>
+        </FieldLayoutWrapper>
     </transition>
 </template>
 
 <style scoped>
-.gf-field-container {
-    width: 100%;
-}
-
 /* Field Level Transitions */
 .field-fade-slide-enter-active,
 .field-fade-slide-leave-active {
@@ -161,22 +160,5 @@ const onCheckboxUpdate = (payload: { id: string; value: CheckboxPayload }) => {
     font-size: 0.9rem;
     color: rgb(17, 35, 55);
     margin-top: 4px;
-}
-
-.gf-html {
-    margin: 1rem 0;
-}
-
-/* Sizes */
-.gf-field--small {
-    /*max-width: calc((100% / 3) - 2rem);*/
-}
-
-.gf-field--medium {
-    /*max-width: calc((100% / 2) - 1rem);*/
-}
-
-.gf-field--large {
-    /*max-width: 100%;*/
 }
 </style>

@@ -52,6 +52,29 @@ export interface GFCalculation {
     referencedFields: string[];
 }
 
+/**
+ * GF uses a 12-column grid system.
+ *
+ * Common mappings:
+ *   columnSpan 12 -> 100%
+ *   columnSpan  6 ->  50%
+ *   columnSpan  4 ->  33%
+ *   columnSpan  3 ->  25%
+ *   columnSpan  2 ->  16.67%
+ */
+export type GFGridColumnSpan = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+
+export interface GFLayout {
+    columnSpan: GFGridColumnSpan;
+    spacerColumnSpan: number;
+    widthPercent: number;
+    spacerPercent: number;
+    totalColumnsUsed: number;
+    isFullWidth: boolean;
+    cssGridSpan: string;
+    cssWidth: string;
+}
+
 export interface GFStep {
     step_number: number;
     label: string;
@@ -79,6 +102,7 @@ export interface GFField {
     enableCalculation?: boolean;
     numberFormat?: 'decimal_dot' | 'decimal_comma';
     validation: GFValidation;
+    layout: GFLayout;
     // Type-specific extras
     multipleFiles?: boolean;
     maxFiles?: number | string;
@@ -106,3 +130,12 @@ export interface GFEntry {
     created_by: string;
     fields: Record<string, unknown>;
 }
+
+export type ResolveFieldWidth = (layout: GFLayout) => string;
+
+/**
+ * Groups fields in a step into rows based on their totalColumnsUsed,
+ * matching how GF wraps fields visually (each row sums to ≤ 12 columns).
+ */
+export type GFFieldRow = GFField[];
+export type GroupFieldsIntoRows = (fields: GFField[]) => GFFieldRow[];
