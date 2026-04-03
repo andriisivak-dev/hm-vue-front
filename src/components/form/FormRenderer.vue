@@ -495,7 +495,7 @@ const onFinalSubmit = handleSubmit(
 }
 
 .case-id-note strong {
-    color: var(--accent);
+    color: #262469;
 }
 
 /* ── Save error banner ──────────────────────────────────────────────────── */
@@ -575,14 +575,6 @@ const onFinalSubmit = handleSubmit(
     transform: translateY(-2px);
     box-shadow: 0 6px 16px var(--accent-bg);
 }
-
-/*.btn-secondary {
-  position: relative;
-  color: #fff;
-  background: linear-gradient(225deg, #f7931d 0%, #262469 55%) border-box;
-  min-width: 158px;
-  justify-content: flex-end;
-}*/
 
 .btn-secondary {
     background-color: #efefef;
