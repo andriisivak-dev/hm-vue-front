@@ -5,6 +5,7 @@ import FormRenderer from '@/components/form/FormRenderer.vue';
 import AppLayout from '@/components/common/AppLayout.vue';
 import AppHeader from '@/components/common/AppHeader.vue';
 import AppFooter from '@/components/common/AppFooter.vue';
+import AppSidebar from '@/components/common/AppSidebar.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -41,6 +42,7 @@ function onCaseSubmitted(_id: number) {
 <template>
     <AppLayout>
         <AppHeader />
+        <AppSidebar :showFilters="false" />
 
         <div class="app-main">
             <div class="form-page">

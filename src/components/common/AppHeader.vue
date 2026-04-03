@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import NotificationsMenu from '@/components/common/NotificationsMenu.vue';
 import UserProfileMenu from '@/components/common/UserProfileMenu.vue';
+import { useLayoutStore } from '@/stores/layout';
+
+const layoutStore = useLayoutStore();
 </script>
 
 <template>
@@ -8,7 +11,7 @@ import UserProfileMenu from '@/components/common/UserProfileMenu.vue';
         <div class="container-fluid">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button">
+                    <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" @click.prevent="layoutStore.toggleSidebar()">
                         <i class="bi bi-list"></i>
                     </a>
                 </li>
