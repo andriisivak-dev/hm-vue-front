@@ -131,8 +131,6 @@ export interface GFEntry {
     fields: Record<string, unknown>;
 }
 
-export type ResolveFieldWidth = (layout: GFLayout) => string;
-
 /**
  * Groups fields in a step into rows based on their totalColumnsUsed,
  * matching how GF wraps fields visually (each row sums to ≤ 12 columns).
