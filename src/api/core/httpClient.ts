@@ -101,6 +101,8 @@ export interface RequestOptions {
     cacheTtl?: number;
     /** Override retry count for this request */
     retries?: number;
+    /** If true, bypasses the in-memory cache and fetches fresh data */
+    force?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -126,7 +128,7 @@ export class HttpClient {
         const url = this.buildUrl(path, params);
         const cacheKey = url.toString();
 
-        if (options?.cacheTtl) {
+        if (options?.cacheTtl && !options?.force) {
             const cached = apiCache.get<T>(cacheKey);
             if (cached !== null) return Promise.resolve(cached);
         }

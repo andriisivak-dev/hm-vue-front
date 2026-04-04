@@ -4,12 +4,14 @@ import UsersTable from './UsersTable.vue';
 import AddUserModal from './modals/AddUserModal.vue';
 import EditUserModal from './modals/EditUserModal.vue';
 import DeleteUserModal from './modals/DeleteUserModal.vue';
+import RecoverUserModal from './modals/RecoverUserModal.vue';
 import type { User } from '@/api/types';
 import { IconAddNewUser } from '@/components/SVG';
 
 const usersTableRef = ref<InstanceType<typeof UsersTable> | null>(null);
 const editModalRef = ref<InstanceType<typeof EditUserModal> | null>(null);
 const deleteModalRef = ref<InstanceType<typeof DeleteUserModal> | null>(null);
+const recoverModalRef = ref<InstanceType<typeof RecoverUserModal> | null>(null);
 const addModalRef = ref<InstanceType<typeof AddUserModal> | null>(null);
 
 function openAddUser() {
@@ -38,6 +40,12 @@ function openDeleteUser(user: User) {
         deleteModalRef.value.open(user);
     }
 }
+
+function openRecoverUser(user: User) {
+    if (recoverModalRef.value) {
+        recoverModalRef.value.open(user);
+    }
+}
 </script>
 
 <template>
@@ -55,11 +63,17 @@ function openDeleteUser(user: User) {
             </div>
         </div>
 
-        <UsersTable ref="usersTableRef" @edit="openEditUser" @delete="openDeleteUser" />
+        <UsersTable
+            ref="usersTableRef"
+            @edit="openEditUser"
+            @delete="openDeleteUser"
+            @recover="openRecoverUser"
+        />
 
         <!-- Modals -->
         <AddUserModal ref="addModalRef" @success="refreshTable" />
         <EditUserModal ref="editModalRef" @success="refreshTable" />
         <DeleteUserModal ref="deleteModalRef" @success="refreshTable" />
+        <RecoverUserModal ref="recoverModalRef" @success="refreshTable" />
     </div>
 </template>

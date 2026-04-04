@@ -9,11 +9,11 @@ export function useDashboard() {
     const filtersState = createAsyncState<DashboardFilters>();
     const controller = useAbortController();
 
-    async function fetchStats() {
+    async function fetchStats(force = false) {
         statsState.loading.value = true;
         statsState.error.value = null;
         try {
-            statsState.data.value = await dashboardService.getStats({ signal: controller.signal });
+            statsState.data.value = await dashboardService.getStats({ signal: controller.signal, force });
         } catch (err) {
             if (err instanceof ApiError && !err.isAborted) {
                 statsState.error.value = err;

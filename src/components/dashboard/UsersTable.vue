@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue';
-import { useUserList, useUserMutations } from '@/api';
+import { useUserList } from '@/api';
 import type { User } from '@/api/types';
 import { IconRetry, NoUsersFound } from '@/components/SVG';
 import AppPagination from '@/components/common/AppPagination.vue';
 
-defineEmits(['edit', 'delete']);
+defineEmits(['edit', 'delete', 'recover']);
 
 const { data: users, loading, error, meta, fetch } = useUserList();
-const { update } = useUserMutations();
 
 const page = ref(1);
 const perPage = ref(20);
@@ -56,14 +55,6 @@ function refresh() {
 }
 
 defineExpose({ refresh });
-
-async function recoverUser(user: User) {
-    if (!confirm(`Recover ${user.full_name}?`)) return;
-    const result = await update(user.id, { status: 'active' });
-    if (result) {
-        refresh();
-    }
-}
 
 // Helpers
 function getRoleClass(role: string) {
@@ -239,7 +230,9 @@ console.log(users);
                                     <template v-else>
                                         <button
                                             class="btn btn-sm btn-link text-success"
-                                            @click="recoverUser(user)"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#recoverUserModal"
+                                            @click="$emit('recover', user)"
                                         >
                                             Recover
                                         </button>

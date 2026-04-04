@@ -91,7 +91,7 @@ const userDescription = computed(() => {
             <!-- Overview content -->
         </div>
         <div class="sa-tab-content" v-if="currentTab === 'sa-users'">
-            <UsersManagement @users-changed="fetchStats" />
+            <UsersManagement @users-changed="() => fetchStats(true)" />
         </div>
         <div class="tab-content" v-if="currentTab === 'sa-customers'">
             <!-- Customer management content -->
