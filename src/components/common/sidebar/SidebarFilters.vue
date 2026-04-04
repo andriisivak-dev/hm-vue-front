@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
     showFilters?: boolean;
 }>();
 </script>
@@ -21,40 +21,56 @@ const props = defineProps<{
         </div>
 
         <div class="mb-2">
-            <label class="form-label small mb-1" for="cases-filter-product-type">PRODUCT TYPE</label>
+            <label class="form-label small mb-1" for="cases-filter-product-type">
+                PRODUCT TYPE
+            </label>
             <select class="form-select form-select-sm" id="cases-filter-product-type">
                 <option value="">All</option>
             </select>
         </div>
 
         <div class="mb-2">
-            <label class="form-label small mb-1" for="cases-filter-industry-segment">INDUSTRY SEGMENT</label>
+            <label class="form-label small mb-1" for="cases-filter-industry-segment">
+                INDUSTRY SEGMENT
+            </label>
             <select class="form-select form-select-sm" id="cases-filter-industry-segment">
                 <option value="">All</option>
             </select>
         </div>
 
         <div class="mb-2">
-            <label class="form-label small mb-1" for="cases-filter-submitted-by">SUBMITTED BY</label>
+            <label class="form-label small mb-1" for="cases-filter-submitted-by">
+                SUBMITTED BY
+            </label>
             <select class="form-select form-select-sm" id="cases-filter-submitted-by">
                 <option value="">All</option>
             </select>
         </div>
 
         <div class="mb-2">
-            <label class="form-label small mb-1" for="cases-filter-submitted-date-from">SUBMITTED DATE (FROM)</label>
-            <input type="date" class="form-control form-control-sm" id="cases-filter-submitted-date-from" />
+            <label class="form-label small mb-1" for="cases-filter-submitted-date-from">
+                SUBMITTED DATE (FROM)
+            </label>
+            <input
+                type="date"
+                class="form-control form-control-sm"
+                id="cases-filter-submitted-date-from"
+            />
         </div>
-        
+
         <div class="mb-2">
-            <label class="form-label small mb-1" for="cases-filter-submitted-date-to">SUBMITTED DATE (TO)</label>
-            <input type="date" class="form-control form-control-sm" id="cases-filter-submitted-date-to" />
+            <label class="form-label small mb-1" for="cases-filter-submitted-date-to">
+                SUBMITTED DATE (TO)
+            </label>
+            <input
+                type="date"
+                class="form-control form-control-sm"
+                id="cases-filter-submitted-date-to"
+            />
         </div>
 
         <div class="d-grid pt-2">
-            <button type="button" class="btn btn-sm btn-warning mb-3">
-                Reset Filters
-            </button>
+            <button type="button" class="btn btn-sm btn-warning mb-3">Reset Filters</button>
         </div>
     </div>
 </template>

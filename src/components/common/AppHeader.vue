@@ -11,7 +11,13 @@ const layoutStore = useLayoutStore();
         <div class="container-fluid">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button" @click.prevent="layoutStore.toggleSidebar()">
+                    <a
+                        class="nav-link"
+                        data-lte-toggle="sidebar"
+                        href="#"
+                        role="button"
+                        @click.prevent="layoutStore.toggleSidebar()"
+                    >
                         <i class="bi bi-list"></i>
                     </a>
                 </li>
