@@ -1,23 +1,37 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useDashboard } from '@/api';
 import DashboardStatisticCard from './DashboardStatisticCard.vue';
 import DashboardTabs from './DashboardTabs.vue';
 import { IconTotalUsers, IconTotalCustomers, IconPendingReports } from '@/components/SVG';
 
 const { stats, fetchStats, statsLoading } = useDashboard();
+const route = useRoute();
+const router = useRouter();
 
 onMounted(() => {
     fetchStats();
 });
 
-const currentTab = ref('sa-overview');
 const tabs = [
     { id: 'sa-overview', label: 'Overview' },
     { id: 'sa-users', label: 'Users Management' },
     { id: 'sa-customers', label: 'Customer Management' },
     { id: 'sa-casestudy', label: 'Case Study' }
 ];
+
+const currentTab = computed({
+    get() {
+        const queryTab = route.query.tab as string;
+        return tabs.some((t) => t.id === queryTab) ? queryTab : tabs[0].id;
+    },
+    set(newTab) {
+        if (newTab !== route.query.tab) {
+            router.push({ query: { ...route.query, tab: newTab } });
+        }
+    }
+});
 
 const userDescription = computed(() => {
     if (!stats.value?.users) return '';
