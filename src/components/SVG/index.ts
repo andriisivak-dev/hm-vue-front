@@ -6,3 +6,8 @@ export { default as IconActivitiesThumb } from './IconActivitiesThumb.vue';
 export { default as IconTotalUsers } from './IconTotalUsers.vue';
 export { default as IconTotalCustomers } from './IconTotalCustomers.vue';
 export { default as IconPendingReports } from './IconPendingReports.vue';
+export { default as IconAddNewUser } from './IconAddNewUser.vue';
+export { default as NoUsersFound } from './NoUsersFound.vue';
+export { default as IconRetry } from './IconRetry.vue';
+export { default as ArrowPrev } from './ArrowPrev.vue';
+export { default as ArrowNext } from './ArrowNext.vue';
