@@ -35,7 +35,7 @@ export interface UserListParams {
     page?: number;
     per_page?: number;
     role?: UserRole | string;
-    status?: UserStatus;
+    status?: UserStatus | 'all';
     search?: string;
     orderby?: 'date' | 'name';
     order?: 'asc' | 'desc';
