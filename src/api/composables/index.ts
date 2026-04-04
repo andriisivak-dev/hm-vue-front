@@ -1,7 +1,7 @@
 import { ref, onUnmounted, type Ref } from 'vue';
 import { ApiError } from '@/api';
 import { casesService } from '@/api';
-import { formsService, usersService, notificationsService, dashboardService } from '@/api';
+import { formsService, usersService, notificationsService } from '@/api';
 import type {
     CaseListItem,
     CaseDetail,
@@ -327,31 +327,6 @@ export function useDashboard() {
     const filters = ref<DashboardFilters | null>(null);
     const loading = ref(false);
     const error = ref<ApiError | null>(null);
-    const controller = useAbortController();
 
-    async function fetchStats() {
-        loading.value = true;
-        error.value = null;
-        try {
-            stats.value = await dashboardService.getStats({ signal: controller.signal });
-        } catch (err) {
-            if (err instanceof ApiError && !err.isAborted) error.value = err;
-        } finally {
-            loading.value = false;
-        }
-    }
-
-    async function fetchFilters() {
-        try {
-            filters.value = await dashboardService.getFilters({ signal: controller.signal });
-        } catch (err) {
-            if (err instanceof ApiError && !err.isAborted) error.value = err;
-        }
-    }
-
-    async function fetchAll() {
-        await Promise.all([fetchStats(), fetchFilters()]);
-    }
-
-    return { stats, filters, loading, error, fetchStats, fetchFilters, fetchAll };
+    return { stats, filters, loading, error };
 }

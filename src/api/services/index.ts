@@ -5,8 +5,6 @@ import type {
     UserListParams,
     Notification,
     NotificationListParams,
-    DashboardStats,
-    DashboardFilters,
     PaginatedResult
 } from '@/api';
 
@@ -124,28 +122,4 @@ export const notificationsService = {
 // Dashboard service
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const dashboardService = {
-    /**
-     * GET /dashboard/stats
-     * Role-scoped aggregated case counts.
-     */
-    async getStats(options?: RequestOptions): Promise<DashboardStats> {
-        const client = useHttpClient();
-        return client.get<DashboardStats>('/dashboard/stats', undefined, {
-            cacheTtl: 30_000,
-            ...options
-        });
-    },
-
-    /**
-     * GET /dashboard/filters
-     * Taxonomy terms for filter dropdowns.
-     */
-    async getFilters(options?: RequestOptions): Promise<DashboardFilters> {
-        const client = useHttpClient();
-        return client.get<DashboardFilters>('/dashboard/filters', undefined, {
-            cacheTtl: 5 * 60_000, // taxonomies change rarely
-            ...options
-        });
-    }
-};
+export const dashboardService = {};

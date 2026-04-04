@@ -61,12 +61,7 @@ export function setupApi(): void {
 // ── Services (plain async functions — use in Pinia stores or tests) ────────
 
 export { casesService } from './services/casesService';
-export {
-    formsService,
-    usersService,
-    notificationsService,
-    dashboardService
-} from './services/index';
+export { formsService, usersService, notificationsService } from './services/index';
 
 // ── Composables (reactive Vue wrappers) ────────────────────────────────────
 
