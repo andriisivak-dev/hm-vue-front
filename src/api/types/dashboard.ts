@@ -8,6 +8,12 @@ export interface DashboardStats {
     rejected: number;
     draft: number;
     total: number;
+    users?: {
+        total: number;
+        supervisors: number;
+        agents: number;
+        marketing: number;
+    };
 }
 
 export interface DashboardFilters {
