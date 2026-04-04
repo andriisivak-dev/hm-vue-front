@@ -312,6 +312,7 @@ const onFinalSubmit = handleSubmit(
             <p>
                 Your case study has been submitted for review. Your supervisor will be notified
                 shortly.
+                <router-link to="/dashboard"> Go Home </router-link>
             </p>
             <p class="case-id-note">
                 Case ID: <strong>#{{ store.caseId }}</strong>
