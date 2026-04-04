@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useDashboard } from '@/api';
 import DashboardStatisticCard from './DashboardStatisticCard.vue';
 import DashboardTabs from './DashboardTabs.vue';
+import UsersManagement from './UsersManagement.vue';
 import { IconTotalUsers, IconTotalCustomers, IconPendingReports } from '@/components/SVG';
 
 const { stats, fetchStats, statsLoading } = useDashboard();
@@ -89,8 +90,8 @@ const userDescription = computed(() => {
         <div class="tab-content" v-if="currentTab === 'sa-overview'">
             <!-- Overview content -->
         </div>
-        <div class="tab-content" v-if="currentTab === 'sa-users'">
-            <!-- Users management content -->
+        <div class="sa-tab-content" v-if="currentTab === 'sa-users'">
+            <UsersManagement @users-changed="fetchStats" />
         </div>
         <div class="tab-content" v-if="currentTab === 'sa-customers'">
             <!-- Customer management content -->
