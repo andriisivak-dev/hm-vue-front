@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useUserStore } from '@/stores/user';
 import SidebarFilters from './sidebar/SidebarFilters.vue';
+import SidebarActivities from './sidebar/SidebarActivities.vue';
 
 const props = defineProps<{
     showFilters?: boolean;
@@ -12,6 +13,7 @@ const user = computed(() => userStore.user);
 const role = computed(() => user.value?.role || '');
 
 const showNewCaseStudyButton = computed(() => role.value !== 'marketing' && props.showFilters);
+const showActivities = computed(() => role.value !== 'field_agent' && props.showFilters);
 </script>
 
 <template>
@@ -45,6 +47,7 @@ const showNewCaseStudyButton = computed(() => role.value !== 'marketing' && prop
             </router-link>
 
             <SidebarFilters :showFilters="showFilters" />
+            <SidebarActivities :show-activities="showActivities" />
         </div>
     </aside>
 </template>

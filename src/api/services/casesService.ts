@@ -266,5 +266,14 @@ export const casesService = {
         apiCache.invalidate(caseKey(id));
         apiCache.invalidate('/cases');
         return result;
+    },
+
+    /**
+     * GET /cases/activities
+     * Returns activities statistics for the current user.
+     */
+    async getActivities(options?: RequestOptions): Promise<Record<string, number>> {
+        const client = useHttpClient();
+        return client.get<Record<string, number>>('/cases/activities', undefined, options);
     }
 };
