@@ -20,16 +20,19 @@ const props = defineProps<{
 
 const store = useCaseFormStore();
 
+import TextField from './fields/TextField.vue';
+import SelectField from './fields/SelectField.vue';
+
 // Mapping field types to components
 const componentMap: Record<string, Component> = {
-    text: defineAsyncComponent(() => import('./fields/TextField.vue')),
-    number: defineAsyncComponent(() => import('./fields/TextField.vue')), // Reuse TextField with numeric type
-    select: defineAsyncComponent(() => import('./fields/SelectField.vue')),
+    text: TextField,
+    number: TextField, // Reuse TextField with numeric type
+    select: SelectField,
     radio: defineAsyncComponent(() => import('./fields/RadioField.vue')),
     checkbox: defineAsyncComponent(() => import('./fields/CheckboxField.vue')),
     textarea: defineAsyncComponent(() => import('./fields/TextareaField.vue')),
     fileupload: defineAsyncComponent(() => import('./fields/FileUploadField.vue')),
-    calculation: defineAsyncComponent(() => import('./fields/TextField.vue')), // Read-only text field
+    calculation: TextField, // Read-only text field
     html: defineAsyncComponent(() => import('./fields/HtmlField.vue'))
 };
 
