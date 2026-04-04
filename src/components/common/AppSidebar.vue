@@ -3,17 +3,22 @@ import { computed } from 'vue';
 import { useUserStore } from '@/stores/user';
 import SidebarFilters from './sidebar/SidebarFilters.vue';
 import SidebarActivities from './sidebar/SidebarActivities.vue';
+import { useRoute } from 'vue-router';
 
 const props = defineProps<{
     showFilters?: boolean;
 }>();
 
+const route = useRoute();
 const userStore = useUserStore();
+
 const user = computed(() => userStore.user);
 const role = computed(() => user.value?.role || '');
 
-const showNewCaseStudyButton = computed(() => role.value !== 'marketing' && props.showFilters);
-const showActivities = computed(() => role.value !== 'field_agent' && props.showFilters);
+const canCreateCase = computed(() => role.value !== 'hm_marketing');
+const isDashboard = computed(() => route.name === 'dashboard');
+const showNewCaseStudyButton = computed(() => canCreateCase.value && isDashboard.value);
+const showActivities = computed(() => role.value !== 'hm_field_agent' && props.showFilters);
 </script>
 
 <template>
