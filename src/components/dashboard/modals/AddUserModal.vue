@@ -20,19 +20,14 @@ const alertMsg = ref('');
 const alertType = ref('danger');
 const supervisors = ref<User[]>([]);
 
-const supervisorsLoaded = ref(false);
-
 onMounted(() => {
     // Defer loading until modal opens
 });
 
 async function open() {
     baseModal.value?.show();
-    if (!supervisorsLoaded.value) {
-        await fetchSupervisors({ role: 'hm_manager', per_page: -1 });
-        if (supervisorsList.value) supervisors.value = supervisorsList.value;
-        supervisorsLoaded.value = true;
-    }
+    await fetchSupervisors({ role: 'hm_manager', per_page: -1 });
+    if (supervisorsList.value) supervisors.value = supervisorsList.value;
 }
 defineExpose({ open });
 
