@@ -26,3 +26,39 @@ export function useUserList() {
 
     return { ...state, meta, fetch };
 }
+
+export function useUserMutations() {
+    const loading = ref(false);
+    const error = ref<ApiError | null>(null);
+    const controller = useAbortController();
+
+    async function create(data: Record<string, unknown>): Promise<User | null> {
+        return run(() => usersService.create(data, { signal: controller.signal }));
+    }
+
+    async function update(id: number, data: Record<string, unknown>): Promise<User | null> {
+        return run(() => usersService.update(id, data, { signal: controller.signal }));
+    }
+
+    async function remove(id: number): Promise<boolean> {
+        const result = await run(() => usersService.delete(id, { signal: controller.signal }));
+        return result !== null;
+    }
+
+    async function run<T>(fn: () => Promise<T>): Promise<T | null> {
+        loading.value = true;
+        error.value = null;
+        try {
+            return await fn();
+        } catch (err) {
+            if (err instanceof ApiError && !err.isAborted) {
+                error.value = err;
+            }
+            return null;
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    return { loading, error, create, update, remove };
+}
