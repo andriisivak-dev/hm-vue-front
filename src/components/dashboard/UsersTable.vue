@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed, watch } from 'vue';
+import { ref, reactive, onMounted, watch } from 'vue';
 import { useUserList, useUserMutations } from '@/api';
 import type { User } from '@/api/types';
-import { ArrowNext, ArrowPrev, IconRetry, NoUsersFound } from '@/components/SVG';
+import { IconRetry, NoUsersFound } from '@/components/SVG';
+import AppPagination from '@/components/common/AppPagination.vue';
 
 defineEmits(['edit', 'delete']);
 
@@ -104,33 +105,6 @@ function formatDate(dateStr: string) {
         return dateStr;
     }
 }
-
-const paginationPages = computed(() => {
-    if (!meta.value) return [];
-    const current = page.value;
-    const total = meta.value.total_pages;
-
-    if (total <= 7) {
-        return Array.from({ length: total }, (_, i) => i + 1);
-    }
-
-    const pages = new Set([1, total, current]);
-    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
-        pages.add(i);
-    }
-
-    const sorted = [...pages].sort((a, b) => a - b);
-    const result: (number | string)[] = [];
-
-    for (let i = 0; i < sorted.length; i++) {
-        if (i > 0 && sorted[i] - sorted[i - 1] > 1) {
-            result.push('…');
-        }
-        result.push(sorted[i]);
-    }
-
-    return result;
-});
 
 console.log(users);
 </script>
@@ -304,54 +278,12 @@ console.log(users);
             </div>
         </div>
 
-        <nav class="users-pagination" v-if="meta" aria-label="Users pagination">
-            <div class="users-pagination__meta" aria-live="polite">
-                Showing {{ Math.min((meta.page - 1) * meta.per_page + 1, meta.total) }}–{{
-                    Math.min(meta.page * meta.per_page, meta.total)
-                }}
-                of {{ meta.total }}
-            </div>
-            <div class="users-pagination__controls" v-if="meta.total_pages > 1">
-                <button
-                    class="pagination-btn pagination-btn--nav"
-                    :disabled="page <= 1"
-                    @click="fetchPage(page - 1)"
-                    aria-label="Previous page"
-                >
-                    <ArrowPrev />
-                </button>
-                <div style="display: inline-block">
-                    <span v-for="p in paginationPages" :key="p">
-                        <span v-if="p === '…'" class="pagination-ellipsis">…</span>
-                        <button
-                            v-else
-                            class="pagination-btn"
-                            :class="{ 'is-active': p === page }"
-                            @click="fetchPage(p as number)"
-                        >
-                            {{ p }}
-                        </button>
-                    </span>
-                </div>
-                <button
-                    class="pagination-btn pagination-btn--nav"
-                    :disabled="page >= meta.total_pages"
-                    @click="fetchPage(page + 1)"
-                    aria-label="Next page"
-                >
-                    <ArrowNext />
-                </button>
-            </div>
-            <div class="users-pagination__perpage">
-                <label for="usersPerPage" class="visually-hidden">Rows per page</label>
-                <select id="usersPerPage" v-model="perPage" class="form-select form-select-sm">
-                    <option :value="3">3</option>
-                    <option :value="10">10</option>
-                    <option :value="20">20</option>
-                    <option :value="50">50</option>
-                </select>
-                <span class="users-pagination__perpage-label">per page</span>
-            </div>
-        </nav>
+        <AppPagination
+            v-if="meta"
+            :meta="meta"
+            v-model:per-page="perPage"
+            @change="fetchPage"
+            aria-label="Users pagination"
+        />
     </div>
 </template>
