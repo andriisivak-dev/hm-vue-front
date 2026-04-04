@@ -1,6 +1,13 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, type Component } from 'vue';
 import { useActivitiesStore } from '@/stores/activities';
+import {
+    IconActivitiesArrow,
+    IconActivitiesPen,
+    IconActivitiesEye,
+    IconActivitiesCheck,
+    IconActivitiesThumb
+} from '@/components/SVG';
 
 const props = defineProps<{
     showActivities?: boolean;
@@ -14,12 +21,18 @@ onMounted(() => {
     }
 });
 
-const activityItems = [
-    { key: 'pending_review', label: 'Pending Review', icon: 'bi-eye' },
-    { key: 'returned', label: 'Returned (Requested Info)', icon: 'bi-arrow-return-left' },
-    { key: 'approved', label: 'Approved', icon: 'bi-hand-thumbs-up' },
-    { key: 'rejected', label: 'Rejected', icon: 'bi-x-circle' },
-    { key: 'draft', label: 'Draft', icon: 'bi-file-earmark' }
+interface ActivityItem {
+    key: 'pending_review' | 'returned' | 'approved' | 'rejected' | 'draft';
+    label: string;
+    icon: Component;
+}
+
+const activityItems: ActivityItem[] = [
+    { key: 'pending_review', label: 'Pending Review', icon: IconActivitiesEye },
+    { key: 'returned', label: 'Returned (Requested Info)', icon: IconActivitiesArrow },
+    { key: 'approved', label: 'Approved', icon: IconActivitiesThumb },
+    { key: 'rejected', label: 'Rejected', icon: IconActivitiesPen },
+    { key: 'draft', label: 'Draft', icon: IconActivitiesCheck }
 ];
 </script>
 
@@ -47,7 +60,7 @@ const activityItems = [
                     </div>
                 </div>
                 <div class="icon fs-3 text-white">
-                    <i class="bi" :class="item.icon"></i>
+                    <component :is="item.icon" />
                 </div>
             </div>
         </div>
