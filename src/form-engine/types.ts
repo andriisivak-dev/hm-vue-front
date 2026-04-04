@@ -81,6 +81,22 @@ export interface GFStep {
     fields: GFField[];
 }
 
+export interface SimpleField {
+    id: string | number;
+    type?: string;
+    inputType?: string;
+    label: string;
+    description?: string;
+    cssClass?: string;
+    css_class?: string;
+    is_required?: boolean;
+    placeholder?: string;
+    choices?: GFChoice[] | { text: string; value: string; isSelected?: boolean }[];
+    [key: string]: unknown;
+}
+
+export type AnyField = GFField | SimpleField;
+
 export interface GFField {
     id: number | string;
     type: string;

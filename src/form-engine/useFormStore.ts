@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { GFForm, GFField, GFEntry, GFConditionalLogic } from './types';
+import type { GFForm, GFField, GFEntry, GFConditionalLogic, AnyField } from './types';
 import { LogicEngine } from './LogicEngine';
 import { FormulaEngine } from './FormulaEngine';
 import { FIELD_IDS } from '../stores/constants.ts';
@@ -96,7 +96,7 @@ export const useCaseFormStore = defineStore('caseForm', {
          */
         getFormattedLabel:
             (state) =>
-            (field: GFField): string => {
+            (field: AnyField): string => {
                 const rawLabel = field.label || '';
                 const mode = String(state.values[FIELD_IDS.TOOL_MODE] || '').trim();
 

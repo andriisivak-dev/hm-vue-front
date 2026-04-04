@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { GFField } from '@/form-engine/types';
+import type { AnyField } from '@/form-engine/types';
 import { useCaseFormStore } from '@/form-engine/useFormStore';
 
 const props = defineProps<{
-    field: GFField;
+    field: AnyField;
     error?: string;
 }>();
 
