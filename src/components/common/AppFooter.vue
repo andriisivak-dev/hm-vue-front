@@ -9,4 +9,8 @@
     </footer>
 </template>
 
-<style scoped></style>
+<style scoped>
+.app-footer {
+    margin-top: 20px;
+}
+</style>
