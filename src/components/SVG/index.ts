@@ -11,3 +11,5 @@ export { default as NoUsersFound } from './NoUsersFound.vue';
 export { default as IconRetry } from './IconRetry.vue';
 export { default as ArrowPrev } from './ArrowPrev.vue';
 export { default as ArrowNext } from './ArrowNext.vue';
+export { default as IconEyeOpen } from './IconEyeOpen.vue';
+export { default as IconEyeClose } from './IconEyeClose.vue';
