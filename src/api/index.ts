@@ -73,7 +73,8 @@ export {
     useFormSchema,
     useUserList,
     useNotifications,
-    useDashboard
+    useDashboard,
+    useUserMutations
 } from './composables/index';
 
 // ── Types ──────────────────────────────────────────────────────────────────
