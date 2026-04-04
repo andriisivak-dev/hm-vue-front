@@ -40,7 +40,6 @@ const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)
 .gf-field-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
     text-align: left;
     width: 100%;
 }
@@ -52,6 +51,7 @@ const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)
     display: flex;
     align-items: center;
     gap: 4px;
+    margin-bottom: 8px;
 }
 
 .gf-required {
@@ -66,9 +66,9 @@ const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)
 }
 
 .gf-error-message {
-    font-size: 0.85rem;
-    color: #ef4444;
     margin-top: 0.25rem;
+    font-size: 14px;
+    color: #ef4444;
 }
 
 .has-error :deep(input),
