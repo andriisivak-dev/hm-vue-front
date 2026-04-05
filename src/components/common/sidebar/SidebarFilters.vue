@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { dashboardService } from '@/api/services/dashboardService';
 import type { DashboardFilters } from '@/api/types/dashboard';
+import { VueDatePicker } from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 
 defineProps<{
     showFilters?: boolean;
@@ -11,12 +14,61 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const filters = ref<DashboardFilters | null>(null);
 
-const selectedStatus = ref('all');
-const selectedProductType = ref('');
-const selectedIndustrySegment = ref('');
-const selectedSubmittedBy = ref('');
-const submittedDateFrom = ref('');
-const submittedDateTo = ref('');
+const route = useRoute();
+const router = useRouter();
+
+const selectedStatus = computed({
+    get() {
+        const tab = route.query.tab as string;
+        if (!tab) {
+            return route.path.includes('supervisor') ? 'draft' : 'all';
+        }
+        return tab;
+    },
+    set(newStatus) {
+        if (newStatus !== route.query.tab) {
+            router.push({ query: { ...route.query, tab: newStatus, page: 1 } });
+        }
+    }
+});
+function createQuerySync(queryParam: string, defaultValue = '') {
+    return computed({
+        get() {
+            return (route.query[queryParam] as string) || defaultValue;
+        },
+        set(newVal) {
+            if (newVal !== route.query[queryParam]) {
+                const newQuery = { ...route.query, [queryParam]: newVal, page: 1 };
+                if (!newVal) delete newQuery[queryParam];
+                router.push({ query: newQuery as Record<string, any> });
+            }
+        }
+    });
+}
+
+const selectedProductType = createQuerySync('product_type');
+const selectedIndustrySegment = createQuerySync('industry_segment');
+const selectedSubmittedBy = createQuerySync('submitted_by');
+const submittedDateFrom = createQuerySync('date_from');
+const submittedDateTo = createQuerySync('date_to');
+
+const today = new Date();
+today.setHours(23, 59, 59, 999);
+
+const maxDateFrom = computed(() => {
+    if (!submittedDateTo.value) return today;
+    const toDate = new Date(submittedDateTo.value);
+    return toDate < today ? toDate : today;
+});
+
+const minDateTo = computed(() => {
+    if (!submittedDateFrom.value) return undefined;
+    return new Date(submittedDateFrom.value);
+});
+
+const maxDateTo = computed(() => {
+    return today;
+});
 
 onMounted(async () => {
     try {
@@ -34,12 +86,16 @@ onMounted(async () => {
 });
 
 const resetFilters = () => {
-    selectedStatus.value = 'all';
-    selectedProductType.value = '';
-    selectedIndustrySegment.value = '';
-    selectedSubmittedBy.value = '';
-    submittedDateFrom.value = '';
-    submittedDateTo.value = '';
+    const query = { ...route.query };
+    delete query.product_type;
+    delete query.industry_segment;
+    delete query.submitted_by;
+    delete query.date_from;
+    delete query.date_to;
+    query.tab = 'all';
+    query.page = '1';
+
+    router.push({ query });
 };
 </script>
 
@@ -78,7 +134,7 @@ const resetFilters = () => {
                     <option
                         v-for="type in filters?.product_types"
                         :key="type.term_id"
-                        :value="type.term_id"
+                        :value="type.slug"
                     >
                         {{ type.name }}
                     </option>
@@ -98,7 +154,7 @@ const resetFilters = () => {
                     <option
                         v-for="segment in filters?.industry_segments"
                         :key="segment.term_id"
-                        :value="segment.term_id"
+                        :value="segment.slug"
                     >
                         {{ segment.name }}
                     </option>
@@ -125,11 +181,18 @@ const resetFilters = () => {
                 <label class="form-label small mb-1" for="cases-filter-submitted-date-from">
                     SUBMITTED DATE (FROM)
                 </label>
-                <input
+                <VueDatePicker
                     v-model="submittedDateFrom"
-                    type="date"
-                    class="form-control form-control-sm"
-                    id="cases-filter-submitted-date-from"
+                    uid="cases-filter-submitted-date-from"
+                    :time-config="{ enableTimePicker: false }"
+                    :max-date="maxDateFrom"
+                    prevent-min-max-navigation
+                    auto-apply
+                    model-type="yyyy-MM-dd"
+                    format="yyyy-MM-dd"
+                    placeholder="Select Date"
+                    :dark="true"
+                    input-class-name="form-control form-control-sm"
                 />
             </div>
 
@@ -137,11 +200,19 @@ const resetFilters = () => {
                 <label class="form-label small mb-1" for="cases-filter-submitted-date-to">
                     SUBMITTED DATE (TO)
                 </label>
-                <input
+                <VueDatePicker
                     v-model="submittedDateTo"
-                    type="date"
-                    class="form-control form-control-sm"
-                    id="cases-filter-submitted-date-to"
+                    uid="cases-filter-submitted-date-to"
+                    :time-config="{ enableTimePicker: false }"
+                    :min-date="minDateTo"
+                    :max-date="maxDateTo"
+                    prevent-min-max-navigation
+                    auto-apply
+                    model-type="yyyy-MM-dd"
+                    format="yyyy-MM-dd"
+                    placeholder="Select Date"
+                    :dark="true"
+                    input-class-name="form-control form-control-sm"
                 />
             </div>
 

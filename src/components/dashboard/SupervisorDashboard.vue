@@ -49,9 +49,20 @@ watch(
     }
 );
 
-watch([currentTab, perPage], () => {
-    fetchPage(1);
-});
+watch(
+    [
+        currentTab,
+        perPage,
+        () => route.query.product_type,
+        () => route.query.industry_segment,
+        () => route.query.submitted_by,
+        () => route.query.date_from,
+        () => route.query.date_to
+    ],
+    () => {
+        fetchPage(1);
+    }
+);
 
 function fetchPage(p: number) {
     page.value = p;
@@ -65,6 +76,12 @@ function fetchPage(p: number) {
     if (currentTab.value !== 'all' && currentTab.value !== 'library') {
         params.status = currentTab.value;
     }
+
+    if (route.query.product_type) params.hm_product_type = route.query.product_type;
+    if (route.query.industry_segment) params.hm_industry_segment = route.query.industry_segment;
+    if (route.query.submitted_by) params.submitted_by = route.query.submitted_by;
+    if (route.query.date_from) params.date_from = route.query.date_from;
+    if (route.query.date_to) params.date_to = route.query.date_to;
 
     fetch(params, currentTab.value === 'library');
 }
