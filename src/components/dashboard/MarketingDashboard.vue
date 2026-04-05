@@ -69,7 +69,6 @@ const page = ref(Number(route.query.page) || 1);
 const perPage = ref(10);
 
 const { data: casesData, meta: caseMeta, loading: casesLoading, fetch: fetchCases } = useCaseList();
-const activitiesStore = useActivitiesStore();
 
 watch(
     () => route.query.page,

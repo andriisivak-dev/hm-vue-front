@@ -104,11 +104,16 @@ console.log(props.cases);
                             </td>
 
                             <td data-label="Actions" class="text-center">
-                                <template v-if="viewMode === 'library'">
+                                <template v-if="viewMode === 'library' || viewMode === 'approved'">
                                     <a
                                         :href="`/case/?cid=${item.id}&mode=view`"
                                         class="btn btn-sm btn-link text-info"
                                         >View</a
+                                    >
+                                    <a
+                                        href="#"
+                                        class="btn btn-sm btn-link text-info"
+                                        >View Details</a
                                     >
                                 </template>
                                 <template
@@ -119,12 +124,18 @@ console.log(props.cases);
                                     "
                                 >
                                     <template v-if="item.author?.id === currentUser?.id">
-                                        <!-- Manager's own cases -->
+                                        <!-- Own cases -->
                                         <a
                                             v-if="['draft', 'returned'].includes(item.status)"
                                             :href="`/case/?cid=${item.id}`"
                                             class="btn btn-sm btn-link text-primary"
                                             >Continue</a
+                                        >
+                                        <a
+                                            v-else-if="item.status === 'in_review' && ['administrator', 'hm_administrator'].includes(currentUser?.role || '')"
+                                            :href="`/case/?cid=${item.id}`"
+                                            class="btn btn-sm btn-link text-primary"
+                                            >Edit</a
                                         >
                                         <a
                                             v-else
@@ -146,6 +157,12 @@ console.log(props.cases);
                                             :href="`/case/?cid=${item.id}&mode=view`"
                                             class="btn btn-sm btn-link text-info"
                                             >View</a
+                                        >
+                                        <a
+                                            v-if="item.status === 'in_review'"
+                                            :href="`/case/?cid=${item.id}`"
+                                            class="btn btn-sm btn-link text-primary"
+                                            >Edit</a
                                         >
                                         <template v-if="item.status === 'in_review'">
                                             <button
