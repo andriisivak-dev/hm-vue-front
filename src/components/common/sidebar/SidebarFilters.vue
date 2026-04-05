@@ -19,12 +19,14 @@ const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 
-const isSuperAdmin = computed(() => ['administrator', 'hm_administrator'].includes(userStore.user?.role || ''));
+const isSuperAdmin = computed(() =>
+    ['administrator', 'hm_administrator'].includes(userStore.user?.role || '')
+);
 const isSupervisor = computed(() => userStore.user?.role === 'hm_manager');
 const isMarketing = computed(() => userStore.user?.role === 'hm_marketing');
 
 const statusQueryParam = computed(() => {
-    return (isSuperAdmin.value || isMarketing.value) ? 'status' : 'tab';
+    return isSuperAdmin.value || isMarketing.value ? 'status' : 'tab';
 });
 
 const selectedStatus = computed({
@@ -32,7 +34,7 @@ const selectedStatus = computed({
         const param = statusQueryParam.value;
         const statusVal = route.query[param] as string;
         if (!statusVal) {
-            return (isSupervisor.value || isSuperAdmin.value || isMarketing.value) ? 'draft' : 'all';
+            return isSupervisor.value || isSuperAdmin.value || isMarketing.value ? 'draft' : 'all';
         }
         return statusVal;
     },
@@ -57,15 +59,19 @@ function createQuerySync(queryParam: string, defaultValue = '') {
         },
         set(newVal) {
             if (newVal !== route.query[queryParam]) {
-                const newQuery: Record<string, any> = { ...route.query, [queryParam]: newVal, page: 1 };
+                const newQuery: Record<string, any> = {
+                    ...route.query,
+                    [queryParam]: newVal,
+                    page: 1
+                };
                 if (!newVal) delete newQuery[queryParam];
-                
+
                 if (isSuperAdmin.value) {
                     newQuery.tab = 'sa-casestudy';
                 } else if (isMarketing.value) {
                     newQuery.tab = 'mk-casestudy';
                 }
-                
+
                 router.push({ query: newQuery });
             }
         }
@@ -118,7 +124,7 @@ const resetFilters = () => {
     delete query.submitted_by;
     delete query.date_from;
     delete query.date_to;
-    
+
     if (isSuperAdmin.value) {
         query.status = 'all';
         query.tab = 'sa-casestudy';

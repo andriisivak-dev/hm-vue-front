@@ -69,7 +69,12 @@ const page = ref(Number(route.query.page) || 1);
 const perPage = ref(10);
 
 const { data: casesData, meta: caseMeta, loading: casesLoading, fetch: fetchCases } = useCaseList();
-const { remove: removeCase, approve: approveCase, reject: rejectCase, returnForRevision: returnCase } = useCaseMutations();
+const {
+    remove: removeCase,
+    approve: approveCase,
+    reject: rejectCase,
+    returnForRevision: returnCase
+} = useCaseMutations();
 const activitiesStore = useActivitiesStore();
 
 watch(
@@ -233,7 +238,9 @@ onMounted(() => {
 
             <div class="fa-tab-content active" style="display: block">
                 <template v-if="currentCaseTab === 'draft'">
-                    <div class="fa-case-study-cards case-study-cards js-fa-case-studies position-relative mt-4">
+                    <div
+                        class="fa-case-study-cards case-study-cards js-fa-case-studies position-relative mt-4"
+                    >
                         <div v-if="casesLoading" class="no-case-studies text-center py-5">
                             <p class="text-muted">Loading case studies...</p>
                         </div>

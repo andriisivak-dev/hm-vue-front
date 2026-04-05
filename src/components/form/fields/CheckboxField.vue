@@ -50,7 +50,10 @@ const toggleAll = () => {
                     <label
                         v-if="typeof choice !== 'string'"
                         class="gf-checkbox-label"
-                        :class="{ 'is-selected': !!modelValues[field.inputs?.[index]?.id ?? ''], 'gf-readonly': isReadonly }"
+                        :class="{
+                            'is-selected': !!modelValues[field.inputs?.[index]?.id ?? ''],
+                            'gf-readonly': isReadonly
+                        }"
                     >
                         <input
                             type="checkbox"

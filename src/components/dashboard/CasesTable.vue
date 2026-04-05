@@ -110,9 +110,7 @@ console.log(props.cases);
                                         class="btn btn-sm btn-link text-info"
                                         >View</a
                                     >
-                                    <a
-                                        href="#"
-                                        class="btn btn-sm btn-link text-info"
+                                    <a href="#" class="btn btn-sm btn-link text-info"
                                         >View Details</a
                                     >
                                 </template>
@@ -132,7 +130,12 @@ console.log(props.cases);
                                             >Continue</a
                                         >
                                         <a
-                                            v-else-if="item.status === 'in_review' && ['administrator', 'hm_administrator'].includes(currentUser?.role || '')"
+                                            v-else-if="
+                                                item.status === 'in_review' &&
+                                                ['administrator', 'hm_administrator'].includes(
+                                                    currentUser?.role || ''
+                                                )
+                                            "
                                             :href="`/case/?cid=${item.id}`"
                                             class="btn btn-sm btn-link text-primary"
                                             >Edit</a
@@ -231,7 +234,9 @@ console.log(props.cases);
 <style scoped>
 .hm-case-table {
     border-radius: 10px;
-    background: linear-gradient(white, white) padding-box, linear-gradient(185deg, #f7931d 0%, #262469 50%) border-box;
+    background:
+        linear-gradient(white, white) padding-box,
+        linear-gradient(185deg, #f7931d 0%, #262469 50%) border-box;
     border: 1px solid transparent;
     overflow: hidden;
 }

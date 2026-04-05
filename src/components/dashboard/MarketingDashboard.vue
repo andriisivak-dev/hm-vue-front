@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useDashboard, useCaseList, useCaseMutations } from '@/api';
+import { useDashboard, useCaseList } from '@/api';
 import DashboardStatisticCard from './DashboardStatisticCard.vue';
 import DashboardTabs from './DashboardTabs.vue';
 import UsersManagement from './UsersManagement.vue';
@@ -9,7 +9,6 @@ import CasesTable from './CasesTable.vue';
 import CaseStudyCard from './CaseStudyCard.vue';
 import type { CaseStudy } from './CaseStudyCard.vue';
 import AppPagination from '@/components/common/AppPagination.vue';
-import { useActivitiesStore } from '@/stores/activities';
 import { IconTotalUsers, IconTotalCustomers, IconPendingReports } from '@/components/SVG';
 
 const { stats, fetchStats, statsLoading } = useDashboard();
@@ -189,7 +188,9 @@ onMounted(() => {
 
             <div class="fa-tab-content active" style="display: block">
                 <template v-if="currentCaseTab === 'draft'">
-                    <div class="fa-case-study-cards case-study-cards js-fa-case-studies position-relative mt-4">
+                    <div
+                        class="fa-case-study-cards case-study-cards js-fa-case-studies position-relative mt-4"
+                    >
                         <div v-if="casesLoading" class="no-case-studies text-center py-5">
                             <p class="text-muted">Loading case studies...</p>
                         </div>
@@ -209,11 +210,7 @@ onMounted(() => {
                     <div v-if="casesLoading" class="card shadow-sm border-0 text-center py-5">
                         <p class="text-muted">Loading case studies...</p>
                     </div>
-                    <CasesTable
-                        v-else
-                        :cases="casesForCurrentTab"
-                        :viewMode="currentCaseTab"
-                    />
+                    <CasesTable v-else :cases="casesForCurrentTab" :viewMode="currentCaseTab" />
                 </template>
                 <AppPagination
                     v-if="casesForCurrentTab.length > 0 && caseMeta && !casesLoading"
