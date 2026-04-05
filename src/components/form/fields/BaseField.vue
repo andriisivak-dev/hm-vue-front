@@ -44,9 +44,13 @@ const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)
     width: 100%;
 }
 
+.gf-input-container {
+    position: relative;
+}
+
 .gf-label {
     font-weight: 700;
-    font-size: 18px;
+    font-size: 17px;
     color: #262469;
     display: flex;
     align-items: center;

@@ -41,10 +41,12 @@ const isHidden = computed(() => {
     return false;
 });
 
-const query = ref(props.modelValue || '');
+const query = ref(String(props.modelValue || ''));
 const results = ref<ClientResult[]>([]);
 const isSearching = ref(false);
 const showDropdown = ref(false);
+const selectedIndex = ref(-1);
+const listRef = ref<HTMLElement | null>(null);
 
 // Gravity Config from WP Localization
 const win = window as unknown as CustomWindow;
@@ -63,6 +65,7 @@ const TARGETS = {
  * Perform Client Search
  */
 const searchClients = useDebounceFn(async (term: string) => {
+    selectedIndex.value = -1;
     if (term.length < 3) {
         results.value = [];
         showDropdown.value = false;
@@ -122,6 +125,67 @@ const onInput = (e: Event) => {
 };
 
 /**
+ * On manual focus
+ */
+const onFocus = () => {
+    if (isReadonly.value) return;
+    if (query.value.length >= 3) {
+        if (results.value.length > 0) {
+            showDropdown.value = true;
+        } else {
+            searchClients(query.value);
+        }
+    }
+};
+
+/**
+ * Keyboard Navigation
+ */
+const onKeyDown = () => {
+    if (!showDropdown.value || results.value.length === 0) return;
+    if (selectedIndex.value < results.value.length - 1) {
+        selectedIndex.value++;
+        scrollToSelected();
+    }
+};
+
+const onKeyUp = () => {
+    if (!showDropdown.value || results.value.length === 0) return;
+    if (selectedIndex.value > 0) {
+        selectedIndex.value--;
+        scrollToSelected();
+    }
+};
+
+const onKeyEnter = () => {
+    if (!showDropdown.value) return;
+    if (selectedIndex.value >= 0 && selectedIndex.value < results.value.length) {
+        selectClient(results.value[selectedIndex.value]);
+    }
+};
+
+const scrollToSelected = () => {
+    setTimeout(() => {
+        if (!listRef.value) return;
+        const items = listRef.value.querySelectorAll('.dropdown-item');
+        const activeItem = items[selectedIndex.value] as HTMLElement;
+        if (activeItem) {
+            const container = listRef.value;
+            const itemTop = activeItem.offsetTop;
+            const itemBottom = itemTop + activeItem.offsetHeight;
+            const containerTop = container.scrollTop;
+            const containerBottom = containerTop + container.clientHeight;
+
+            if (itemTop < containerTop) {
+                container.scrollTop = itemTop;
+            } else if (itemBottom > containerBottom) {
+                container.scrollTop = itemBottom - container.clientHeight;
+            }
+        }
+    }, 10);
+};
+
+/**
  * Preload logic (if entry data exists)
  */
 onMounted(async () => {
@@ -152,6 +216,7 @@ const isReadonly = computed(() => {
 const closeDropdown = () => {
     setTimeout(() => {
         showDropdown.value = false;
+        selectedIndex.value = -1;
     }, 200);
 };
 </script>
@@ -163,7 +228,12 @@ const closeDropdown = () => {
                 :id="`input_${field.id}`"
                 :value="query"
                 @input="onInput"
+                @focus="onFocus"
                 @blur="closeDropdown"
+                @keydown.down.prevent="onKeyDown"
+                @keydown.up.prevent="onKeyUp"
+                @keydown.enter.prevent="onKeyEnter"
+                @keydown.esc="closeDropdown"
                 class="gf-input"
                 :class="{ 'gf-readonly': isReadonly }"
                 :placeholder="field.placeholder || 'Start typing to search...'"
@@ -174,12 +244,18 @@ const closeDropdown = () => {
             <div v-show="isSearching" class="search-loader"></div>
 
             <transition name="fade">
-                <ul v-if="showDropdown" class="autocomplete-dropdown glass-panel">
+                <ul
+                    v-if="showDropdown"
+                    class="autocomplete-dropdown glass-panel"
+                    @mousedown.prevent
+                    ref="listRef"
+                >
                     <li
-                        v-for="item in results"
+                        v-for="(item, index) in results"
                         :key="item.id"
                         @mousedown="selectClient(item)"
                         class="dropdown-item"
+                        :class="{ 'is-active': selectedIndex === index }"
                     >
                         <span class="company">{{ item.company_name }}</span>
                         <span class="location" v-if="item.city"
@@ -271,7 +347,8 @@ const closeDropdown = () => {
     transition: all 0.2s;
 }
 
-.dropdown-item:hover {
+.dropdown-item:hover,
+.dropdown-item.is-active {
     background: #d1d1d1;
 }
 
@@ -299,10 +376,10 @@ const closeDropdown = () => {
 
 /* Custom scrollbar */
 .autocomplete-dropdown::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
 }
 .autocomplete-dropdown::-webkit-scrollbar-thumb {
-    background: var(--border);
+    background: #262469;
     border-radius: 10px;
 }
 </style>

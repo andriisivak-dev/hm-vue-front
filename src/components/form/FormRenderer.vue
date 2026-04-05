@@ -401,12 +401,11 @@ const onFinalSubmit = handleSubmit(
                 <button
                     v-else-if="!store.isViewMode"
                     type="button"
-                    class="btn-primary btn-submit"
+                    class="btn-primary"
                     :disabled="store.isSaving"
                     @click="onFinalSubmit"
                 >
                     <Loader2 v-if="store.isSaving" :size="18" class="spin" />
-                    <Check v-else :size="18" />
                     Submit Case Study
                 </button>
             </div>
@@ -574,7 +573,7 @@ const onFinalSubmit = handleSubmit(
     color: #fff;
     padding: 8px 14px;
     border-radius: 5px;
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .btn-primary:disabled,
@@ -598,10 +597,8 @@ const onFinalSubmit = handleSubmit(
 .btn-secondary {
     background-color: #efefef;
     color: #262469;
-}
-
-.btn-secondary:hover:not(:disabled) {
-    background: #e2e8f0;
+    border-radius: 5px;
+    border: 1px solid #262469;
 }
 
 .btn-submit {

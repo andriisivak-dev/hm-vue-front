@@ -54,15 +54,21 @@ const isReadonly = computed(() => {
     color: rgb(17, 35, 55);
 }
 
-.gf-input:not(.gf-readonly):focus {
+.gf-input:focus {
     outline: none;
     box-shadow: 0 0 12px 0 rgba(111, 1, 255, 0.32);
 }
 
 .gf-readonly {
-    background: #f1f5f9 !important;
+    background:
+        linear-gradient(#f8fbff, #f8fbff) padding-box,
+        linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
     cursor: not-allowed;
-    color: rgb(100, 100, 100);
+}
+
+.gf-input.gf-readonly:focus,
+.gf-input.gf-readonly:active {
+    box-shadow: none !important;
 }
 
 .gf-input::placeholder {

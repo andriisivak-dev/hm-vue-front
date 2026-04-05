@@ -51,11 +51,9 @@ const isLocked = (num: number) => !store.isViewMode && num > store.highestReache
 }
 
 .steps-form-title {
-    letter-spacing: -0.24px;
-    margin: 0 0 8px;
-    font-size: 24px;
-    line-height: 118%;
-    font-family: var(--heading);
+    margin: 0 0 0.5rem;
+    font-size: 2rem;
+    line-height: 1.2;
     font-weight: 500;
 }
 
