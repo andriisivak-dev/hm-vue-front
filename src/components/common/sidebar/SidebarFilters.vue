@@ -5,6 +5,7 @@ import { dashboardService } from '@/api/services/dashboardService';
 import type { DashboardFilters } from '@/api/types/dashboard';
 import { VueDatePicker } from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
+import { useUserStore } from '@/stores/user';
 
 defineProps<{
     showFilters?: boolean;
@@ -16,21 +17,36 @@ const filters = ref<DashboardFilters | null>(null);
 
 const route = useRoute();
 const router = useRouter();
+const userStore = useUserStore();
+
+const isSuperAdmin = computed(() => ['administrator', 'hm_administrator'].includes(userStore.user?.role || ''));
+const isSupervisor = computed(() => userStore.user?.role === 'hm_manager');
+
+const statusQueryParam = computed(() => {
+    return isSuperAdmin.value ? 'status' : 'tab';
+});
 
 const selectedStatus = computed({
     get() {
-        const tab = route.query.tab as string;
-        if (!tab) {
-            return route.path.includes('supervisor') ? 'draft' : 'all';
+        const param = statusQueryParam.value;
+        const statusVal = route.query[param] as string;
+        if (!statusVal) {
+            return (isSupervisor.value || isSuperAdmin.value) ? 'draft' : 'all';
         }
-        return tab;
+        return statusVal;
     },
     set(newStatus) {
-        if (newStatus !== route.query.tab) {
-            router.push({ query: { ...route.query, tab: newStatus, page: 1 } });
+        const param = statusQueryParam.value;
+        if (newStatus !== route.query[param]) {
+            const query: Record<string, any> = { ...route.query, [param]: newStatus, page: 1 };
+            if (isSuperAdmin.value) {
+                query.tab = 'sa-casestudy';
+            }
+            router.push({ query });
         }
     }
 });
+
 function createQuerySync(queryParam: string, defaultValue = '') {
     return computed({
         get() {
@@ -38,9 +54,14 @@ function createQuerySync(queryParam: string, defaultValue = '') {
         },
         set(newVal) {
             if (newVal !== route.query[queryParam]) {
-                const newQuery = { ...route.query, [queryParam]: newVal, page: 1 };
+                const newQuery: Record<string, any> = { ...route.query, [queryParam]: newVal, page: 1 };
                 if (!newVal) delete newQuery[queryParam];
-                router.push({ query: newQuery as Record<string, any> });
+                
+                if (isSuperAdmin.value) {
+                    newQuery.tab = 'sa-casestudy';
+                }
+                
+                router.push({ query: newQuery });
             }
         }
     });
@@ -86,13 +107,19 @@ onMounted(async () => {
 });
 
 const resetFilters = () => {
-    const query = { ...route.query };
+    const query: Record<string, any> = { ...route.query };
     delete query.product_type;
     delete query.industry_segment;
     delete query.submitted_by;
     delete query.date_from;
     delete query.date_to;
-    query.tab = 'all';
+    
+    if (isSuperAdmin.value) {
+        query.status = 'all';
+        query.tab = 'sa-casestudy';
+    } else {
+        query.tab = 'all';
+    }
     query.page = '1';
 
     router.push({ query });

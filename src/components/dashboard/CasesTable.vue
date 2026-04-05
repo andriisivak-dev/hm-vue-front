@@ -57,7 +57,7 @@ console.log(props.cases);
 </script>
 
 <template>
-    <div class="card shadow-sm border-0">
+    <div class="card mt-4 hm-case-table">
         <div class="card-body p-0">
             <div class="table-responsive" v-if="cases.length > 0">
                 <table class="table table-hover mb-0">
@@ -202,3 +202,17 @@ console.log(props.cases);
         </div>
     </div>
 </template>
+
+<style scoped>
+.hm-case-table {
+    border-radius: 10px;
+    background: linear-gradient(white, white) padding-box, linear-gradient(185deg, #f7931d 0%, #262469 50%) border-box;
+    border: 1px solid transparent;
+    overflow: hidden;
+}
+
+.table-responsive td,
+.table-responsive th {
+    color: #262469;
+}
+</style>

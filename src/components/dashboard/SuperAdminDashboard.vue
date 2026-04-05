@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useDashboard } from '@/api';
+import { useDashboard, useCaseList, useCaseMutations } from '@/api';
 import DashboardStatisticCard from './DashboardStatisticCard.vue';
 import DashboardTabs from './DashboardTabs.vue';
 import UsersManagement from './UsersManagement.vue';
+import CasesTable from './CasesTable.vue';
+import CaseStudyCard from './CaseStudyCard.vue';
+import type { CaseStudy } from './CaseStudyCard.vue';
+import AppPagination from '@/components/common/AppPagination.vue';
+import { useActivitiesStore } from '@/stores/activities';
 import { IconTotalUsers, IconTotalCustomers, IconPendingReports } from '@/components/SVG';
 
 const { stats, fetchStats, statsLoading } = useDashboard();
 const route = useRoute();
 const router = useRouter();
-
-onMounted(() => {
-    fetchStats();
-});
 
 const tabs = [
     { id: 'sa-overview', label: 'Overview' },
@@ -38,6 +39,135 @@ const userDescription = computed(() => {
     if (!stats.value?.users) return '';
     const { supervisors, agents, marketing } = stats.value.users;
     return `${supervisors}&nbsp;Supervisors, ${agents}&nbsp;Agents, ${marketing}&nbsp;Marketing`;
+});
+
+// --- Case Studies Logic ---
+const caseTabs = [
+    { id: 'all', label: 'All' },
+    { id: 'draft', label: 'Draft' },
+    { id: 'in_review', label: 'Pending Review' },
+    { id: 'returned', label: 'Returned to Agent' },
+    { id: 'approved', label: 'Approved' },
+    { id: 'rejected', label: 'Rejected' },
+    { id: 'library', label: 'Case Library' }
+];
+
+const currentCaseTab = computed({
+    get() {
+        const queryTab = route.query.status as string;
+        return caseTabs.some((t) => t.id === queryTab) ? queryTab : 'draft';
+    },
+    set(newTab) {
+        if (newTab !== route.query.status) {
+            router.push({ query: { ...route.query, status: newTab, page: 1 } });
+            page.value = 1;
+        }
+    }
+});
+
+const page = ref(Number(route.query.page) || 1);
+const perPage = ref(10);
+
+const { data: casesData, meta: caseMeta, loading: casesLoading, fetch: fetchCases } = useCaseList();
+const { remove: removeCase, approve: approveCase, reject: rejectCase, returnForRevision: returnCase } = useCaseMutations();
+const activitiesStore = useActivitiesStore();
+
+watch(
+    () => route.query.page,
+    (newPage) => {
+        if (newPage) page.value = Number(newPage);
+    }
+);
+
+watch(
+    [
+        currentCaseTab,
+        perPage,
+        () => route.query.product_type,
+        () => route.query.industry_segment,
+        () => route.query.submitted_by,
+        () => route.query.date_from,
+        () => route.query.date_to,
+        currentTab
+    ],
+    () => {
+        if (currentTab.value === 'sa-casestudy') {
+            fetchCasePage(1);
+        }
+    }
+);
+
+function fetchCasePage(p: number) {
+    page.value = p;
+    router.replace({ query: { ...route.query, page: p } });
+
+    const params: Record<string, unknown> = {
+        page: p,
+        per_page: perPage.value
+    };
+
+    if (currentCaseTab.value !== 'all' && currentCaseTab.value !== 'library') {
+        params.status = currentCaseTab.value;
+    }
+
+    if (route.query.product_type) params.hm_product_type = route.query.product_type;
+    if (route.query.industry_segment) params.hm_industry_segment = route.query.industry_segment;
+    if (route.query.submitted_by) params.submitted_by = route.query.submitted_by;
+    if (route.query.date_from) params.date_from = route.query.date_from;
+    if (route.query.date_to) params.date_to = route.query.date_to;
+
+    fetchCases(params, currentCaseTab.value === 'library');
+}
+
+const casesForCurrentTab = computed(() => (casesData.value as unknown as CaseStudy[]) || []);
+
+const handleCaseDelete = async (caseId: number, caseTitle: string) => {
+    if (confirm(`Are you sure you want to delete case #${caseId} (${caseTitle})?`)) {
+        const success = await removeCase(caseId);
+        if (success) {
+            fetchCasePage(page.value);
+            activitiesStore.fetchActivities();
+        }
+    }
+};
+
+const handleCaseApprove = async (caseId: number) => {
+    if (confirm(`Are you sure you want to approve case #${caseId}?`)) {
+        const success = await approveCase(caseId);
+        if (success) {
+            fetchCasePage(page.value);
+            activitiesStore.fetchActivities();
+        }
+    }
+};
+
+const handleCaseReject = async (caseId: number) => {
+    const reason = prompt(`Please enter a reason for rejecting case #${caseId}:`);
+    if (reason !== null) {
+        const success = await rejectCase(caseId, reason || 'No reason provided');
+        if (success) {
+            fetchCasePage(page.value);
+            activitiesStore.fetchActivities();
+        }
+    }
+};
+
+const handleCaseReturn = async (caseId: number) => {
+    const reason = prompt(`Please enter a reason for returning case #${caseId}:`);
+    if (reason !== null) {
+        const success = await returnCase(caseId, reason || 'Please review and update');
+        if (success) {
+            fetchCasePage(page.value);
+            activitiesStore.fetchActivities();
+        }
+    }
+};
+
+onMounted(() => {
+    fetchStats();
+    if (currentTab.value === 'sa-casestudy') {
+        fetchCasePage(page.value);
+    }
 });
 </script>
 
@@ -98,6 +228,51 @@ const userDescription = computed(() => {
         </div>
         <div class="tab-content" v-if="currentTab === 'sa-casestudy'">
             <!-- Case study content -->
+            <DashboardTabs v-model="currentCaseTab" :tabs="caseTabs" containerId="sa-case-tabs" />
+            <div class="divider"></div>
+
+            <div class="fa-tab-content active" style="display: block">
+                <template v-if="currentCaseTab === 'draft'">
+                    <div class="fa-case-study-cards case-study-cards js-fa-case-studies position-relative">
+                        <div v-if="casesLoading" class="no-case-studies text-center py-5">
+                            <p class="text-muted">Loading case studies...</p>
+                        </div>
+                        <template v-else-if="casesForCurrentTab.length > 0">
+                            <CaseStudyCard
+                                v-for="item in casesForCurrentTab"
+                                :key="item.id"
+                                :case-study="item"
+                                @delete="handleCaseDelete"
+                            />
+                        </template>
+                        <div v-else class="no-case-studies text-center py-5">
+                            <p class="text-muted">No draft case studies found.</p>
+                        </div>
+                    </div>
+                </template>
+                <template v-else>
+                    <div v-if="casesLoading" class="card shadow-sm border-0 text-center py-5">
+                        <p class="text-muted">Loading case studies...</p>
+                    </div>
+                    <CasesTable
+                        v-else
+                        :cases="casesForCurrentTab"
+                        :viewMode="currentCaseTab"
+                        @delete="handleCaseDelete"
+                        @approve="handleCaseApprove"
+                        @reject="handleCaseReject"
+                        @return="handleCaseReturn"
+                    />
+                </template>
+                <AppPagination
+                    v-if="casesForCurrentTab.length > 0 && caseMeta && !casesLoading"
+                    :meta="caseMeta"
+                    v-model:per-page="perPage"
+                    @change="fetchCasePage"
+                    aria-label="Case studies pagination"
+                    class="mt-4"
+                />
+            </div>
         </div>
     </div>
 </template>
