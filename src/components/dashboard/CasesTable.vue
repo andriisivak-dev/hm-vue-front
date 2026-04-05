@@ -136,7 +136,7 @@ console.log(props.cases);
                                                     currentUser?.role || ''
                                                 )
                                             "
-                                            :href="`/case/?cid=${item.id}`"
+                                            href="#"
                                             class="btn btn-sm btn-link text-primary"
                                             >Edit</a
                                         >
@@ -163,7 +163,7 @@ console.log(props.cases);
                                         >
                                         <a
                                             v-if="item.status === 'in_review'"
-                                            :href="`/case/?cid=${item.id}`"
+                                            href="#"
                                             class="btn btn-sm btn-link text-primary"
                                             >Edit</a
                                         >
