@@ -29,6 +29,10 @@ const statusQueryParam = computed(() => {
     return isSuperAdmin.value || isMarketing.value ? 'status' : 'tab';
 });
 
+const isCaseLibraryTab = computed(() => {
+    return route.query.tab === 'library' || route.query.status === 'library';
+});
+
 const selectedStatus = computed({
     get() {
         const param = statusQueryParam.value;
@@ -202,7 +206,7 @@ const resetFilters = () => {
                 </select>
             </div>
 
-            <div class="mb-2">
+            <div class="mb-2" v-show="!isCaseLibraryTab">
                 <label class="form-label small mb-1" for="cases-filter-submitted-by">
                     SUBMITTED BY
                 </label>

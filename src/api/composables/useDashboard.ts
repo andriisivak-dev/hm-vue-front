@@ -26,11 +26,11 @@ export function useDashboard() {
         }
     }
 
-    async function fetchFilters() {
+    async function fetchFilters(context?: string) {
         filtersState.loading.value = true;
         filtersState.error.value = null;
         try {
-            filtersState.data.value = await dashboardService.getFilters({
+            filtersState.data.value = await dashboardService.getFilters(context, {
                 signal: controller.signal
             });
         } catch (err) {

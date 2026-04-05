@@ -10,11 +10,15 @@ export const dashboardService = {
         });
     },
 
-    async getFilters(options?: RequestOptions): Promise<DashboardFilters> {
+    async getFilters(context?: string, options?: RequestOptions): Promise<DashboardFilters> {
         const client = useHttpClient();
-        return client.get<DashboardFilters>('/dashboard/filters', undefined, {
-            cacheTtl: 300_000,
-            ...options
-        });
+        return client.get<DashboardFilters>(
+            '/dashboard/filters',
+            context ? { context } : undefined,
+            {
+                cacheTtl: 300_000,
+                ...options
+            }
+        );
     }
 };

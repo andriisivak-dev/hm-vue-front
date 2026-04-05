@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import DashboardTabs from './DashboardTabs.vue';
 import CaseStudyCard from './CaseStudyCard.vue';
 import CasesTable from './CasesTable.vue';
+import CaseLibraryFilters from './CaseLibraryFilters.vue';
 import AppPagination from '@/components/common/AppPagination.vue';
 import { useCaseList, useCaseMutations } from '@/api';
 import type { CaseStudy } from './CaseStudyCard.vue';
@@ -64,6 +65,17 @@ function fetchPage(p: number) {
     if (currentTab.value !== 'all' && currentTab.value !== 'library') {
         params.status = currentTab.value;
     }
+
+    if (route.query.customer_name) params.customer_name = route.query.customer_name;
+    if (route.query.tool_specification) params.tool_specification = route.query.tool_specification;
+    if (route.query.insert_specification)
+        params.insert_specification = route.query.insert_specification;
+    if (route.query.hm_machine_type) params.hm_machine_type = route.query.hm_machine_type;
+    if (route.query.hm_machine_make) params.hm_machine_make = route.query.hm_machine_make;
+    if (route.query.hm_tool_brand) params.hm_tool_brand = route.query.hm_tool_brand;
+    if (route.query.hm_industry_segment)
+        params.hm_industry_segment = route.query.hm_industry_segment;
+    if (route.query.submitted_by) params.submitted_by = route.query.submitted_by;
 
     fetch(params, currentTab.value === 'library');
 }
@@ -136,6 +148,7 @@ const handleDelete = async (caseId: number, caseTitle: string) => {
             </template>
 
             <template v-else>
+                <CaseLibraryFilters v-if="currentTab === 'library'" @change="fetchPage(1)" />
                 <div v-if="loading" class="card shadow-sm border-0 text-center py-5">
                     <p class="text-muted">Loading case studies...</p>
                 </div>

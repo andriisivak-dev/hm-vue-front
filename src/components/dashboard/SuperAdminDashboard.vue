@@ -7,6 +7,7 @@ import DashboardTabs from './DashboardTabs.vue';
 import UsersManagement from './UsersManagement.vue';
 import CasesTable from './CasesTable.vue';
 import CaseStudyCard from './CaseStudyCard.vue';
+import CaseLibraryFilters from './CaseLibraryFilters.vue';
 import type { CaseStudy } from './CaseStudyCard.vue';
 import AppPagination from '@/components/common/AppPagination.vue';
 import { useActivitiesStore } from '@/stores/activities';
@@ -47,9 +48,8 @@ const caseTabs = [
     { id: 'draft', label: 'Draft' },
     { id: 'in_review', label: 'Pending Review' },
     { id: 'returned', label: 'Returned to Agent' },
-    { id: 'approved', label: 'Approved' },
     { id: 'rejected', label: 'Rejected' },
-    { id: 'library', label: 'Case Library' }
+    { id: 'library', label: 'Case Library (Approved)' }
 ];
 
 const currentCaseTab = computed({
@@ -120,6 +120,13 @@ function fetchCasePage(p: number) {
     if (route.query.submitted_by) params.submitted_by = route.query.submitted_by;
     if (route.query.date_from) params.date_from = route.query.date_from;
     if (route.query.date_to) params.date_to = route.query.date_to;
+    if (route.query.customer_name) params.customer_name = route.query.customer_name;
+    if (route.query.tool_specification) params.tool_specification = route.query.tool_specification;
+    if (route.query.insert_specification)
+        params.insert_specification = route.query.insert_specification;
+    if (route.query.hm_machine_type) params.hm_machine_type = route.query.hm_machine_type;
+    if (route.query.hm_machine_make) params.hm_machine_make = route.query.hm_machine_make;
+    if (route.query.hm_tool_brand) params.hm_tool_brand = route.query.hm_tool_brand;
 
     fetchCases(params, currentCaseTab.value === 'library');
 }
@@ -233,8 +240,16 @@ onMounted(() => {
         </div>
         <div class="tab-content" v-if="currentTab === 'sa-casestudy'">
             <!-- Case study content -->
-            <DashboardTabs v-model="currentCaseTab" :tabs="caseTabs" containerId="sa-case-tabs" />
-            <div class="divider"></div>
+            <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+                <div>
+                    <h3 class="mb-0 title">Case Studies</h3>
+                </div>
+                <DashboardTabs
+                    v-model="currentCaseTab"
+                    :tabs="caseTabs"
+                    containerId="sa-case-tabs"
+                />
+            </div>
 
             <div class="fa-tab-content active" style="display: block">
                 <template v-if="currentCaseTab === 'draft'">
@@ -258,6 +273,10 @@ onMounted(() => {
                     </div>
                 </template>
                 <template v-else>
+                    <CaseLibraryFilters
+                        v-if="currentCaseTab === 'library'"
+                        @change="fetchCasePage(1)"
+                    />
                     <div v-if="casesLoading" class="card shadow-sm border-0 text-center py-5">
                         <p class="text-muted">Loading case studies...</p>
                     </div>
