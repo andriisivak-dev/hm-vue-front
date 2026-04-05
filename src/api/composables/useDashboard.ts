@@ -13,7 +13,10 @@ export function useDashboard() {
         statsState.loading.value = true;
         statsState.error.value = null;
         try {
-            statsState.data.value = await dashboardService.getStats({ signal: controller.signal, force });
+            statsState.data.value = await dashboardService.getStats({
+                signal: controller.signal,
+                force
+            });
         } catch (err) {
             if (err instanceof ApiError && !err.isAborted) {
                 statsState.error.value = err;
