@@ -106,7 +106,7 @@ console.log(props.cases);
                             <td data-label="Actions" class="text-center">
                                 <template v-if="viewMode === 'library' || viewMode === 'approved'">
                                     <a
-                                        :href="`/case/?cid=${item.id}&mode=view`"
+                                        :href="`/case-study/?cid=${item.id}&mode=view`"
                                         class="btn btn-sm btn-link text-info"
                                         >View</a
                                     >
@@ -125,7 +125,7 @@ console.log(props.cases);
                                         <!-- Own cases -->
                                         <a
                                             v-if="['draft', 'returned'].includes(item.status)"
-                                            :href="`/case/?cid=${item.id}`"
+                                            :href="`/case-study/?cid=${item.id}`"
                                             class="btn btn-sm btn-link text-primary"
                                             >Continue</a
                                         >
@@ -142,7 +142,7 @@ console.log(props.cases);
                                         >
                                         <a
                                             v-else
-                                            :href="`/case/?cid=${item.id}&mode=view`"
+                                            :href="`/case-study/?cid=${item.id}&mode=view`"
                                             class="btn btn-sm btn-link text-info"
                                             >View</a
                                         >
@@ -157,7 +157,7 @@ console.log(props.cases);
                                     <template v-else>
                                         <!-- Subordinate cases -->
                                         <a
-                                            :href="`/case/?cid=${item.id}&mode=view`"
+                                            :href="`/case-study/?cid=${item.id}&mode=view`"
                                             class="btn btn-sm btn-link text-info"
                                             >View</a
                                         >
@@ -192,7 +192,7 @@ console.log(props.cases);
                                 <template v-else-if="currentUser?.role === 'hm_marketing'">
                                     <!-- Marketing Actions -->
                                     <a
-                                        :href="`/case/?cid=${item.id}&mode=view`"
+                                        :href="`/case-study/?cid=${item.id}&mode=view`"
                                         class="btn btn-sm btn-link text-info"
                                         >View</a
                                     >
@@ -201,13 +201,13 @@ console.log(props.cases);
                                     <!-- Field Agent Actions -->
                                     <a
                                         v-if="['draft', 'returned'].includes(item.status)"
-                                        :href="`/case/?cid=${item.id}`"
+                                        :href="`/case-study/?cid=${item.id}`"
                                         class="btn btn-sm btn-link text-primary"
                                         >Continue</a
                                     >
                                     <a
                                         v-else
-                                        :href="`/case/?cid=${item.id}&mode=view`"
+                                        :href="`/case-study/?cid=${item.id}&mode=view`"
                                         class="btn btn-sm btn-link text-info"
                                         >View</a
                                     >

@@ -34,7 +34,7 @@ const isViewMode = computed<boolean>(() => route.query.mode === 'view');
  * Updates the URL to ?cid={id} without triggering a full navigation.
  */
 function onCaseCreated(id: number) {
-    router.replace({ path: '/case', query: { cid: String(id) } });
+    router.replace({ path: '/case-study', query: { cid: String(id) } });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

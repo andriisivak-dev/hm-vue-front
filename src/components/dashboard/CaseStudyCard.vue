@@ -81,7 +81,7 @@ const isReadonly = computed(() => {
 });
 
 const actionUrl = computed(() => {
-    return `/case/?cid=${props.caseStudy.id}`;
+    return `/case-study/?cid=${props.caseStudy.id}`;
 });
 
 const progress = computed(() => props.caseStudy.progress || 0);
