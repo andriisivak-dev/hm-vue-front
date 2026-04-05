@@ -3,7 +3,7 @@
         <div class="float-end d-none d-sm-inline"></div>
         <strong>
             Copyright &copy; {{ new Date().getFullYear() }}
-            <router-link to="/dashboard">hemat-tools</router-link>.
+            <router-link to="/">hemat-tools</router-link>.
         </strong>
         All rights reserved.
     </footer>

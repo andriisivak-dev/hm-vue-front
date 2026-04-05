@@ -22,7 +22,7 @@ const layoutStore = useLayoutStore();
                     </a>
                 </li>
                 <li class="nav-item d-none d-md-block">
-                    <router-link to="/dashboard" class="nav-link">Profile</router-link>
+                    <router-link to="/" class="nav-link">Profile</router-link>
                 </li>
             </ul>
 

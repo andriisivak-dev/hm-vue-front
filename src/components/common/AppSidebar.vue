@@ -24,7 +24,7 @@ const showActivities = computed(() => role.value !== 'hm_field_agent' && props.s
 <template>
     <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
         <div class="sidebar-brand with-bottom-line">
-            <router-link to="/dashboard" class="brand-link">
+            <router-link to="/" class="brand-link">
                 <img src="/Logo.svg" alt="Hemant" class="brand-image" />
             </router-link>
         </div>
@@ -45,7 +45,7 @@ const showActivities = computed(() => role.value !== 'hm_field_agent' && props.s
         <div class="sidebar-wrapper">
             <router-link
                 v-if="showNewCaseStudyButton"
-                to="/case"
+                to="/case-study"
                 class="btn btn-warning w-100 mt-2 mb-2 fw-bold"
             >
                 + New Case Study

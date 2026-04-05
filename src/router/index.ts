@@ -6,12 +6,13 @@ const routes = [
     // { path: '/', component: AppDashboard },
     // { path: '/dashboard', redirect: '/' },
     {
-        path: '/dashboard',
+        // path: '/dashboard',
+        path: '/',
         name: 'dashboard',
         component: AppDashboard
     },
     {
-        path: '/case',
+        path: '/case-study',
         name: 'case',
         component: AppForm
     }

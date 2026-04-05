@@ -110,7 +110,7 @@ const handleDelete = async (caseId: number, caseTitle: string) => {
             <div class="text">
                 Document a new field application with complete details, photos, and results
             </div>
-            <router-link to="/case" class="new-case-study-btn btn btn-blue">
+            <router-link to="/case-study" class="new-case-study-btn btn btn-blue">
                 Start new case study
             </router-link>
         </div>
