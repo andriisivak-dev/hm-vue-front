@@ -17,11 +17,13 @@ export function useCaseList() {
     const meta = ref<PaginationMeta | null>(null);
     const controller = useAbortController();
 
-    async function fetch(params?: CaseListParams) {
+    async function fetch(params?: CaseListParams, isLibrary = false) {
         state.loading.value = true;
         state.error.value = null;
         try {
-            const result = await casesService.list(params, { signal: controller.signal });
+            const result = isLibrary
+                ? await casesService.library(params, { signal: controller.signal })
+                : await casesService.list(params, { signal: controller.signal });
             state.data.value = result.items;
             meta.value = result.meta;
         } catch (err) {

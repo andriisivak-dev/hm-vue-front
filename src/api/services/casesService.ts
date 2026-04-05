@@ -74,6 +74,25 @@ export const casesService = {
     },
 
     /**
+     * GET /case-library
+     * Returns a paginated list of all approved cases.
+     */
+    async library(
+        params?: CaseListParams,
+        options?: RequestOptions
+    ): Promise<PaginatedResult<CaseListItem>> {
+        const client = useHttpClient();
+        const { baseUrl, nonce } = client as unknown as { baseUrl: string; nonce: string };
+        return fetchPaginated<CaseListItem>(
+            baseUrl,
+            nonce,
+            '/case-library',
+            params as Record<string, unknown>,
+            options?.signal
+        );
+    },
+
+    /**
      * GET /cases/:id
      * Fetches full case detail with permissions and review history.
      */
