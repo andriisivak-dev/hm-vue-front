@@ -1,5 +1,4 @@
-import type { TaxonomyTerm } from './cases';
-import type { UserSupervisor } from './users';
+import type { TaxonomyTerm } from '@/api';
 
 export interface DashboardStats {
     pending_review: number;
@@ -16,12 +15,18 @@ export interface DashboardStats {
     };
 }
 
+export interface FilterOption {
+    id: string | number;
+    name: string;
+}
+
 export interface DashboardFilters {
+    statuses: FilterOption[];
     product_types: TaxonomyTerm[];
     industry_segments: TaxonomyTerm[];
     machine_types: TaxonomyTerm[];
     machine_makes: TaxonomyTerm[];
     tool_brands: TaxonomyTerm[];
     solution_types: TaxonomyTerm[];
-    submitted_by: UserSupervisor[];
+    submitted_by: FilterOption[];
 }
