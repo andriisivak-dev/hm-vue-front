@@ -1,9 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import DashboardTabs from './DashboardTabs.vue';
-import FieldAgentCaseStudyCard from './FieldAgentCaseStudyCard.vue';
-import type { CaseStudy } from './FieldAgentCaseStudyCard.vue';
+import CaseStudyCard from './CaseStudyCard.vue';
+import CasesTable from './CasesTable.vue';
+import AppPagination from '@/components/common/AppPagination.vue';
+import { useCaseList, useCaseMutations } from '@/api';
+import type { CaseStudy } from './CaseStudyCard.vue';
 import { IconPlus } from '@/components/SVG';
+
+const route = useRoute();
+const router = useRouter();
 
 const tabs = [
     { id: 'all', label: 'All' },
@@ -11,50 +18,74 @@ const tabs = [
     { id: 'in_review', label: 'Submitted' },
     { id: 'returned', label: 'Returned to Review' },
     { id: 'approved', label: 'Approved' },
-    { id: 'rejected', label: 'Rejected' }
+    { id: 'rejected', label: 'Rejected' },
+    { id: 'library', label: 'Case Library' }
 ];
 
-const currentTab = ref('all');
-
-const mockCaseStudies = ref<CaseStudy[]>([
-    {
-        id: 1,
-        status: 'draft',
-        title: 'Draft Case Study Template',
-        customer_name: 'Acme Corp',
-        location: 'Mumbai, India',
-        product: 'Drill Bit X200',
-        progress: 40,
-        step_current: 2,
-        step_total: 5
+const currentTab = computed({
+    get() {
+        const queryTab = route.query.tab as string;
+        return tabs.some((t) => t.id === queryTab) ? queryTab : 'all';
     },
-    {
-        id: 2,
-        status: 'in_review',
-        title: 'Submitted Case Study',
-        customer_name: 'Stark Industries',
-        location: 'Delhi, India',
-        submitted_at: '2023-10-25',
-        progress: 100,
-        step_current: 5,
-        step_total: 5
+    set(newTab) {
+        if (newTab !== route.query.tab) {
+            router.push({ query: { ...route.query, tab: newTab, page: 1 } });
+            page.value = 1;
+        }
     }
-]);
-
-const casesForCurrentTab = computed(() => {
-    if (currentTab.value === 'all') return mockCaseStudies.value;
-    return mockCaseStudies.value.filter((c) => c.status === currentTab.value);
 });
 
-const handleDelete = (caseId: number, caseTitle: string) => {
-    // eslint-disable-next-line no-console
-    console.log(`Delete intent for case ${caseId} (${caseTitle})`);
-    // NOTE: In the future, this will open a delete confirmation modal and then call the API
+const page = ref(Number(route.query.page) || 1);
+const perPage = ref(10);
+
+const { data: casesData, meta, loading, fetch } = useCaseList();
+const { remove } = useCaseMutations();
+
+watch(
+    () => route.query.page,
+    (newPage) => {
+        if (newPage) page.value = Number(newPage);
+    }
+);
+
+watch([currentTab, perPage], () => {
+    fetchPage(1);
+});
+
+function fetchPage(p: number) {
+    page.value = p;
+    router.replace({ query: { ...route.query, page: p } });
+
+    const params: Record<string, unknown> = {
+        page: p,
+        per_page: perPage.value
+    };
+
+    if (currentTab.value !== 'all' && currentTab.value !== 'library') {
+        params.status = currentTab.value;
+    }
+
+    fetch(params, currentTab.value === 'library');
+}
+
+onMounted(() => {
+    fetchPage(page.value);
+});
+
+const casesForCurrentTab = computed(() => (casesData.value as unknown as CaseStudy[]) || []);
+
+const handleDelete = async (caseId: number, caseTitle: string) => {
+    if (confirm(`Are you sure you want to delete case #${caseId} (${caseTitle})?`)) {
+        const success = await remove(caseId);
+        if (success) {
+            fetchPage(page.value);
+        }
+    }
 };
 </script>
 
 <template>
-    <div>
+    <div class="mt-4">
         <div class="divider"></div>
 
         <h3 class="subtitle mt-3">Create and manage your case studies</h3>
@@ -67,9 +98,9 @@ const handleDelete = (caseId: number, caseTitle: string) => {
             <div class="text">
                 Document a new field application with complete details, photos, and results
             </div>
-            <a href="/case-study/" class="new-case-study-btn btn btn-blue">
+            <router-link to="/case" class="new-case-study-btn btn btn-blue">
                 Start new case study
-            </a>
+            </router-link>
         </div>
 
         <h3 class="subtitle mt-3 mb-4">Recent Case Studies</h3>
@@ -81,20 +112,50 @@ const handleDelete = (caseId: number, caseTitle: string) => {
         <div class="divider"></div>
 
         <div class="fa-tab-content active" style="display: block">
-            <div class="fa-case-study-cards case-study-cards js-fa-case-studies">
-                <template v-if="casesForCurrentTab.length > 0">
-                    <FieldAgentCaseStudyCard
-                        v-for="item in casesForCurrentTab"
-                        :key="item.id"
-                        :case-study="item"
-                        @delete="handleDelete"
-                    />
-                </template>
+            <!-- Cards View for Drafts -->
+            <template v-if="currentTab === 'draft'">
+                <div
+                    class="fa-case-study-cards case-study-cards js-fa-case-studies position-relative"
+                >
+                    <div v-if="loading" class="no-case-studies text-center py-5">
+                        <p class="text-muted">Loading case studies...</p>
+                    </div>
 
-                <div v-else class="no-case-studies text-center py-5">
-                    <p class="text-muted">No case studies found for this status.</p>
+                    <template v-else-if="casesForCurrentTab.length > 0">
+                        <CaseStudyCard
+                            v-for="item in casesForCurrentTab"
+                            :key="item.id"
+                            :case-study="item"
+                            @delete="handleDelete"
+                        />
+                    </template>
+                    <div v-else class="no-case-studies text-center py-5">
+                        <p class="text-muted">No draft case studies found.</p>
+                    </div>
                 </div>
-            </div>
+            </template>
+
+            <template v-else>
+                <div v-if="loading" class="card shadow-sm border-0 text-center py-5">
+                    <p class="text-muted">Loading case studies...</p>
+                </div>
+                <CasesTable
+                    v-else
+                    :cases="casesForCurrentTab"
+                    :viewMode="currentTab"
+                    @delete="handleDelete"
+                />
+            </template>
+
+            <!-- Shared Pagination -->
+            <AppPagination
+                v-if="casesForCurrentTab.length > 0 && meta && !loading"
+                :meta="meta"
+                v-model:per-page="perPage"
+                @change="fetchPage"
+                aria-label="Case studies pagination"
+                class="mt-4"
+            />
         </div>
     </div>
 </template>
