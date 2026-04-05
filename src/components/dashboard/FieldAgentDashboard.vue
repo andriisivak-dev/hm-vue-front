@@ -115,7 +115,7 @@ const handleDelete = async (caseId: number, caseTitle: string) => {
             <!-- Cards View for Drafts -->
             <template v-if="currentTab === 'draft'">
                 <div
-                    class="fa-case-study-cards case-study-cards js-fa-case-studies position-relative"
+                    class="fa-case-study-cards case-study-cards js-fa-case-studies position-relative mt-4"
                 >
                     <div v-if="loading" class="no-case-studies text-center py-5">
                         <p class="text-muted">Loading case studies...</p>

@@ -21,9 +21,10 @@ const userStore = useUserStore();
 
 const isSuperAdmin = computed(() => ['administrator', 'hm_administrator'].includes(userStore.user?.role || ''));
 const isSupervisor = computed(() => userStore.user?.role === 'hm_manager');
+const isMarketing = computed(() => userStore.user?.role === 'hm_marketing');
 
 const statusQueryParam = computed(() => {
-    return isSuperAdmin.value ? 'status' : 'tab';
+    return (isSuperAdmin.value || isMarketing.value) ? 'status' : 'tab';
 });
 
 const selectedStatus = computed({
@@ -31,7 +32,7 @@ const selectedStatus = computed({
         const param = statusQueryParam.value;
         const statusVal = route.query[param] as string;
         if (!statusVal) {
-            return (isSupervisor.value || isSuperAdmin.value) ? 'draft' : 'all';
+            return (isSupervisor.value || isSuperAdmin.value || isMarketing.value) ? 'draft' : 'all';
         }
         return statusVal;
     },
@@ -41,6 +42,8 @@ const selectedStatus = computed({
             const query: Record<string, any> = { ...route.query, [param]: newStatus, page: 1 };
             if (isSuperAdmin.value) {
                 query.tab = 'sa-casestudy';
+            } else if (isMarketing.value) {
+                query.tab = 'mk-casestudy';
             }
             router.push({ query });
         }
@@ -59,6 +62,8 @@ function createQuerySync(queryParam: string, defaultValue = '') {
                 
                 if (isSuperAdmin.value) {
                     newQuery.tab = 'sa-casestudy';
+                } else if (isMarketing.value) {
+                    newQuery.tab = 'mk-casestudy';
                 }
                 
                 router.push({ query: newQuery });
@@ -117,6 +122,9 @@ const resetFilters = () => {
     if (isSuperAdmin.value) {
         query.status = 'all';
         query.tab = 'sa-casestudy';
+    } else if (isMarketing.value) {
+        query.status = 'all';
+        query.tab = 'mk-casestudy';
     } else {
         query.tab = 'all';
     }

@@ -17,10 +17,10 @@ const route = useRoute();
 const router = useRouter();
 
 const tabs = [
-    { id: 'sa-overview', label: 'Overview' },
-    { id: 'sa-users', label: 'Users Management' },
-    { id: 'sa-customers', label: 'Customer Management' },
-    { id: 'sa-casestudy', label: 'Case Study' }
+    { id: 'mk-overview', label: 'Overview' },
+    { id: 'mk-users', label: 'Users Management' },
+    { id: 'mk-customers', label: 'Customer Management' },
+    { id: 'mk-casestudy', label: 'Case Study' }
 ];
 
 const currentTab = computed({
@@ -69,7 +69,6 @@ const page = ref(Number(route.query.page) || 1);
 const perPage = ref(10);
 
 const { data: casesData, meta: caseMeta, loading: casesLoading, fetch: fetchCases } = useCaseList();
-const { remove: removeCase, approve: approveCase, reject: rejectCase, returnForRevision: returnCase } = useCaseMutations();
 const activitiesStore = useActivitiesStore();
 
 watch(
@@ -91,7 +90,7 @@ watch(
         currentTab
     ],
     () => {
-        if (currentTab.value === 'sa-casestudy') {
+        if (currentTab.value === 'mk-casestudy') {
             fetchCasePage(1);
         }
     }
@@ -121,51 +120,9 @@ function fetchCasePage(p: number) {
 
 const casesForCurrentTab = computed(() => (casesData.value as unknown as CaseStudy[]) || []);
 
-const handleCaseDelete = async (caseId: number, caseTitle: string) => {
-    if (confirm(`Are you sure you want to delete case #${caseId} (${caseTitle})?`)) {
-        const success = await removeCase(caseId);
-        if (success) {
-            fetchCasePage(page.value);
-            activitiesStore.fetchActivities();
-        }
-    }
-};
-
-const handleCaseApprove = async (caseId: number) => {
-    if (confirm(`Are you sure you want to approve case #${caseId}?`)) {
-        const success = await approveCase(caseId);
-        if (success) {
-            fetchCasePage(page.value);
-            activitiesStore.fetchActivities();
-        }
-    }
-};
-
-const handleCaseReject = async (caseId: number) => {
-    const reason = prompt(`Please enter a reason for rejecting case #${caseId}:`);
-    if (reason !== null) {
-        const success = await rejectCase(caseId, reason || 'No reason provided');
-        if (success) {
-            fetchCasePage(page.value);
-            activitiesStore.fetchActivities();
-        }
-    }
-};
-
-const handleCaseReturn = async (caseId: number) => {
-    const reason = prompt(`Please enter a reason for returning case #${caseId}:`);
-    if (reason !== null) {
-        const success = await returnCase(caseId, reason || 'Please review and update');
-        if (success) {
-            fetchCasePage(page.value);
-            activitiesStore.fetchActivities();
-        }
-    }
-};
-
 onMounted(() => {
     fetchStats();
-    if (currentTab.value === 'sa-casestudy') {
+    if (currentTab.value === 'mk-casestudy') {
         fetchCasePage(page.value);
     }
 });
@@ -213,22 +170,22 @@ onMounted(() => {
         </div>
 
         <div class="divider"></div>
-        <DashboardTabs v-model="currentTab" :tabs="tabs" containerId="sa-dashboard-tabs" />
+        <DashboardTabs v-model="currentTab" :tabs="tabs" containerId="mk-dashboard-tabs" />
         <div class="divider"></div>
 
         <!-- Tab content placeholders -->
-        <div class="tab-content" v-if="currentTab === 'sa-overview'">
+        <div class="tab-content" v-if="currentTab === 'mk-overview'">
             <!-- Overview content -->
         </div>
-        <div class="sa-tab-content" v-if="currentTab === 'sa-users'">
+        <div class="sa-tab-content" v-if="currentTab === 'mk-users'">
             <UsersManagement @users-changed="() => fetchStats(true)" />
         </div>
-        <div class="tab-content" v-if="currentTab === 'sa-customers'">
+        <div class="tab-content" v-if="currentTab === 'mk-customers'">
             <!-- Customer management content -->
         </div>
-        <div class="tab-content" v-if="currentTab === 'sa-casestudy'">
+        <div class="tab-content" v-if="currentTab === 'mk-casestudy'">
             <!-- Case study content -->
-            <DashboardTabs v-model="currentCaseTab" :tabs="caseTabs" containerId="sa-case-tabs" />
+            <DashboardTabs v-model="currentCaseTab" :tabs="caseTabs" containerId="mk-case-tabs" />
             <div class="divider"></div>
 
             <div class="fa-tab-content active" style="display: block">
@@ -242,7 +199,6 @@ onMounted(() => {
                                 v-for="item in casesForCurrentTab"
                                 :key="item.id"
                                 :case-study="item"
-                                @delete="handleCaseDelete"
                             />
                         </template>
                         <div v-else class="no-case-studies text-center py-5">
@@ -258,10 +214,6 @@ onMounted(() => {
                         v-else
                         :cases="casesForCurrentTab"
                         :viewMode="currentCaseTab"
-                        @delete="handleCaseDelete"
-                        @approve="handleCaseApprove"
-                        @reject="handleCaseReject"
-                        @return="handleCaseReturn"
                     />
                 </template>
                 <AppPagination

@@ -169,6 +169,14 @@ console.log(props.cases);
                                         </template>
                                     </template>
                                 </template>
+                                <template v-else-if="currentUser?.role === 'hm_marketing'">
+                                    <!-- Marketing Actions -->
+                                    <a
+                                        :href="`/case/?cid=${item.id}`"
+                                        class="btn btn-sm btn-link text-info"
+                                        >View</a
+                                    >
+                                </template>
                                 <template v-else>
                                     <!-- Field Agent Actions -->
                                     <a

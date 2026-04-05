@@ -4,9 +4,11 @@ import { useUserList } from '@/api';
 import type { User } from '@/api/types';
 import { IconRetry, NoUsersFound } from '@/components/SVG';
 import AppPagination from '@/components/common/AppPagination.vue';
+import { useUserStore } from '@/stores/user';
 
 defineEmits(['edit', 'delete', 'recover']);
 
+const userStore = useUserStore();
 const { data: users, loading, error, meta, fetch } = useUserList();
 
 const page = ref(1);
@@ -180,7 +182,7 @@ console.log(users);
                                 <th>Assignment</th>
                                 <th>Status</th>
                                 <th>Joined</th>
-                                <th class="text-center">Actions</th>
+                                <th class="text-center" v-if="userStore.user?.role !== 'hm_marketing'">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
@@ -208,7 +210,7 @@ console.log(users);
                                 <td data-label="Joined" class="text-muted">
                                     {{ formatDate(user.created_at) }}
                                 </td>
-                                <td data-label="Actions" class="text-center">
+                                <td data-label="Actions" class="text-center" v-if="userStore.user?.role !== 'hm_marketing'">
                                     <template v-if="user.status !== 'inactive'">
                                         <button
                                             class="btn btn-sm btn-link text-primary"

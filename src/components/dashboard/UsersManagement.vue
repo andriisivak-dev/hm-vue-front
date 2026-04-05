@@ -7,6 +7,9 @@ import DeleteUserModal from './modals/DeleteUserModal.vue';
 import RecoverUserModal from './modals/RecoverUserModal.vue';
 import type { User } from '@/api/types';
 import { IconAddNewUser } from '@/components/SVG';
+import { useUserStore } from '@/stores/user';
+
+const userStore = useUserStore();
 
 const usersTableRef = ref<InstanceType<typeof UsersTable> | null>(null);
 const editModalRef = ref<InstanceType<typeof EditUserModal> | null>(null);
@@ -55,7 +58,7 @@ function openRecoverUser(user: User) {
                 <h3 class="mb-0 title">Users Management</h3>
                 <p class="subtitle">Manage all system users and their assignments</p>
             </div>
-            <div class="actions-btn">
+            <div class="actions-btn" v-if="userStore.user?.role !== 'hm_marketing'">
                 <button class="add-new-user-btn btn" @click="openAddUser">
                     <IconAddNewUser />
                     Add New User
