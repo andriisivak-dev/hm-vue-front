@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { GFField } from '@/form-engine/types.ts';
+import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
 import BaseField from './BaseField.vue';
 
 const props = defineProps<{
@@ -9,11 +10,16 @@ const props = defineProps<{
     error?: string;
 }>();
 
+const store = useCaseFormStore();
 const emit = defineEmits(['update:modelValue']);
 
 const value = computed({
     get: () => props.modelValue,
     set: (val) => emit('update:modelValue', val)
+});
+
+const isReadonly = computed(() => {
+    return store.isFieldReadonly(props.field.id);
 });
 </script>
 
@@ -23,8 +29,10 @@ const value = computed({
             :id="`input_${field.id}`"
             v-model="value"
             class="gf-textarea"
+            :class="{ 'gf-readonly': isReadonly }"
             :placeholder="field.placeholder"
             :required="field.is_required"
+            :readonly="isReadonly"
             rows="4"
         ></textarea>
     </BaseField>
@@ -46,9 +54,15 @@ const value = computed({
     min-height: 100px;
 }
 
-.gf-textarea:focus {
+.gf-textarea:not(.gf-readonly):focus {
     outline: none;
     box-shadow: 0 0 12px 0 rgba(111, 1, 255, 0.32);
+}
+
+.gf-readonly {
+    background: #f1f5f9 !important;
+    cursor: not-allowed;
+    color: rgb(100, 100, 100);
 }
 
 .gf-textarea::placeholder {

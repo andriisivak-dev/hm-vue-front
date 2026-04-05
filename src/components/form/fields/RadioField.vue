@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { GFField } from '@/form-engine/types.ts';
+import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
 import BaseField from './BaseField.vue';
 
 const props = defineProps<{
@@ -9,11 +10,16 @@ const props = defineProps<{
     error?: string;
 }>();
 
+const store = useCaseFormStore();
 const emit = defineEmits(['update:modelValue']);
 
 const value = computed({
     get: () => props.modelValue,
     set: (val) => emit('update:modelValue', val)
+});
+
+const isReadonly = computed(() => {
+    return store.isFieldReadonly(props.field.id);
 });
 </script>
 
@@ -24,7 +30,7 @@ const value = computed({
                 <label
                     v-if="typeof choice !== 'string'"
                     class="gf-radio-label"
-                    :class="{ 'is-selected': value === choice.value }"
+                    :class="{ 'is-selected': value === choice.value, 'gf-readonly': isReadonly }"
                 >
                     <input
                         type="radio"
@@ -32,6 +38,7 @@ const value = computed({
                         :value="choice.value"
                         v-model="value"
                         class="gf-radio-input"
+                        :disabled="isReadonly"
                     />
                     <div class="gf-radio-indicator"></div>
                     <span class="gf-radio-text" v-html="choice.text"></span>

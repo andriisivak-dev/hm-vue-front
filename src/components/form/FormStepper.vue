@@ -10,7 +10,7 @@ const getStatus = (num: number) => {
     return 'pending';
 };
 
-const isLocked = (num: number) => num > store.highestReachedStep;
+const isLocked = (num: number) => !store.isViewMode && num > store.highestReachedStep;
 </script>
 
 <template>

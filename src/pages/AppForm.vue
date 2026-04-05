@@ -25,6 +25,11 @@ const caseId = computed<number | undefined>(() => {
 });
 
 /**
+ * Determine if we are in read-only view mode
+ */
+const isViewMode = computed<boolean>(() => route.query.mode === 'view');
+
+/**
  * Called by FormRenderer when a brand-new case is created.
  * Updates the URL to ?cid={id} without triggering a full navigation.
  */
@@ -53,6 +58,7 @@ function onCaseSubmitted(_id: number) {
                 <FormRenderer
                     :form-id="FORM_ID"
                     :case-id="caseId"
+                    :is-view-mode="isViewMode"
                     @case-created="onCaseCreated"
                     @case-submitted="onCaseSubmitted"
                 />

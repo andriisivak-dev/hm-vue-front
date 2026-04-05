@@ -44,6 +44,10 @@ const props = defineProps<{
      * • number    -> existing case (form pre-filled from hm_form_data)
      */
     caseId?: number;
+    /**
+     * If true, the form is completely read-only and no save/submit occurs.
+     */
+    isViewMode?: boolean;
 }>();
 
 // ── Emits ────────────────────────────────────────────────────────────────────
@@ -131,12 +135,16 @@ onMounted(async () => {
         };
 
         store.initialize(gfForm);
+        if (props.isViewMode) {
+            store.setViewMode(true);
+        }
 
         // 2a. Existing case — load hm_form_data and hydrate
         if (props.caseId) {
             store.setCaseId(props.caseId);
 
             const caseData = await casesService.get(props.caseId);
+            store.authorId = caseData.author?.id ?? null;
 
             if (caseData.form_data && Object.keys(caseData.form_data).length > 0) {
                 store.hydrateFromFormData(caseData.form_data);
@@ -155,6 +163,11 @@ onMounted(async () => {
             // If already submitted, mark accordingly
             if (caseData.status !== 'draft' && caseData.status !== 'returned') {
                 store.isSubmitted = true;
+            }
+
+            // In view mode, do not show the success message because they are just viewing, not submitting right now.
+            if (store.isViewMode) {
+                store.isSubmitted = false;
             }
         } else {
             // 2b. New case — create draft immediately so we always have a caseId
@@ -185,16 +198,18 @@ onBeforeUnmount(() => clearAll());
 
 /** Save current step data to the API, then advance to next step. */
 const nextStep = async () => {
-    // Client-side validation first
-    const result = await validate();
-    if (!result.valid) {
-        await scrollToFirstError(result.errors);
-        return;
-    }
+    if (!store.isViewMode) {
+        // Client-side validation first
+        const result = await validate();
+        if (!result.valid) {
+            await scrollToFirstError(result.errors);
+            return;
+        }
 
-    // Persist data + completed step number to API
-    const saved = await saveFormData(store.currentStep);
-    if (!saved) return;
+        // Persist data + completed step number to API
+        const saved = await saveFormData(store.currentStep);
+        if (!saved) return;
+    }
 
     store.nextStep();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -384,7 +399,7 @@ const onFinalSubmit = handleSubmit(
 
                 <!-- Submit -->
                 <button
-                    v-else
+                    v-else-if="!store.isViewMode"
                     type="button"
                     class="btn-primary btn-submit"
                     :disabled="store.isSaving"

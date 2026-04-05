@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { GFField } from '@/form-engine/types.ts';
+import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
 import BaseField from './BaseField.vue';
 
 const props = defineProps<{
@@ -9,9 +10,15 @@ const props = defineProps<{
     error?: string;
 }>();
 
+const store = useCaseFormStore();
 const emit = defineEmits(['update:value']);
 
+const isReadonly = computed(() => {
+    return store.isFieldReadonly(props.field.id);
+});
+
 const toggleValue = (inputId: string, text: string, isChecked: boolean) => {
+    if (isReadonly.value) return;
     emit('update:value', { id: inputId, value: isChecked ? text : '' });
 };
 
@@ -22,6 +29,7 @@ const allChecked = computed(() => {
 });
 
 const toggleAll = () => {
+    if (isReadonly.value) return;
     if (!props.field.choices || !props.field.inputs || typeof props.field.choices === 'string')
         return;
     const shouldCheck = !allChecked.value;
@@ -42,12 +50,13 @@ const toggleAll = () => {
                     <label
                         v-if="typeof choice !== 'string'"
                         class="gf-checkbox-label"
-                        :class="{ 'is-selected': !!modelValues[field.inputs?.[index]?.id ?? ''] }"
+                        :class="{ 'is-selected': !!modelValues[field.inputs?.[index]?.id ?? ''], 'gf-readonly': isReadonly }"
                     >
                         <input
                             type="checkbox"
                             :value="choice.value"
                             :checked="!!modelValues[field.inputs?.[index]?.id ?? '']"
+                            :disabled="isReadonly"
                             @change="
                                 (e) =>
                                     toggleValue(

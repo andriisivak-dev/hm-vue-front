@@ -3,7 +3,10 @@ import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import type { GFField } from '@/form-engine/types.ts';
 import { X, UploadCloud, File as FileIcon } from 'lucide-vue-next';
 import { useFileUploadQueue, type PendingFile } from '@/composables/useFileUploadQueue';
+import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
 import BaseField from './BaseField.vue';
+
+const store = useCaseFormStore();
 
 type FileStatus = 'pending' | 'uploaded' | 'error';
 
@@ -32,6 +35,10 @@ const emit = defineEmits<{
 
 const fieldId = String(props.field.id);
 const { enqueuePending, dequeuePending, resolvedMap } = useFileUploadQueue();
+
+const isReadonly = computed(() => {
+    return store.isFieldReadonly(props.field.id);
+});
 
 const files = ref<LocalFile[]>([]);
 const uploadWarnings = ref<string[]>([]);
@@ -318,6 +325,7 @@ const updateModelValue = () => {
 <template>
     <BaseField :field="field" :error="error">
         <div
+            v-if="!isReadonly"
             class="fileupload-container"
             :class="{ 'is-dragging': isDragging }"
             @dragenter="onDragEnter"
@@ -411,6 +419,7 @@ const updateModelValue = () => {
                     </div>
 
                     <button
+                        v-if="!isReadonly"
                         type="button"
                         class="remove-btn"
                         @click.stop="removeFile(file.id)"

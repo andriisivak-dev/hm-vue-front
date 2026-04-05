@@ -20,6 +20,10 @@ export const useCaseFormStore = defineStore('caseForm', {
         // ── Case state ────────────────────────────────────────────────────────
         /** ID of the WP case post currently being edited (null = not yet created) */
         caseId: null as number | null,
+        /** ID of the user who authored the case */
+        authorId: null as number | null,
+        /** True if the form should be completely read-only */
+        isViewMode: false,
         /** True while an async save/submit is in flight */
         isSaving: false,
         /** Human-readable error from the last save attempt */
@@ -35,6 +39,7 @@ export const useCaseFormStore = defineStore('caseForm', {
          * Determine if a field is readonly (calculation OR manual)
          */
         isFieldReadonly: (state) => (fieldId: string | number) => {
+            if (state.isViewMode) return true;
             const field = state._allFields.find((f) => String(f.id) === String(fieldId));
             if (field?.calculation?.enableCalculation) return true;
             return !!state.readonlyFields[String(fieldId)];
@@ -117,6 +122,10 @@ export const useCaseFormStore = defineStore('caseForm', {
             this.readonlyFields[String(fieldId)] = isReadonly;
         },
 
+        setViewMode(mode: boolean) {
+            this.isViewMode = mode;
+        },
+
         /**
          * Initialize form schema and set default values.
          * Resets all case state.
@@ -149,6 +158,8 @@ export const useCaseFormStore = defineStore('caseForm', {
             this.saveError = null;
             this.isSubmitted = false;
             this.caseId = null;
+            this.authorId = null;
+            this.isViewMode = false;
 
             this.recalculateAll();
             this.initVCRPMCalculations();
@@ -336,7 +347,7 @@ export const useCaseFormStore = defineStore('caseForm', {
             if (this.currentStep < this.totalPages) {
                 this.currentStep++;
                 // Advance the watermark when the user reaches a new step
-                if (this.currentStep > this.highestReachedStep) {
+                if (!this.isViewMode && this.currentStep > this.highestReachedStep) {
                     this.highestReachedStep = this.currentStep;
                 }
             }
@@ -355,7 +366,7 @@ export const useCaseFormStore = defineStore('caseForm', {
          */
         setStep(step: number) {
             if (step < 1 || step > this.totalPages) return;
-            if (step > this.highestReachedStep) return; // blocked — not yet reached
+            if (!this.isViewMode && step > this.highestReachedStep) return; // blocked — not yet reached
             this.currentStep = step;
         },
 

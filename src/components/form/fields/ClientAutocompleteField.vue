@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import type { GFField } from '@/form-engine/types.ts';
 import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
+import { useUserStore } from '@/stores/user.ts';
 import BaseField from './BaseField.vue';
 import { useDebounceFn } from '@vueuse/core';
 
@@ -26,7 +27,19 @@ const props = defineProps<{
 }>();
 
 const store = useCaseFormStore();
+const userStore = useUserStore();
 const emit = defineEmits(['update:modelValue']);
+
+const isHidden = computed(() => {
+    if (!store.isViewMode) return false;
+    const user = userStore.user;
+    if (!user) return false;
+    // Hide if role is field agent and it is not their case
+    if (user.role === 'hm_field_agent' && store.authorId !== user.id) {
+        return true;
+    }
+    return false;
+});
 
 const query = ref(props.modelValue || '');
 const results = ref<ClientResult[]>([]);
@@ -94,6 +107,8 @@ const selectClient = (client: ClientResult) => {
  * On manual typing
  */
 const onInput = (e: Event) => {
+    if (isReadonly.value) return;
+
     const val = (e.target as HTMLInputElement).value;
     query.value = val;
     emit('update:modelValue', val);
@@ -129,6 +144,10 @@ onMounted(async () => {
     }
 });
 
+const isReadonly = computed(() => {
+    return store.isFieldReadonly(props.field.id);
+});
+
 // Close dropdown on outside click
 const closeDropdown = () => {
     setTimeout(() => {
@@ -138,7 +157,7 @@ const closeDropdown = () => {
 </script>
 
 <template>
-    <BaseField :field="field" :error="error" class="autocomplete-wrapper">
+    <BaseField :field="field" :error="error" class="autocomplete-wrapper" v-if="!isHidden">
         <div class="input-with-dropdown">
             <input
                 :id="`input_${field.id}`"
@@ -146,8 +165,10 @@ const closeDropdown = () => {
                 @input="onInput"
                 @blur="closeDropdown"
                 class="gf-input"
+                :class="{ 'gf-readonly': isReadonly }"
                 :placeholder="field.placeholder || 'Start typing to search...'"
                 autocomplete="off"
+                :readonly="isReadonly"
             />
 
             <div v-show="isSearching" class="search-loader"></div>
@@ -184,6 +205,17 @@ const closeDropdown = () => {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     width: 100%;
     color: rgb(17, 35, 55);
+}
+
+.gf-input:not(.gf-readonly):focus {
+    outline: none;
+    box-shadow: 0 0 12px 0 rgba(111, 1, 255, 0.32);
+}
+
+.gf-readonly {
+    background: #f1f5f9 !important;
+    cursor: not-allowed;
+    color: rgb(100, 100, 100);
 }
 
 .autocomplete-wrapper {

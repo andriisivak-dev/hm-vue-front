@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { AnyField } from '@/form-engine/types.ts';
+import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
 import BaseField from './BaseField.vue';
 
 const props = defineProps<{
@@ -9,11 +10,16 @@ const props = defineProps<{
     error?: string;
 }>();
 
+const store = useCaseFormStore();
 const emit = defineEmits(['update:modelValue']);
 
 const value = computed({
     get: () => props.modelValue,
     set: (val) => emit('update:modelValue', val)
+});
+
+const isReadonly = computed(() => {
+    return store.isFieldReadonly(props.field.id);
 });
 </script>
 
@@ -24,7 +30,9 @@ const value = computed({
                 :id="`input_${field.id}`"
                 v-model="value"
                 class="gf-select"
+                :class="{ 'gf-readonly': isReadonly }"
                 :required="field.is_required"
+                :disabled="isReadonly"
             >
                 <option v-if="field.placeholder" value="" disabled selected>
                     {{ field.placeholder }}

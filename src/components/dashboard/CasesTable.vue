@@ -106,7 +106,7 @@ console.log(props.cases);
                             <td data-label="Actions" class="text-center">
                                 <template v-if="viewMode === 'library'">
                                     <a
-                                        :href="`/case/?cid=${item.id}`"
+                                        :href="`/case/?cid=${item.id}&mode=view`"
                                         class="btn btn-sm btn-link text-info"
                                         >View</a
                                     >
@@ -128,7 +128,7 @@ console.log(props.cases);
                                         >
                                         <a
                                             v-else
-                                            :href="`/case/?cid=${item.id}`"
+                                            :href="`/case/?cid=${item.id}&mode=view`"
                                             class="btn btn-sm btn-link text-info"
                                             >View</a
                                         >
@@ -143,7 +143,7 @@ console.log(props.cases);
                                     <template v-else>
                                         <!-- Subordinate cases -->
                                         <a
-                                            :href="`/case/?cid=${item.id}`"
+                                            :href="`/case/?cid=${item.id}&mode=view`"
                                             class="btn btn-sm btn-link text-info"
                                             >View</a
                                         >
@@ -172,7 +172,7 @@ console.log(props.cases);
                                 <template v-else-if="currentUser?.role === 'hm_marketing'">
                                     <!-- Marketing Actions -->
                                     <a
-                                        :href="`/case/?cid=${item.id}`"
+                                        :href="`/case/?cid=${item.id}&mode=view`"
                                         class="btn btn-sm btn-link text-info"
                                         >View</a
                                     >
@@ -187,7 +187,7 @@ console.log(props.cases);
                                     >
                                     <a
                                         v-else
-                                        :href="`/case/?cid=${item.id}`"
+                                        :href="`/case/?cid=${item.id}&mode=view`"
                                         class="btn btn-sm btn-link text-info"
                                         >View</a
                                     >
