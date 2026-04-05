@@ -158,7 +158,10 @@ onMounted(async () => {
             }
         } else {
             // 2b. New case — create draft immediately so we always have a caseId
-            const created = await casesService.create({ form_id: props.formId, total_steps: gfForm.total_steps });
+            const created = await casesService.create({
+                form_id: props.formId,
+                total_steps: gfForm.total_steps
+            });
             store.setCaseId(created.id);
             emit('case-created', created.id);
         }
