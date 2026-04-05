@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useUserStore } from '@/stores/user';
 
 export interface CaseStudyAuthor {
     id: number;
@@ -69,9 +70,15 @@ const statusLabel = computed(() => {
 const isFinal = computed(
     () => (props.caseStudy.current_step || 0) === (props.caseStudy.total_steps || 6)
 );
-const isReadonly = computed(() =>
-    ['in_review', 'approved', 'rejected'].includes(props.caseStudy.status)
-);
+const userStore = useUserStore();
+const currentUser = computed(() => userStore.user);
+
+const isOwnCase = computed(() => props.caseStudy.author?.id === currentUser.value?.id);
+
+const isReadonly = computed(() => {
+    if (!isOwnCase.value) return true;
+    return ['in_review', 'approved', 'rejected'].includes(props.caseStudy.status);
+});
 
 const actionUrl = computed(() => {
     return `/case/?cid=${props.caseStudy.id}`;
@@ -138,7 +145,7 @@ const onDelete = () => {
                 {{ isReadonly ? 'View' : 'Continue' }}
             </router-link>
             <button
-                v-if="caseStudy.status === 'draft'"
+                v-if="caseStudy.status === 'draft' && isOwnCase"
                 class="btn text-danger action-btn ms-2 js-delete-case"
                 @click.prevent="onDelete"
                 aria-label="Delete draft case"

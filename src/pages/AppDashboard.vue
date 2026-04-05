@@ -5,6 +5,7 @@ import AppFooter from '@/components/common/AppFooter.vue';
 import AppSidebar from '@/components/common/AppSidebar.vue';
 import SuperAdminDashboard from '@/components/dashboard/SuperAdminDashboard.vue';
 import FieldAgentDashboard from '@/components/dashboard/FieldAgentDashboard.vue';
+import SupervisorDashboard from '@/components/dashboard/SupervisorDashboard.vue';
 import { useUserStore } from '@/stores/user';
 import { computed } from 'vue';
 
@@ -47,6 +48,9 @@ const isSuperAdmin = computed(() =>
                 <div class="container-fluid">
                     <template v-if="isSuperAdmin">
                         <SuperAdminDashboard />
+                    </template>
+                    <template v-else-if="user?.role === 'hm_manager'">
+                        <SupervisorDashboard />
                     </template>
                     <template v-else-if="user?.role === 'hm_field_agent'">
                         <FieldAgentDashboard />
