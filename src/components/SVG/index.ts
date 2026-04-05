@@ -13,3 +13,4 @@ export { default as ArrowPrev } from './ArrowPrev.vue';
 export { default as ArrowNext } from './ArrowNext.vue';
 export { default as IconEyeOpen } from './IconEyeOpen.vue';
 export { default as IconEyeClose } from './IconEyeClose.vue';
+export { default as IconPlus } from './IconPlus.vue';
