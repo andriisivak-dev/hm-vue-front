@@ -71,6 +71,13 @@ defineExpose({ hide, show });
 </template>
 
 <style scoped>
+.modal-header {
+    padding: 0 0;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+}
+
 .modal-transition-enter-active,
 .modal-transition-leave-active {
     transition:
