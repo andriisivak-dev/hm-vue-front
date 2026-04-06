@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useNotifications } from '@/api';
+import NotificationModal from '@/components/dashboard/modals/NotificationModal.vue';
+import type { Notification } from '@/api/types';
+import { formatTime } from '@/utils';
 
 const {
     data: notifications,
@@ -12,23 +15,29 @@ const {
     markAllAsRead
 } = useNotifications();
 
-onMounted(() => {
-    fetchUnreadCount();
-});
+const dropdownEl = ref<HTMLElement | null>(null);
+const notifModal = ref<InstanceType<typeof NotificationModal> | null>(null);
 
 const loadInitialNotifications = () => {
-    // Load first page of notifications when opening the dropdown (if not loaded yet)
     if (!notifications.value || notifications.value.length === 0) {
         fetch({ per_page: 5 });
     }
 };
 
-const handleMarkAsRead = async (id: number, isRead: boolean) => {
-    if (!isRead) {
-        await markAsRead(id);
+onMounted(() => {
+    fetchUnreadCount();
+    dropdownEl.value?.addEventListener('show.bs.dropdown', loadInitialNotifications);
+});
+
+onUnmounted(() => {
+    dropdownEl.value?.removeEventListener('show.bs.dropdown', loadInitialNotifications);
+});
+
+const handleNotifClick = async (notif: Notification) => {
+    if (!notif.is_read) {
+        await markAsRead(notif.id);
     }
-    // Optional: Navigate to Case page depending on your router setup
-    // router.push(`/cases/${caseId}`);
+    notifModal.value?.open(notif);
 };
 
 const handleMarkAllAsRead = async () => {
@@ -36,44 +45,25 @@ const handleMarkAllAsRead = async () => {
         await markAllAsRead();
     }
 };
-
-// Helper for formatting time (simple fallback)
-const formatTime = (dateStr: string) => {
-    if (!dateStr) return '';
-    try {
-        const date = new Date(dateStr);
-        return new Intl.DateTimeFormat('en-IN', {
-            hour: 'numeric',
-            minute: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        }).format(date);
-    } catch {
-        return dateStr;
-    }
-};
 </script>
 
 <template>
-    <li class="nav-item dropdown">
-        <a class="nav-link" data-bs-toggle="dropdown" href="#" @click="loadInitialNotifications">
-            <i class="bi bi-bell-fill"></i>
-            <span v-if="unreadCount > 0" class="navbar-badge badge text-bg-warning">{{
-                unreadCount
-            }}</span>
+    <NotificationModal ref="notifModal" />
+    <li ref="dropdownEl" class="nav-item dropdown">
+        <a class="nav-link" data-bs-toggle="dropdown" data-bs-auto-close="outside" href="#">
+            <i class="bi bi-bell-fill" />
+            <span v-if="unreadCount > 0" class="navbar-badge badge text-bg-warning">
+                {{ unreadCount }}
+            </span>
         </a>
         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
             <span class="dropdown-item dropdown-header"
                 >{{ unreadCount }} Unread Notifications</span
             >
-            <div class="dropdown-divider"></div>
+            <div class="dropdown-divider" />
 
             <div v-if="loading" class="dropdown-item text-center text-muted">
-                <span
-                    class="spinner-border spinner-border-sm"
-                    role="status"
-                    aria-hidden="true"
-                ></span>
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
                 Loading...
             </div>
 
@@ -83,7 +73,7 @@ const formatTime = (dateStr: string) => {
                         href="#"
                         class="dropdown-item"
                         :class="{ 'bg-light': !notif.is_read }"
-                        @click.prevent="handleMarkAsRead(notif.id, notif.is_read)"
+                        @click.prevent="handleNotifClick(notif)"
                         :title="notif.message"
                     >
                         <div class="d-flex w-100 justify-content-between">
@@ -95,17 +85,17 @@ const formatTime = (dateStr: string) => {
                                             ? 'bi-envelope-open text-muted'
                                             : 'bi-envelope-fill text-primary'
                                     "
-                                ></i>
-                                <span :class="{ 'fw-bold': !notif.is_read }">{{
-                                    notif.message
-                                }}</span>
+                                />
+                                <span :class="{ 'fw-bold': !notif.is_read }">
+                                    {{ notif.message }}
+                                </span>
                             </span>
                         </div>
                         <div class="text-end text-muted text-sm mt-1" style="font-size: 0.75rem">
                             {{ formatTime(notif.created_at) }}
                         </div>
                     </a>
-                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-divider" />
                 </div>
             </template>
 
@@ -117,7 +107,7 @@ const formatTime = (dateStr: string) => {
                 href="#"
                 v-if="unreadCount > 0"
                 class="dropdown-item dropdown-footer text-center mt-2"
-                @click.prevent="handleMarkAllAsRead"
+                @click.prevent.stop="handleMarkAllAsRead"
             >
                 Mark All as Read
             </a>
