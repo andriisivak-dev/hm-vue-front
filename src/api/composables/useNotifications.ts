@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { ApiError, notificationsService } from '@/api';
 import type { Notification, NotificationListParams, PaginationMeta } from '@/api/types';
 import { createAsyncState, useAbortController } from './shared';
@@ -7,14 +7,26 @@ export function useNotifications() {
     const state = createAsyncState<Notification[]>();
     const meta = ref<PaginationMeta | null>(null);
     const unreadCount = ref<number>(0);
+    const currentPage = ref<number>(1);
+    const loadingMore = ref<boolean>(false);
     const controller = useAbortController();
 
     async function fetch(params?: NotificationListParams) {
-        state.loading.value = true;
+        const isLoadMore = (params?.page ?? 1) > 1;
+
+        if (!isLoadMore) {
+            state.loading.value = true;
+        }
         state.error.value = null;
+        currentPage.value = params?.page ?? 1;
+
         try {
             const result = await notificationsService.list(params, { signal: controller.signal });
-            state.data.value = result.items;
+            if (currentPage.value === 1) {
+                state.data.value = result.items;
+            } else {
+                state.data.value = [...(state.data.value ?? []), ...result.items];
+            }
             meta.value = result.meta;
         } catch (err) {
             if (err instanceof ApiError && !err.isAborted) {
@@ -22,7 +34,16 @@ export function useNotifications() {
             }
         } finally {
             state.loading.value = false;
+            loadingMore.value = false;
         }
+    }
+
+    async function fetchNextPage(perPage = 5) {
+        if (!meta.value) return;
+        if (currentPage.value >= meta.value.total_pages) return;
+
+        loadingMore.value = true;
+        await fetch({ page: currentPage.value + 1, per_page: perPage });
     }
 
     async function fetchUnreadCount() {
@@ -50,5 +71,19 @@ export function useNotifications() {
         unreadCount.value = 0;
     }
 
-    return { ...state, meta, unreadCount, fetch, fetchUnreadCount, markAsRead, markAllAsRead };
+    const hasMore = computed(() => !!meta.value && currentPage.value < meta.value.total_pages);
+
+    return {
+        ...state,
+        meta,
+        unreadCount,
+        currentPage,
+        loadingMore,
+        hasMore,
+        fetch,
+        fetchNextPage,
+        fetchUnreadCount,
+        markAsRead,
+        markAllAsRead
+    };
 }

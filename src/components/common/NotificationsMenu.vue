@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useNotifications } from '@/api';
 import NotificationModal from '@/components/dashboard/modals/NotificationModal.vue';
 import type { Notification } from '@/api/types';
@@ -9,7 +9,10 @@ const {
     data: notifications,
     unreadCount,
     loading,
+    loadingMore,
+    hasMore,
     fetch,
+    fetchNextPage,
     fetchUnreadCount,
     markAsRead,
     markAllAsRead
@@ -17,6 +20,30 @@ const {
 
 const dropdownEl = ref<HTMLElement | null>(null);
 const notifModal = ref<InstanceType<typeof NotificationModal> | null>(null);
+const sentinelEl = ref<HTMLElement | null>(null);
+const listEl = ref<HTMLElement | null>(null);
+
+let observer: IntersectionObserver | null = null;
+
+const setupObserver = () => {
+    observer?.disconnect();
+    if (!sentinelEl.value) return;
+
+    observer = new IntersectionObserver(
+        ([entry]) => {
+            if (entry.isIntersecting && hasMore.value && !loadingMore.value) {
+                fetchNextPage(5);
+            }
+        },
+        { root: listEl.value, threshold: 0.1 }
+    );
+    observer.observe(sentinelEl.value);
+};
+
+watch(sentinelEl, (el) => {
+    if (el) setupObserver();
+    else observer?.disconnect();
+});
 
 const loadInitialNotifications = () => {
     if (!notifications.value || notifications.value.length === 0) {
@@ -31,19 +58,16 @@ onMounted(() => {
 
 onUnmounted(() => {
     dropdownEl.value?.removeEventListener('show.bs.dropdown', loadInitialNotifications);
+    observer?.disconnect();
 });
 
 const handleNotifClick = async (notif: Notification) => {
-    if (!notif.is_read) {
-        await markAsRead(notif.id);
-    }
+    if (!notif.is_read) await markAsRead(notif.id);
     notifModal.value?.open(notif);
 };
 
 const handleMarkAllAsRead = async () => {
-    if (unreadCount.value > 0) {
-        await markAllAsRead();
-    }
+    if (unreadCount.value > 0) await markAllAsRead();
 };
 </script>
 
@@ -56,56 +80,80 @@ const handleMarkAllAsRead = async () => {
                 {{ unreadCount }}
             </span>
         </a>
+
         <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
-            <span class="dropdown-item dropdown-header"
-                >{{ unreadCount }} Unread Notifications</span
-            >
+            <span class="dropdown-item dropdown-header">
+                {{ unreadCount }} Unread Notifications
+            </span>
             <div class="dropdown-divider" />
 
-            <div v-if="loading" class="dropdown-item text-center text-muted">
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+            <div v-if="loading" class="dropdown-item text-center text-muted py-3">
+                <span
+                    class="spinner-border spinner-border-sm me-1"
+                    role="status"
+                    aria-hidden="true"
+                />
                 Loading...
             </div>
 
-            <template v-else-if="notifications && notifications.length > 0">
-                <div v-for="notif in notifications" :key="notif.id">
-                    <a
-                        href="#"
-                        class="dropdown-item"
-                        :class="{ 'bg-light': !notif.is_read }"
-                        @click.prevent="handleNotifClick(notif)"
-                        :title="notif.message"
-                    >
-                        <div class="d-flex w-100 justify-content-between">
-                            <span class="d-block text-truncate" style="max-width: 200px">
-                                <i
-                                    class="bi me-2"
-                                    :class="
-                                        notif.is_read
-                                            ? 'bi-envelope-open text-muted'
-                                            : 'bi-envelope-fill text-primary'
-                                    "
-                                />
-                                <span :class="{ 'fw-bold': !notif.is_read }">
-                                    {{ notif.message }}
-                                </span>
-                            </span>
+            <template v-else>
+                <div v-if="notifications && notifications.length > 0">
+                    <div ref="listEl" class="notif-list">
+                        <TransitionGroup name="notif" tag="div">
+                            <div v-for="notif in notifications" :key="notif.id">
+                                <a
+                                    href="#"
+                                    class="dropdown-item"
+                                    :class="{ 'bg-light': !notif.is_read }"
+                                    :title="notif.message"
+                                    @click.prevent="handleNotifClick(notif)"
+                                >
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <span
+                                            class="d-block text-truncate"
+                                            style="max-width: 200px"
+                                        >
+                                            <i
+                                                class="bi me-2"
+                                                :class="
+                                                    notif.is_read
+                                                        ? 'bi-envelope-open text-muted'
+                                                        : 'bi-envelope-fill text-primary'
+                                                "
+                                            />
+                                            <span :class="{ 'fw-bold': !notif.is_read }">
+                                                {{ notif.message }}
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div
+                                        class="text-end text-muted mt-1"
+                                        style="font-size: 0.75rem"
+                                    >
+                                        {{ formatTime(notif.created_at) }}
+                                    </div>
+                                </a>
+                                <div class="dropdown-divider" />
+                            </div>
+                        </TransitionGroup>
+
+                        <div v-if="hasMore" ref="sentinelEl" class="notif-sentinel">
+                            <span
+                                v-if="loadingMore"
+                                class="spinner-border spinner-border-sm text-muted"
+                                role="status"
+                                aria-hidden="true"
+                            />
                         </div>
-                        <div class="text-end text-muted text-sm mt-1" style="font-size: 0.75rem">
-                            {{ formatTime(notif.created_at) }}
-                        </div>
-                    </a>
-                    <div class="dropdown-divider" />
+                    </div>
                 </div>
+
+                <div v-else class="dropdown-item text-center text-muted py-3">No notifications</div>
             </template>
 
-            <div v-else-if="!loading" class="dropdown-item text-center text-muted">
-                No notifications
-            </div>
-
             <a
-                href="#"
                 v-if="unreadCount > 0"
+                href="#"
                 class="dropdown-item dropdown-footer text-center mt-2"
                 @click.prevent.stop="handleMarkAllAsRead"
             >
@@ -114,3 +162,30 @@ const handleMarkAllAsRead = async () => {
         </div>
     </li>
 </template>
+
+<style scoped>
+.notif-list {
+    max-height: 340px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+}
+
+.notif-sentinel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 36px;
+    padding: 4px;
+}
+
+.notif-enter-active {
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+}
+.notif-enter-from {
+    opacity: 0;
+    transform: translateY(8px);
+}
+</style>
