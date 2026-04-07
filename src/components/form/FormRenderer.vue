@@ -71,6 +71,8 @@ const { flushQueue, clearAll } = useFileUploadQueue();
 
 const isPageLoading = ref(true);
 const loadError = ref<string | null>(null);
+const showDraftSaved = ref(false);
+let autosaveInterval: ReturnType<typeof setInterval> | null = null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -186,13 +188,19 @@ onMounted(async () => {
         setTimeout(() => {
             isPageLoading.value = false;
         }, 600);
+        
+        // Setup autosave
+        resetAutosaveTimer();
     }
 });
 
 // ── Cleanup ────────────────────────────────────────────────────────────────────
 
 // Revoke any remaining pending file blob URLs if the user navigates away
-onBeforeUnmount(() => clearAll());
+onBeforeUnmount(() => {
+    clearAll();
+    if (autosaveInterval) clearInterval(autosaveInterval);
+});
 
 // ── Navigation actions ────────────────────────────────────────────────────────
 
@@ -218,6 +226,37 @@ const nextStep = async () => {
 const prevStep = () => {
     store.prevStep();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+const resetAutosaveTimer = () => {
+    if (autosaveInterval) {
+        clearInterval(autosaveInterval);
+    }
+    if (!store.isViewMode) {
+        autosaveInterval = setInterval(() => {
+            if (!store.isSaving && !store.isSubmitted && store.caseId) {
+                saveDraft();
+            }
+        }, 30000);
+    }
+};
+
+const saveDraft = async () => {
+    // Only attempt save if not viewing, not submitting, and form is loaded
+    if (store.isViewMode || store.isSaving || store.isSubmitted || !store.caseId) return;
+    
+    resetAutosaveTimer();
+    
+    // Bypass strict global validation (which highlights required fields on empty inputs).
+    // Just save whatever valid/invalid state currently exists.
+    const saved = await saveFormData(Math.max(0, store.currentStep - 1));
+    
+    if (saved) {
+        showDraftSaved.value = true;
+        setTimeout(() => {
+            showDraftSaved.value = false;
+        }, 2000);
+    }
 };
 
 // ── Save helpers ─────────────────────────────────────────────────────────────
@@ -375,7 +414,17 @@ const onFinalSubmit = handleSubmit(
                     Previous
                 </button>
 
-                <div class="footer-spacer"></div>
+                <div class="d-flex gap-2 align-items-center">
+                <!-- Save -->
+                <button
+                    v-if="!store.isViewMode"
+                    type="button"
+                    class="add-new-user-btn btn"
+                    :disabled="store.isSaving"
+                    @click="saveDraft"
+                >
+                    Save
+                </button>
 
                 <!-- Saving indicator -->
                 <transition name="fade">
@@ -383,7 +432,12 @@ const onFinalSubmit = handleSubmit(
                         <Loader2 :size="16" class="spin" />
                         Saving…
                     </span>
+                    <span v-else-if="showDraftSaved" class="saving-indicator text-success">
+                        <Check :size="16" />
+                        Saved
+                    </span>
                 </transition>
+                </div>
 
                 <!-- Next -->
                 <button
@@ -545,6 +599,7 @@ const onFinalSubmit = handleSubmit(
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    justify-content: space-between;
 }
 
 .footer-spacer {
@@ -647,5 +702,9 @@ const onFinalSubmit = handleSubmit(
 .fade-enter-from,
 .fade-leave-to {
     opacity: 0;
+}
+
+.add-new-user-btn {
+    font-size: 18px
 }
 </style>
