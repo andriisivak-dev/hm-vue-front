@@ -7,6 +7,7 @@ export interface DashboardStats {
     rejected: number;
     draft: number;
     total: number;
+    total_customers?: number;
     users?: {
         total: number;
         supervisors: number;

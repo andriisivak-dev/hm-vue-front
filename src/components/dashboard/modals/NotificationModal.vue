@@ -4,7 +4,7 @@ import AppModal from '@/components/common/AppModal.vue';
 import type { Notification } from '@/api/types';
 import { formatTime } from '@/utils';
 
-const emit = defineEmits(['read']);
+defineEmits(['read']);
 
 const baseModal = ref<InstanceType<typeof AppModal> | null>(null);
 const notification = ref<Notification | null>(null);

@@ -4,3 +4,4 @@ export * from './users';
 export * from './notifications';
 export * from './dashboard';
 export * from './forms';
+export * from './customers';

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useDashboard, useCaseList, useCaseMutations } from '@/api';
+import { useDashboard, useCaseList, useCaseMutations, useCustomerStats } from '@/api';
 import DashboardStatisticCard from './DashboardStatisticCard.vue';
 import DashboardTabs from './DashboardTabs.vue';
 import UsersManagement from './UsersManagement.vue';
+import CustomersManagement from './CustomersManagement.vue';
 import CasesTable from './CasesTable.vue';
 import CaseStudyCard from './CaseStudyCard.vue';
 import CaseLibraryFilters from './CaseLibraryFilters.vue';
@@ -14,6 +15,7 @@ import { useActivitiesStore } from '@/stores/activities';
 import { IconTotalUsers, IconTotalCustomers, IconPendingReports } from '@/components/SVG';
 
 const { stats, fetchStats, statsLoading } = useDashboard();
+const { total: customersTotal, fetch: fetchCustomerStats } = useCustomerStats();
 const route = useRoute();
 const router = useRouter();
 
@@ -177,6 +179,7 @@ const handleCaseReturn = async (caseId: number) => {
 
 onMounted(() => {
     fetchStats();
+    fetchCustomerStats();
     if (currentTab.value === 'sa-casestudy') {
         fetchCasePage(page.value);
     }
@@ -203,7 +206,7 @@ onMounted(() => {
             <DashboardStatisticCard
                 cardClass="total-customers"
                 title="Total Customers"
-                number="0"
+                :number="customersTotal"
                 :loading="statsLoading"
             >
                 <template #icon>
@@ -235,8 +238,8 @@ onMounted(() => {
         <div class="sa-tab-content" v-if="currentTab === 'sa-users'">
             <UsersManagement @users-changed="() => fetchStats(true)" />
         </div>
-        <div class="tab-content" v-if="currentTab === 'sa-customers'">
-            <!-- Customer management content -->
+        <div class="sa-tab-content" v-if="currentTab === 'sa-customers'">
+            <CustomersManagement @customers-changed="fetchCustomerStats" />
         </div>
         <div class="tab-content" v-if="currentTab === 'sa-casestudy'">
             <!-- Case study content -->
