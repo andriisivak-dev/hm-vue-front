@@ -18,7 +18,9 @@ const role = computed(() => user.value?.role || '');
 const canCreateCase = computed(() => role.value !== 'hm_marketing');
 const isDashboard = computed(() => route.name === 'dashboard');
 const showNewCaseStudyButton = computed(() => canCreateCase.value && isDashboard.value);
-const showActivities = computed(() => role.value !== 'hm_field_agent' && props.showFilters);
+const showActivities = computed(
+    () => role.value !== 'hm_field_agent' && role.value !== 'hm_marketing' && props.showFilters
+);
 </script>
 
 <template>
@@ -52,9 +54,16 @@ const showActivities = computed(() => role.value !== 'hm_field_agent' && props.s
             </router-link>
 
             <SidebarFilters :showFilters="showFilters" />
+            <div class="sidebar-divider" v-if="showActivities" />
             <SidebarActivities :show-activities="showActivities" />
         </div>
     </aside>
 </template>
 
-<style scoped></style>
+<style scoped>
+.sidebar-divider {
+    width: 100%;
+    height: 1px;
+    background-color: #fff;
+}
+</style>

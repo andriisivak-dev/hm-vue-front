@@ -145,7 +145,7 @@ const resetFilters = () => {
 </script>
 
 <template>
-    <div v-if="showFilters" class="sidebar-filters with-bottom-line" id="cases-sidebar-filters">
+    <div v-if="showFilters" class="sidebar-filters" id="cases-sidebar-filters">
         <h2 class="filters-title fw-semibold mb-2">Filters:</h2>
 
         <div v-if="loading" class="text-white small mb-3">Loading filters...</div>
