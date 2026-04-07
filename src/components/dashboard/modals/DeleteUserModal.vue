@@ -69,11 +69,11 @@ function reset() {
         <div v-if="alertMsg" class="alert mb-3" :class="`alert-${alertType}`" role="alert">
             {{ alertMsg }}
         </div>
-        <p>
+        <h4>
             Are you sure you want to deactivate
             <strong id="deleteUserName">{{ displayUserName }}</strong
             >?
-        </p>
+        </h4>
         <p class="text-muted small">
             The user will not be able to log in, but their historical case data will be preserved.
         </p>

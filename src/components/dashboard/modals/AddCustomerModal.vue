@@ -221,7 +221,7 @@ function onHidden() {
             {{ alertMsg }}
         </div>
 
-        <form @submit.prevent="onSubmit" id="addCustomerForm" novalidate>
+        <form @submit.prevent="onSubmit" id="addCustomerForm" novalidate class="app-modal-form">
             <div class="mb-3">
                 <TextField
                     :field="companyNameField"
@@ -323,3 +323,12 @@ function onHidden() {
         </form>
     </AppModal>
 </template>
+
+<style scoped>
+.app-modal-form {
+    max-width: 380px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+</style>

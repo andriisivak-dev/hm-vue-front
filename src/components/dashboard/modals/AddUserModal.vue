@@ -150,7 +150,7 @@ function onHidden() {
         <div v-if="alertMsg" class="alert mb-3" :class="`alert-${alertType}`" role="alert">
             {{ alertMsg }}
         </div>
-        <form @submit.prevent="onSubmit" id="addUserForm" novalidate>
+        <form @submit.prevent="onSubmit" id="addUserForm" class="app-modal-form" novalidate>
             <div class="mb-3">
                 <TextField
                     :field="nameField"
@@ -209,3 +209,12 @@ function onHidden() {
         </form>
     </AppModal>
 </template>
+
+<style scoped>
+.app-modal-form {
+    max-width: 380px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+</style>

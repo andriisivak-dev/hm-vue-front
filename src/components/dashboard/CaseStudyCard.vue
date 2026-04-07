@@ -45,9 +45,14 @@ const props = defineProps<{
     caseStudy: CaseStudy;
 }>();
 
-const emit = defineEmits<{
-    (e: 'delete', caseId: number, caseTitle: string): void;
+defineEmits<{
+    (e: 'success'): void;
 }>();
+
+import { ref } from 'vue';
+import CaseActionConfirmModal from './modals/CaseActionConfirmModal.vue';
+
+const confirmModal = ref<InstanceType<typeof CaseActionConfirmModal> | null>(null);
 
 const title = computed(
     () =>
@@ -88,8 +93,16 @@ const progress = computed(() => props.caseStudy.progress || 0);
 const stepCurrent = computed(() => props.caseStudy.current_step || 0);
 const stepTotal = computed(() => props.caseStudy.total_steps || 6);
 
-const onDelete = () => {
-    emit('delete', props.caseStudy.id, title.value);
+const promptDelete = () => {
+    confirmModal.value?.open({
+        action: 'delete',
+        caseId: props.caseStudy.id,
+        caseTitle: title.value,
+        title: 'Delete Case Study',
+        description: `Are you sure you want to delete case #${props.caseStudy.id} (${title.value})?`,
+        buttonText: 'Delete Case',
+        buttonClass: 'btn-danger'
+    });
 };
 </script>
 
@@ -147,12 +160,14 @@ const onDelete = () => {
             <button
                 v-if="caseStudy.status === 'draft' && isOwnCase"
                 class="btn text-danger action-btn ms-2 js-delete-case"
-                @click.prevent="onDelete"
+                @click.prevent="promptDelete"
                 aria-label="Delete draft case"
                 title="Delete draft case"
             >
                 <i class="bi bi-trash"></i>
             </button>
         </div>
+
+        <CaseActionConfirmModal ref="confirmModal" @success="$emit('success')" />
     </div>
 </template>

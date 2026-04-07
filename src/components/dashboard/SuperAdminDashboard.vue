@@ -135,45 +135,35 @@ function fetchCasePage(p: number) {
 
 const casesForCurrentTab = computed(() => (casesData.value as unknown as CaseStudy[]) || []);
 
-const handleCaseDelete = async (caseId: number, caseTitle: string) => {
-    if (confirm(`Are you sure you want to delete case #${caseId} (${caseTitle})?`)) {
-        const success = await removeCase(caseId);
-        if (success) {
-            fetchCasePage(page.value);
-            activitiesStore.fetchActivities();
-        }
+const handleCaseDelete = async (caseId: number) => {
+    const success = await removeCase(caseId);
+    if (success) {
+        fetchCasePage(page.value);
+        activitiesStore.fetchActivities();
     }
 };
 
 const handleCaseApprove = async (caseId: number) => {
-    if (confirm(`Are you sure you want to approve case #${caseId}?`)) {
-        const success = await approveCase(caseId);
-        if (success) {
-            fetchCasePage(page.value);
-            activitiesStore.fetchActivities();
-        }
+    const success = await approveCase(caseId);
+    if (success) {
+        fetchCasePage(page.value);
+        activitiesStore.fetchActivities();
     }
 };
 
-const handleCaseReject = async (caseId: number) => {
-    const reason = prompt(`Please enter a reason for rejecting case #${caseId}:`);
-    if (reason !== null) {
-        const success = await rejectCase(caseId, reason || 'No reason provided');
-        if (success) {
-            fetchCasePage(page.value);
-            activitiesStore.fetchActivities();
-        }
+const handleCaseReject = async (caseId: number, reason: string) => {
+    const success = await rejectCase(caseId, reason || 'No reason provided');
+    if (success) {
+        fetchCasePage(page.value);
+        activitiesStore.fetchActivities();
     }
 };
 
-const handleCaseReturn = async (caseId: number) => {
-    const reason = prompt(`Please enter a reason for returning case #${caseId}:`);
-    if (reason !== null) {
-        const success = await returnCase(caseId, reason || 'Please review and update');
-        if (success) {
-            fetchCasePage(page.value);
-            activitiesStore.fetchActivities();
-        }
+const handleCaseReturn = async (caseId: number, reason: string) => {
+    const success = await returnCase(caseId, reason || 'Please review and update');
+    if (success) {
+        fetchCasePage(page.value);
+        activitiesStore.fetchActivities();
     }
 };
 

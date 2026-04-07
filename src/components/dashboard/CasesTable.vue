@@ -11,12 +11,16 @@ const props = defineProps<{
     viewMode: string;
 }>();
 
-const emit = defineEmits<{
-    (e: 'delete', caseId: number, caseTitle: string): void;
-    (e: 'approve', caseId: number): void;
-    (e: 'reject', caseId: number): void;
-    (e: 'return', caseId: number): void;
+defineEmits<{
+    (e: 'success'): void;
 }>();
+
+import { ref } from 'vue';
+import CaseActionReasonModal from './modals/CaseActionReasonModal.vue';
+import CaseActionConfirmModal from './modals/CaseActionConfirmModal.vue';
+
+const reasonModal = ref<InstanceType<typeof CaseActionReasonModal> | null>(null);
+const confirmModal = ref<InstanceType<typeof CaseActionConfirmModal> | null>(null);
 
 const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
@@ -38,8 +42,49 @@ const getStatusClass = (status: string) => {
     return 'bg-secondary';
 };
 
-const handleDelete = (caseId: number, caseTitle: string) => {
-    emit('delete', caseId, caseTitle);
+const promptDelete = (caseId: number, caseTitle: string) => {
+    confirmModal.value?.open({
+        action: 'delete',
+        caseId,
+        caseTitle,
+        title: 'Delete Case Study',
+        description: `Are you sure you want to delete case #${caseId} (${caseTitle})?`,
+        buttonText: 'Delete Case',
+        buttonClass: 'btn-danger'
+    });
+};
+
+const promptApprove = (caseId: number) => {
+    confirmModal.value?.open({
+        action: 'approve',
+        caseId,
+        title: 'Approve Case Study',
+        description: `Are you sure you want to approve case #${caseId}?`,
+        buttonText: 'Approve',
+        buttonClass: 'btn-success'
+    });
+};
+
+const promptReject = (caseId: number) => {
+    reasonModal.value?.open({
+        action: 'reject',
+        caseId,
+        title: 'Reject Case Study',
+        description: `Please enter a reason for rejecting case #${caseId}:`,
+        buttonText: 'Reject Case',
+        buttonClass: 'btn-danger'
+    });
+};
+
+const promptReturn = (caseId: number) => {
+    reasonModal.value?.open({
+        action: 'return',
+        caseId,
+        title: 'Return Case for Revision',
+        description: `Please enter a reason for returning case #${caseId}:`,
+        buttonText: 'Return Case',
+        buttonClass: 'btn-warning'
+    });
 };
 
 const formatDate = (dateString?: string) => {
@@ -149,7 +194,7 @@ console.log(props.cases);
                                         <button
                                             v-if="item.status === 'draft'"
                                             class="btn btn-sm btn-link text-danger"
-                                            @click.prevent="handleDelete(item.id, item.title || '')"
+                                            @click.prevent="promptDelete(item.id, item.title || '')"
                                         >
                                             Delete
                                         </button>
@@ -170,19 +215,19 @@ console.log(props.cases);
                                         <template v-if="item.status === 'in_review'">
                                             <button
                                                 class="btn btn-sm btn-link text-success"
-                                                @click.prevent="$emit('approve', item.id)"
+                                                @click.prevent="promptApprove(item.id)"
                                             >
                                                 Approve
                                             </button>
                                             <button
                                                 class="btn btn-sm btn-link text-danger"
-                                                @click.prevent="$emit('reject', item.id)"
+                                                @click.prevent="promptReject(item.id)"
                                             >
                                                 Reject
                                             </button>
                                             <button
                                                 class="btn btn-sm btn-link text-warning"
-                                                @click.prevent="$emit('return', item.id)"
+                                                @click.prevent="promptReturn(item.id)"
                                             >
                                                 Return
                                             </button>
@@ -214,7 +259,7 @@ console.log(props.cases);
                                     <button
                                         v-if="item.status === 'draft'"
                                         class="btn btn-sm btn-link text-danger"
-                                        @click.prevent="handleDelete(item.id, item.title || '')"
+                                        @click.prevent="promptDelete(item.id, item.title || '')"
                                     >
                                         Delete
                                     </button>
@@ -228,6 +273,9 @@ console.log(props.cases);
                 <p class="mb-0 text-muted">No case studies found.</p>
             </div>
         </div>
+
+        <CaseActionReasonModal ref="reasonModal" @success="$emit('success')" />
+        <CaseActionConfirmModal ref="confirmModal" @success="$emit('success')" />
     </div>
 </template>
 

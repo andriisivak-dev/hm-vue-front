@@ -86,12 +86,10 @@ onMounted(() => {
 
 const casesForCurrentTab = computed(() => (casesData.value as unknown as CaseStudy[]) || []);
 
-const handleDelete = async (caseId: number, caseTitle: string) => {
-    if (confirm(`Are you sure you want to delete case #${caseId} (${caseTitle})?`)) {
-        const success = await remove(caseId);
-        if (success) {
-            fetchPage(page.value);
-        }
+const handleDelete = async (caseId: number) => {
+    const success = await remove(caseId);
+    if (success) {
+        fetchPage(page.value);
     }
 };
 </script>

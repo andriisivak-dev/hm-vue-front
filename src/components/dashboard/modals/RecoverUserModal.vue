@@ -69,11 +69,11 @@ function reset() {
         <div v-if="alertMsg" class="alert mb-3" :class="`alert-${alertType}`" role="alert">
             {{ alertMsg }}
         </div>
-        <p>
+        <h4>
             Are you sure you want to recover
             <strong id="recoverUserName">{{ displayUserName }}</strong
             >?
-        </p>
+        </h4>
         <p class="text-muted small">
             The user will regain access to the system and their assignments will be active again.
         </p>

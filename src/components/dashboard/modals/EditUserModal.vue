@@ -176,7 +176,13 @@ function reset() {
         <div v-if="alertMsg" class="alert mb-3" :class="`alert-${alertType}`" role="alert">
             {{ alertMsg }}
         </div>
-        <form @submit.prevent="onSubmit" id="editUserForm" novalidate v-if="user">
+        <form
+            @submit.prevent="onSubmit"
+            id="editUserForm"
+            novalidate
+            v-if="user"
+            class="app-modal-form"
+        >
             <input type="hidden" :value="user.id" id="editUserId" />
             <div class="mb-3">
                 <TextField
@@ -236,3 +242,12 @@ function reset() {
         </form>
     </AppModal>
 </template>
+
+<style scoped>
+.app-modal-form {
+    max-width: 380px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+</style>

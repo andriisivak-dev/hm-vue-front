@@ -59,10 +59,10 @@ function onHidden() {
             {{ alertMsg }}
         </div>
 
-        <p class="mb-0">
-            Delete <strong id="deleteCustomerName">{{ displayName }}</strong
+        <h4 class="mb-0">
+            Delete customer <strong id="deleteCustomerName">{{ displayName }}</strong
             >? This action cannot be undone.
-        </p>
+        </h4>
 
         <div class="d-flex justify-content-end gap-2 mt-4">
             <button type="button" class="btn btn-lgrey" @click="baseModal?.hide()">Cancel</button>
