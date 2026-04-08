@@ -38,6 +38,8 @@ export interface CaseStudy {
     progress?: number;
     author: CaseStudyAuthor;
     reviewer: CaseStudyReviewer;
+    approved_by?: CaseStudyAuthor | null;
+    returned_by?: CaseStudyAuthor | null;
     return_reason?: string;
 }
 

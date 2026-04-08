@@ -17,10 +17,19 @@ import AppTable from '@/components/common/AppTable.vue';
 const userStore = useUserStore();
 const currentUser = computed(() => userStore.user);
 
-defineProps<{
+const props = defineProps<{
     cases: CaseStudy[];
     viewMode: string;
 }>();
+
+// Show 'Approved By' column for modes where a case can be approved
+const showApprovedBy = computed(() =>
+    ['approved', 'library', 'all'].includes(props.viewMode)
+);
+// Show 'Returned By' column for modes where a case can be returned
+const showReturnedBy = computed(() =>
+    ['returned', 'all'].includes(props.viewMode)
+);
 
 defineEmits<{
     (e: 'success'): void;
@@ -114,6 +123,8 @@ const formatDate = (dateString?: string) => {
                     <tr>
                         <th>Case ID</th>
                         <th>Submitted By</th>
+                        <th v-if="showApprovedBy">Approved By</th>
+                        <th v-if="showReturnedBy">Returned By</th>
                         <th>Company</th>
                         <th>Location</th>
                         <th>Industry</th>
@@ -133,6 +144,12 @@ const formatDate = (dateString?: string) => {
                                     ? 'You'
                                     : item.author?.full_name || '—'
                             }}
+                        </td>
+                        <td v-if="showApprovedBy" data-label="Approved By" class="text-muted">
+                            {{ item.approved_by?.full_name || '—' }}
+                        </td>
+                        <td v-if="showReturnedBy" data-label="Returned By" class="text-muted">
+                            {{ item.returned_by?.full_name || '—' }}
                         </td>
 
                         <td data-label="Company">{{ item._case_customer_name || '—' }}</td>

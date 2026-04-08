@@ -36,6 +36,8 @@ export interface CaseListItem {
     total_steps: number;
     author: CaseAuthor | null;
     reviewer: CaseReviewer | null;
+    approved_by: CaseAuthor | null;
+    returned_by: CaseAuthor | null;
     created_at: string;
     updated_at: string;
     submitted_at: string | null;
@@ -66,6 +68,8 @@ export interface CaseDetail {
     meta_fields: Record<string, unknown>;
     author: CaseAuthor | null;
     reviewer: CaseReviewer | null;
+    approved_by: CaseAuthor | null;
+    returned_by: CaseAuthor | null;
     review_message: string | null;
     review_history: ReviewHistoryEntry[];
     permissions: CasePermissions;
