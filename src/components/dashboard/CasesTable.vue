@@ -108,7 +108,7 @@ const formatDate = (dateString?: string) => {
 
 <template>
     <div class="card mt-4 border-0">
-        <div class="card-body p-0">
+        <div class="card-body p-0 app-case-table">
             <AppTable v-if="cases.length > 0" :show="cases.length > 0">
                 <template #head>
                     <tr>
@@ -309,6 +309,11 @@ const formatDate = (dateString?: string) => {
 </template>
 
 <style scoped>
+.app-case-table {
+    min-height: 400px;
+    position: relative;
+}
+
 .action-btn {
     margin: 0;
     padding: 4px;

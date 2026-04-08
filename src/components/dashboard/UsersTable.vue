@@ -161,7 +161,7 @@ console.log(users);
         </div>
 
         <div class="card">
-            <div class="card-body p-0">
+            <div class="card-body p-0 app-users-table">
                 <div
                     class="table-preloader"
                     :class="{ 'is-active': loading }"
@@ -174,8 +174,13 @@ console.log(users);
                 </div>
 
                 <AppTable
-                    :show="Boolean(!loading && users && users.length > 0)"
+                    :show="Boolean(users && users.length > 0)"
                     ariaLabel="Users list"
+                    :style="{
+                        opacity: loading ? 0.5 : 1,
+                        transition: 'opacity 0.3s ease',
+                        pointerEvents: loading ? 'none' : 'auto'
+                    }"
                 >
                     <template #head>
                         <tr>
@@ -288,3 +293,10 @@ console.log(users);
         />
     </div>
 </template>
+
+<style scoped>
+.app-users-table {
+    min-height: 400px;
+    position: relative;
+}
+</style>

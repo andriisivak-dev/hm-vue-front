@@ -6,19 +6,44 @@ defineProps<{
 </script>
 
 <template>
-    <div class="app-table-wrapper" v-show="show !== false">
-        <table class="table table-hover mb-0" :aria-label="ariaLabel">
-            <thead class="table-light">
-                <slot name="head"></slot>
-            </thead>
-            <tbody>
-                <slot name="body"></slot>
-            </tbody>
-        </table>
-    </div>
+    <transition name="fade">
+        <div class="app-table-wrapper" v-show="show">
+            <table class="table table-hover mb-0" :aria-label="ariaLabel">
+                <thead class="table-light">
+                    <slot name="head"></slot>
+                </thead>
+                <TransitionGroup name="table-row" tag="tbody">
+                    <slot name="body"></slot>
+                </TransitionGroup>
+            </table>
+        </div>
+    </transition>
 </template>
 
 <style scoped>
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+.table-row-move,
+.table-row-enter-active,
+.table-row-leave-active {
+    transition:
+        opacity 0.3s ease,
+        background-color 0.3s ease;
+}
+.table-row-enter-from,
+.table-row-leave-to {
+    opacity: 0;
+}
+
+/* Table */
 .app-table-wrapper {
     border-radius: 5px;
     background:

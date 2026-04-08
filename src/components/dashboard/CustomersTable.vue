@@ -108,7 +108,7 @@ function safe(value: string | null | undefined): string {
 
         <!-- Card / Table -->
         <div class="card">
-            <div class="card-body p-0">
+            <div class="card-body p-0 app-customers-table">
                 <!-- Preloader bar -->
                 <div
                     class="table-preloader"
@@ -122,8 +122,13 @@ function safe(value: string | null | undefined): string {
                 </div>
 
                 <AppTable
-                    :show="Boolean(!loading && customers && customers.length > 0)"
+                    :show="Boolean(customers && customers.length > 0)"
                     ariaLabel="Customers list"
+                    :style="{
+                        opacity: loading ? 0.5 : 1,
+                        transition: 'opacity 0.3s ease',
+                        pointerEvents: loading ? 'none' : 'auto'
+                    }"
                 >
                     <template #head>
                         <tr>
@@ -225,4 +230,9 @@ function safe(value: string | null | undefined): string {
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.app-customers-table {
+    min-height: 400px;
+    position: relative;
+}
+</style>
