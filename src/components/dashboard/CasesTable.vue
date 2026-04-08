@@ -1,12 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useUserStore } from '@/stores/user';
 import type { CaseStudy } from './CaseStudyCard.vue';
+import CaseActionReasonModal from './modals/CaseActionReasonModal.vue';
+import CaseActionConfirmModal from './modals/CaseActionConfirmModal.vue';
+import {
+    IconActionApprove,
+    IconActionView,
+    IconActionDelete,
+    IconActionViewDetails,
+    IconActionReturn
+} from '../SVG';
+import { IconActionContinue, IconActionEdit, IconActionReject } from '@/components/SVG';
 
 const userStore = useUserStore();
 const currentUser = computed(() => userStore.user);
 
-const props = defineProps<{
+defineProps<{
     cases: CaseStudy[];
     viewMode: string;
 }>();
@@ -14,10 +24,6 @@ const props = defineProps<{
 defineEmits<{
     (e: 'success'): void;
 }>();
-
-import { ref } from 'vue';
-import CaseActionReasonModal from './modals/CaseActionReasonModal.vue';
-import CaseActionConfirmModal from './modals/CaseActionConfirmModal.vue';
 
 const reasonModal = ref<InstanceType<typeof CaseActionReasonModal> | null>(null);
 const confirmModal = ref<InstanceType<typeof CaseActionConfirmModal> | null>(null);
@@ -97,8 +103,6 @@ const formatDate = (dateString?: string) => {
     }
     return dateString;
 };
-
-console.log(props.cases);
 </script>
 
 <template>
@@ -149,25 +153,129 @@ console.log(props.cases);
                             </td>
 
                             <td data-label="Actions" class="text-center">
-                                <template v-if="viewMode === 'library' || viewMode === 'approved'">
-                                    <a
-                                        :href="`/case-study/?cid=${item.id}&mode=view`"
-                                        class="btn btn-sm btn-link text-info"
-                                        >View</a
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <template
+                                        v-if="viewMode === 'library' || viewMode === 'approved'"
                                     >
-                                    <a href="#" class="btn btn-sm btn-link text-info"
-                                        >View Details</a
+                                        <a
+                                            :href="`/case-study/?cid=${item.id}&mode=view`"
+                                            class="action-btn"
+                                            title="View Case Study"
+                                        >
+                                            <IconActionView color="#0dcaf0" />
+                                        </a>
+                                        <a
+                                            href="#"
+                                            @click.prevent
+                                            class="action-btn"
+                                            title="View Case Study Details"
+                                        >
+                                            <IconActionViewDetails color="#262469" />
+                                        </a>
+                                    </template>
+                                    <template
+                                        v-else-if="
+                                            currentUser?.role === 'hm_manager' ||
+                                            currentUser?.role === 'hm_administrator' ||
+                                            currentUser?.role === 'administrator'
+                                        "
                                     >
-                                </template>
-                                <template
-                                    v-else-if="
-                                        currentUser?.role === 'hm_manager' ||
-                                        currentUser?.role === 'hm_administrator' ||
-                                        currentUser?.role === 'administrator'
-                                    "
-                                >
-                                    <template v-if="item.author?.id === currentUser?.id">
-                                        <!-- Own cases -->
+                                        <template v-if="item.author?.id === currentUser?.id">
+                                            <!-- Own cases -->
+                                            <a
+                                                v-if="['draft', 'returned'].includes(item.status)"
+                                                :href="`/case-study/?cid=${item.id}`"
+                                                class="action-btn"
+                                                title="Continue Case Study"
+                                            >
+                                                <IconActionContinue color="#262469" />
+                                            </a>
+                                            <a
+                                                v-else-if="
+                                                    item.status === 'in_review' &&
+                                                    ['administrator'].includes(
+                                                        currentUser?.role || ''
+                                                    )
+                                                "
+                                                href="#"
+                                                class="action-btn"
+                                                title="Edit Case Study"
+                                            >
+                                                <IconActionEdit color="#262469" />
+                                            </a>
+                                            <a
+                                                v-else
+                                                :href="`/case-study/?cid=${item.id}&mode=view`"
+                                                class="action-btn"
+                                                title="View Case Study"
+                                            >
+                                                <IconActionView color="#0dcaf0" />
+                                            </a>
+                                            <button
+                                                v-if="item.status === 'draft'"
+                                                class="action-btn"
+                                                @click.prevent="
+                                                    promptDelete(item.id, item.title || '')
+                                                "
+                                                title="Delete Case Study"
+                                            >
+                                                <IconActionDelete />
+                                            </button>
+                                        </template>
+                                        <template v-else>
+                                            <!-- Subordinate cases -->
+                                            <a
+                                                :href="`/case-study/?cid=${item.id}&mode=view`"
+                                                class="action-btn"
+                                                title="View Case Study"
+                                            >
+                                                <IconActionView color="#0dcaf0" />
+                                            </a>
+                                            <a
+                                                v-if="item.status === 'in_review'"
+                                                href="#"
+                                                class="action-btn"
+                                                title="Edit Case Study"
+                                            >
+                                                <IconActionEdit color="#262469" />
+                                            </a>
+                                            <template v-if="item.status === 'in_review'">
+                                                <button
+                                                    class="action-btn"
+                                                    @click.prevent="promptApprove(item.id)"
+                                                    title="Approve Case Study"
+                                                >
+                                                    <IconActionApprove color="#5eab1d" />
+                                                </button>
+                                                <button
+                                                    class="action-btn"
+                                                    @click.prevent="promptReturn(item.id)"
+                                                    title="Return Case for Revision"
+                                                >
+                                                    <IconActionReturn color="#f7931d" />
+                                                </button>
+                                                <button
+                                                    class="action-btn"
+                                                    @click.prevent="promptReject(item.id)"
+                                                    title="Reject Case Study"
+                                                >
+                                                    <IconActionReject color="#d91e18" />
+                                                </button>
+                                            </template>
+                                        </template>
+                                    </template>
+                                    <template v-else-if="currentUser?.role === 'hm_marketing'">
+                                        <!-- Marketing Actions -->
+                                        <a
+                                            :href="`/case-study/?cid=${item.id}&mode=view`"
+                                            class="action-btn"
+                                            title="View Case Study"
+                                        >
+                                            <IconActionView color="#0dcaf0" />
+                                        </a>
+                                    </template>
+                                    <template v-else>
+                                        <!-- Field Agent Actions -->
                                         <a
                                             v-if="['draft', 'returned'].includes(item.status)"
                                             :href="`/case-study/?cid=${item.id}`"
@@ -175,95 +283,23 @@ console.log(props.cases);
                                             >Continue</a
                                         >
                                         <a
-                                            v-else-if="
-                                                item.status === 'in_review' &&
-                                                ['administrator', 'hm_administrator'].includes(
-                                                    currentUser?.role || ''
-                                                )
-                                            "
-                                            href="#"
-                                            class="btn btn-sm btn-link text-primary"
-                                            >Edit</a
-                                        >
-                                        <a
                                             v-else
                                             :href="`/case-study/?cid=${item.id}&mode=view`"
-                                            class="btn btn-sm btn-link text-info"
-                                            >View</a
+                                            class="action-btn"
+                                            title="View Case Study"
                                         >
+                                            <IconActionView color="#0dcaf0" />
+                                        </a>
                                         <button
                                             v-if="item.status === 'draft'"
-                                            class="btn btn-sm btn-link text-danger"
+                                            class="action-btn"
                                             @click.prevent="promptDelete(item.id, item.title || '')"
+                                            title="Delete Case Study"
                                         >
-                                            Delete
+                                            <IconActionDelete />
                                         </button>
                                     </template>
-                                    <template v-else>
-                                        <!-- Subordinate cases -->
-                                        <a
-                                            :href="`/case-study/?cid=${item.id}&mode=view`"
-                                            class="btn btn-sm btn-link text-info"
-                                            >View</a
-                                        >
-                                        <a
-                                            v-if="item.status === 'in_review'"
-                                            href="#"
-                                            class="btn btn-sm btn-link text-primary"
-                                            >Edit</a
-                                        >
-                                        <template v-if="item.status === 'in_review'">
-                                            <button
-                                                class="btn btn-sm btn-link text-success"
-                                                @click.prevent="promptApprove(item.id)"
-                                            >
-                                                Approve
-                                            </button>
-                                            <button
-                                                class="btn btn-sm btn-link text-danger"
-                                                @click.prevent="promptReject(item.id)"
-                                            >
-                                                Reject
-                                            </button>
-                                            <button
-                                                class="btn btn-sm btn-link text-warning"
-                                                @click.prevent="promptReturn(item.id)"
-                                            >
-                                                Return
-                                            </button>
-                                        </template>
-                                    </template>
-                                </template>
-                                <template v-else-if="currentUser?.role === 'hm_marketing'">
-                                    <!-- Marketing Actions -->
-                                    <a
-                                        :href="`/case-study/?cid=${item.id}&mode=view`"
-                                        class="btn btn-sm btn-link text-info"
-                                        >View</a
-                                    >
-                                </template>
-                                <template v-else>
-                                    <!-- Field Agent Actions -->
-                                    <a
-                                        v-if="['draft', 'returned'].includes(item.status)"
-                                        :href="`/case-study/?cid=${item.id}`"
-                                        class="btn btn-sm btn-link text-primary"
-                                        >Continue</a
-                                    >
-                                    <a
-                                        v-else
-                                        :href="`/case-study/?cid=${item.id}&mode=view`"
-                                        class="btn btn-sm btn-link text-info"
-                                        >View</a
-                                    >
-                                    <button
-                                        v-if="item.status === 'draft'"
-                                        class="btn btn-sm btn-link text-danger"
-                                        @click.prevent="promptDelete(item.id, item.title || '')"
-                                    >
-                                        Delete
-                                    </button>
-                                </template>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -292,5 +328,17 @@ console.log(props.cases);
 .table-responsive td,
 .table-responsive th {
     color: #262469;
+}
+
+.action-btn {
+    margin: 0;
+    padding: 4px 6px;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.action-btn:hover {
+    opacity: 0.75;
 }
 </style>
