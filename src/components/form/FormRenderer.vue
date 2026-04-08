@@ -2,6 +2,7 @@
 import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue';
 import { useForm } from 'vee-validate';
 import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
+import { useUserStore } from '@/stores/user';
 import { useFileUploadQueue } from '@/composables/useFileUploadQueue';
 import { formsService, casesService, ApiError } from '@/api';
 import '../../assets/form-design.css';
@@ -64,6 +65,7 @@ const emit = defineEmits<{
 // ── Store & form ──────────────────────────────────────────────────────────────
 
 const store = useCaseFormStore();
+const userStore = useUserStore();
 const { handleSubmit, validate, setValues } = useForm();
 const { flushQueue, clearAll } = useFileUploadQueue();
 
@@ -366,14 +368,23 @@ const onFinalSubmit = handleSubmit(
                 <Check :size="40" />
             </div>
             <h3>Case Study Submitted!</h3>
-            <p>
+            <p v-if="['administrator', 'hm_manager'].includes(userStore.user?.role || '')">
+                Your case study has been published in the Case Library.
+                <router-link to="/"> Go to Dashboard </router-link>
+            </p>
+            <p v-else>
                 Your case study has been submitted for review. Your supervisor will be notified
                 shortly.
-                <router-link to="/"> Go Home </router-link>
+                <router-link to="/"> Go to Dashboard </router-link>
             </p>
             <p class="case-id-note">
                 Case ID: <strong>#{{ store.caseId }}</strong>
             </p>
+            <div style="margin-top: 1rem;">
+                <a :href="`/case-study/?cid=${store.caseId}&mode=view`" class="btn-primary" style="text-decoration: none; display: inline-flex; justify-content: center;">
+                    View Case
+                </a>
+            </div>
         </div>
     </div>
 
