@@ -86,11 +86,18 @@ onMounted(() => {
 
 const casesForCurrentTab = computed(() => (casesData.value as unknown as CaseStudy[]) || []);
 
+// CaseStudyCard (draft cards) emits @delete(caseId) — API call lives here.
 const handleDelete = async (caseId: number) => {
     const success = await remove(caseId);
     if (success) {
         fetchPage(page.value);
     }
+};
+
+// CasesTable emits @success after any modal action (delete etc.).
+// The modals call the API themselves, so we only need to refresh here.
+const handleCaseSuccess = () => {
+    fetchPage(page.value);
 };
 </script>
 
@@ -154,7 +161,7 @@ const handleDelete = async (caseId: number) => {
                     v-else
                     :cases="casesForCurrentTab"
                     :viewMode="currentTab"
-                    @delete="handleDelete"
+                    @success="handleCaseSuccess"
                 />
             </template>
 

@@ -40,7 +40,7 @@ const page = ref(Number(route.query.page) || 1);
 const perPage = ref(10);
 
 const { data: casesData, meta, loading, fetch } = useCaseList();
-const { remove, approve, reject, returnForRevision } = useCaseMutations();
+const { remove } = useCaseMutations();
 const activitiesStore = useActivitiesStore();
 
 watch(
@@ -104,6 +104,7 @@ onMounted(() => {
 
 const casesForCurrentTab = computed(() => (casesData.value as unknown as CaseStudy[]) || []);
 
+// CaseStudyCard (draft cards) emits @delete(caseId) — API call lives here.
 const handleDelete = async (caseId: number) => {
     const success = await remove(caseId);
     if (success) {
@@ -112,28 +113,11 @@ const handleDelete = async (caseId: number) => {
     }
 };
 
-const handleApprove = async (caseId: number) => {
-    const success = await approve(caseId);
-    if (success) {
-        fetchPage(page.value);
-        activitiesStore.fetchActivities();
-    }
-};
-
-const handleReject = async (caseId: number, reason: string) => {
-    const success = await reject(caseId, reason || 'No reason provided');
-    if (success) {
-        fetchPage(page.value);
-        activitiesStore.fetchActivities();
-    }
-};
-
-const handleReturn = async (caseId: number, reason: string) => {
-    const success = await returnForRevision(caseId, reason || 'Please review and update');
-    if (success) {
-        fetchPage(page.value);
-        activitiesStore.fetchActivities();
-    }
+// CasesTable emits @success after any modal action (approve/reject/return/delete).
+// The modals call the API themselves, so we only need to refresh here.
+const handleCaseSuccess = () => {
+    fetchPage(page.value);
+    activitiesStore.fetchActivities();
 };
 </script>
 
@@ -180,10 +164,7 @@ const handleReturn = async (caseId: number, reason: string) => {
                     v-else
                     :cases="casesForCurrentTab"
                     :viewMode="currentTab"
-                    @delete="handleDelete"
-                    @approve="handleApprove"
-                    @reject="handleReject"
-                    @return="handleReturn"
+                    @success="handleCaseSuccess"
                 />
             </template>
 

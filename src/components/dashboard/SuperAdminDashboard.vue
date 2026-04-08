@@ -71,12 +71,7 @@ const page = ref(Number(route.query.page) || 1);
 const perPage = ref(10);
 
 const { data: casesData, meta: caseMeta, loading: casesLoading, fetch: fetchCases } = useCaseList();
-const {
-    remove: removeCase,
-    approve: approveCase,
-    reject: rejectCase,
-    returnForRevision: returnCase
-} = useCaseMutations();
+const { remove: removeCase } = useCaseMutations();
 const activitiesStore = useActivitiesStore();
 
 watch(
@@ -135,36 +130,22 @@ function fetchCasePage(p: number) {
 
 const casesForCurrentTab = computed(() => (casesData.value as unknown as CaseStudy[]) || []);
 
+// CaseStudyCard (draft cards) emits @delete(caseId) — API call lives here.
 const handleCaseDelete = async (caseId: number) => {
     const success = await removeCase(caseId);
     if (success) {
         fetchCasePage(page.value);
         activitiesStore.fetchActivities();
+        fetchStats(true);
     }
 };
 
-const handleCaseApprove = async (caseId: number) => {
-    const success = await approveCase(caseId);
-    if (success) {
-        fetchCasePage(page.value);
-        activitiesStore.fetchActivities();
-    }
-};
-
-const handleCaseReject = async (caseId: number, reason: string) => {
-    const success = await rejectCase(caseId, reason || 'No reason provided');
-    if (success) {
-        fetchCasePage(page.value);
-        activitiesStore.fetchActivities();
-    }
-};
-
-const handleCaseReturn = async (caseId: number, reason: string) => {
-    const success = await returnCase(caseId, reason || 'Please review and update');
-    if (success) {
-        fetchCasePage(page.value);
-        activitiesStore.fetchActivities();
-    }
+// CasesTable emits @success after any modal action (approve/reject/return/delete).
+// The modals call the API themselves, so we only need to refresh here.
+const handleCaseSuccess = () => {
+    fetchCasePage(page.value);
+    activitiesStore.fetchActivities();
+    fetchStats(true);
 };
 
 onMounted(() => {
@@ -277,10 +258,7 @@ onMounted(() => {
                         v-else
                         :cases="casesForCurrentTab"
                         :viewMode="currentCaseTab"
-                        @delete="handleCaseDelete"
-                        @approve="handleCaseApprove"
-                        @reject="handleCaseReject"
-                        @return="handleCaseReturn"
+                        @success="handleCaseSuccess"
                     />
                 </template>
                 <AppPagination
