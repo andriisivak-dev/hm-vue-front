@@ -4,6 +4,7 @@ import { useUserList } from '@/api';
 import type { User } from '@/api/types';
 import { IconRetry, NoUsersFound } from '@/components/SVG';
 import AppPagination from '@/components/common/AppPagination.vue';
+import AppTable from '@/components/common/AppTable.vue';
 import { useUserStore } from '@/stores/user';
 
 defineEmits(['edit', 'delete', 'recover']);
@@ -172,87 +173,83 @@ console.log(users);
                     </div>
                 </div>
 
-                <div class="table-responsive" v-show="!loading && users && users.length > 0">
-                    <table class="table table-hover mb-0" id="usersTable" aria-label="Users list">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Assignment</th>
-                                <th>Status</th>
-                                <th>Joined</th>
-                                <th
-                                    class="text-center"
-                                    v-if="userStore.user?.role !== 'hm_marketing'"
+                <AppTable
+                    :show="Boolean(!loading && users && users.length > 0)"
+                    ariaLabel="Users list"
+                >
+                    <template #head>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Assignment</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th class="text-center" v-if="userStore.user?.role !== 'hm_marketing'">
+                                Actions
+                            </th>
+                        </tr>
+                    </template>
+                    <template #body>
+                        <tr v-for="user in users" :key="user.id">
+                            <td data-label="Name">{{ user.full_name }}</td>
+                            <td data-label="Email">{{ user.email }}</td>
+                            <td data-label="Role">
+                                <span class="badge" :class="getRoleClass(user.role)">{{
+                                    getRoleLabel(user.role)
+                                }}</span>
+                            </td>
+                            <td data-label="Assignment">{{ getAssignmentLabel(user) }}</td>
+                            <td>
+                                <span
+                                    class="badge"
+                                    :class="
+                                        user.status === 'inactive' ? 'bg-secondary' : 'bg-success'
+                                    "
                                 >
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersTableBody">
-                            <tr v-for="user in users" :key="user.id">
-                                <td data-label="Name">{{ user.full_name }}</td>
-                                <td data-label="Email">{{ user.email }}</td>
-                                <td data-label="Role">
-                                    <span class="badge" :class="getRoleClass(user.role)">{{
-                                        getRoleLabel(user.role)
-                                    }}</span>
-                                </td>
-                                <td data-label="Assignment">{{ getAssignmentLabel(user) }}</td>
-                                <td>
-                                    <span
-                                        class="badge"
-                                        :class="
-                                            user.status === 'inactive'
-                                                ? 'bg-secondary'
-                                                : 'bg-success'
-                                        "
+                                    {{ user.status === 'inactive' ? 'Inactive' : 'Active' }}
+                                </span>
+                            </td>
+                            <td data-label="Joined" class="text-muted">
+                                {{ formatDate(user.created_at) }}
+                            </td>
+                            <td
+                                data-label="Actions"
+                                class="text-center"
+                                v-if="userStore.user?.role !== 'hm_marketing'"
+                            >
+                                <template v-if="user.status !== 'inactive'">
+                                    <button
+                                        class="btn btn-sm btn-link text-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editUserModal"
+                                        @click="$emit('edit', user)"
                                     >
-                                        {{ user.status === 'inactive' ? 'Inactive' : 'Active' }}
-                                    </span>
-                                </td>
-                                <td data-label="Joined" class="text-muted">
-                                    {{ formatDate(user.created_at) }}
-                                </td>
-                                <td
-                                    data-label="Actions"
-                                    class="text-center"
-                                    v-if="userStore.user?.role !== 'hm_marketing'"
-                                >
-                                    <template v-if="user.status !== 'inactive'">
-                                        <button
-                                            class="btn btn-sm btn-link text-primary"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editUserModal"
-                                            @click="$emit('edit', user)"
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            class="btn btn-sm btn-link text-danger"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#deleteUserModal"
-                                            @click="$emit('delete', user)"
-                                        >
-                                            Remove
-                                        </button>
-                                    </template>
-                                    <template v-else>
-                                        <button
-                                            class="btn btn-sm btn-link text-success"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#recoverUserModal"
-                                            @click="$emit('recover', user)"
-                                        >
-                                            Recover
-                                        </button>
-                                    </template>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                                        Edit
+                                    </button>
+                                    <button
+                                        class="btn btn-sm btn-link text-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteUserModal"
+                                        @click="$emit('delete', user)"
+                                    >
+                                        Remove
+                                    </button>
+                                </template>
+                                <template v-else>
+                                    <button
+                                        class="btn btn-sm btn-link text-success"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#recoverUserModal"
+                                        @click="$emit('recover', user)"
+                                    >
+                                        Recover
+                                    </button>
+                                </template>
+                            </td>
+                        </tr>
+                    </template>
+                </AppTable>
 
                 <div
                     class="table-empty-state"

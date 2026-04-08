@@ -4,6 +4,7 @@ import { useCustomerList } from '@/api';
 import type { Customer } from '@/api/types';
 import { IconRetry, NoUsersFound } from '@/components/SVG';
 import AppPagination from '@/components/common/AppPagination.vue';
+import AppTable from '@/components/common/AppTable.vue';
 
 defineEmits<{
     edit: [customer: Customer];
@@ -120,69 +121,62 @@ function safe(value: string | null | undefined): string {
                     </div>
                 </div>
 
-                <!-- Table -->
-                <div
-                    class="table-responsive customer-table"
-                    v-show="!loading && customers && customers.length > 0"
+                <AppTable
+                    :show="Boolean(!loading && customers && customers.length > 0)"
+                    ariaLabel="Customers list"
                 >
-                    <table
-                        class="table table-hover mb-0"
-                        id="customersTable"
-                        aria-label="Customers list"
-                    >
-                        <thead class="table-light">
-                            <tr>
-                                <th>Customer Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Billing Center</th>
-                                <th>Location</th>
-                                <th>City</th>
-                                <th>State</th>
-                                <th class="text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="customersTableBody">
-                            <tr v-for="customer in customers" :key="customer.id">
-                                <td data-label="Customer Name">
-                                    {{ safe(customer.company_name) }}
-                                </td>
-                                <td data-label="Email" :title="safe(customer.email)">
-                                    {{ safe(customer.email) }}
-                                </td>
-                                <td data-label="Phone" :title="safe(customer.phone)">
-                                    {{ safe(customer.phone) }}
-                                </td>
-                                <td data-label="Billing Center">
-                                    {{ safe(customer.billing_center) }}
-                                </td>
-                                <td data-label="Location">{{ safe(customer.address) }}</td>
-                                <td data-label="City">{{ safe(customer.city) }}</td>
-                                <td data-label="State">{{ safe(customer.state) }}</td>
-                                <td data-label="Actions" class="text-center">
-                                    <div class="customer-actions-wrap">
-                                        <button
-                                            class="btn btn-sm btn-link text-primary js-edit-customer"
-                                            aria-label="Edit customer"
-                                            title="Edit customer details"
-                                            @click="$emit('edit', customer)"
-                                        >
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button
-                                            class="btn btn-sm btn-link text-danger js-delete-customer"
-                                            aria-label="Delete customer"
-                                            title="Delete customer"
-                                            @click="$emit('delete', customer)"
-                                        >
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                    <template #head>
+                        <tr>
+                            <th>Customer Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Billing Center</th>
+                            <th>Location</th>
+                            <th>City</th>
+                            <th>State</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </template>
+                    <template #body>
+                        <tr v-for="customer in customers" :key="customer.id">
+                            <td data-label="Customer Name">
+                                {{ safe(customer.company_name) }}
+                            </td>
+                            <td data-label="Email" :title="safe(customer.email)">
+                                {{ safe(customer.email) }}
+                            </td>
+                            <td data-label="Phone" :title="safe(customer.phone)">
+                                {{ safe(customer.phone) }}
+                            </td>
+                            <td data-label="Billing Center">
+                                {{ safe(customer.billing_center) }}
+                            </td>
+                            <td data-label="Location">{{ safe(customer.address) }}</td>
+                            <td data-label="City">{{ safe(customer.city) }}</td>
+                            <td data-label="State">{{ safe(customer.state) }}</td>
+                            <td data-label="Actions" class="text-center">
+                                <div class="customer-actions-wrap">
+                                    <button
+                                        class="btn btn-sm btn-link text-primary js-edit-customer"
+                                        aria-label="Edit customer"
+                                        title="Edit customer details"
+                                        @click="$emit('edit', customer)"
+                                    >
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button
+                                        class="btn btn-sm btn-link text-danger js-delete-customer"
+                                        aria-label="Delete customer"
+                                        title="Delete customer"
+                                        @click="$emit('delete', customer)"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </AppTable>
 
                 <!-- Empty state -->
                 <div
@@ -230,3 +224,5 @@ function safe(value: string | null | undefined): string {
         />
     </div>
 </template>
+
+<style scoped></style>
