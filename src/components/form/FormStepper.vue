@@ -2,6 +2,10 @@
 import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
 import { Check } from 'lucide-vue-next';
 
+defineProps<{
+    isViewMode?: boolean;
+}>();
+
 const store = useCaseFormStore();
 
 const getStatus = (num: number) => {
@@ -16,9 +20,12 @@ const isLocked = (num: number) => !store.isViewMode && num > store.highestReache
 <template>
     <div class="stepper-wrapper">
         <p class="steps-form-title">Case Study</p>
-        <p class="steps-require-note">
-            "<span style="color: #c02b0a">*</span>" indicates required fields
-        </p>
+        <div class="d-flex align-items-center justify-content-between" v-if="!isViewMode">
+            <p class="steps-require-note">
+                "<span style="color: #c02b0a">*</span>" indicates required fields
+            </p>
+            <p>Your changes are saved automatically every 30 seconds.</p>
+        </div>
 
         <div class="steps-container">
             <template v-if="store.form?.steps">
@@ -58,7 +65,7 @@ const isLocked = (num: number) => !store.isViewMode && num > store.highestReache
 }
 
 .steps-container {
-    margin-top: 10px;
+    margin-top: 20px;
     display: flex;
     justify-content: space-between;
     gap: 8px 24px;

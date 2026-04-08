@@ -380,8 +380,12 @@ const onFinalSubmit = handleSubmit(
             <p class="case-id-note">
                 Case ID: <strong>#{{ store.caseId }}</strong>
             </p>
-            <div style="margin-top: 1rem;">
-                <a :href="`/case-study/?cid=${store.caseId}&mode=view`" class="btn-primary" style="text-decoration: none; display: inline-flex; justify-content: center;">
+            <div style="margin-top: 1rem">
+                <a
+                    :href="`/case-study/?cid=${store.caseId}&mode=view`"
+                    class="btn-primary"
+                    style="text-decoration: none; display: inline-flex; justify-content: center"
+                >
                     View Case
                 </a>
             </div>
@@ -390,7 +394,7 @@ const onFinalSubmit = handleSubmit(
 
     <!-- ── Form ──────────────────────────────────────────────────────────────── -->
     <div v-else-if="store.form" class="form-renderer-container glass-panel">
-        <FormStepper />
+        <FormStepper :is-view-mode="store.isViewMode" />
 
         <!-- Save error banner -->
         <transition name="fade-slide">
