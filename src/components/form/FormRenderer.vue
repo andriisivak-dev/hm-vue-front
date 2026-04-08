@@ -188,7 +188,7 @@ onMounted(async () => {
         setTimeout(() => {
             isPageLoading.value = false;
         }, 600);
-        
+
         // Setup autosave
         resetAutosaveTimer();
     }
@@ -244,13 +244,13 @@ const resetAutosaveTimer = () => {
 const saveDraft = async () => {
     // Only attempt save if not viewing, not submitting, and form is loaded
     if (store.isViewMode || store.isSaving || store.isSubmitted || !store.caseId) return;
-    
+
     resetAutosaveTimer();
-    
+
     // Bypass strict global validation (which highlights required fields on empty inputs).
     // Just save whatever valid/invalid state currently exists.
     const saved = await saveFormData(Math.max(0, store.currentStep - 1));
-    
+
     if (saved) {
         showDraftSaved.value = true;
         setTimeout(() => {
@@ -415,28 +415,28 @@ const onFinalSubmit = handleSubmit(
                 </button>
 
                 <div class="d-flex gap-2 align-items-center">
-                <!-- Save -->
-                <button
-                    v-if="!store.isViewMode"
-                    type="button"
-                    class="add-new-user-btn btn"
-                    :disabled="store.isSaving"
-                    @click="saveDraft"
-                >
-                    Save
-                </button>
+                    <!-- Save -->
+                    <button
+                        v-if="!store.isViewMode"
+                        type="button"
+                        class="add-new-user-btn btn"
+                        :disabled="store.isSaving"
+                        @click="saveDraft"
+                    >
+                        Save
+                    </button>
 
-                <!-- Saving indicator -->
-                <transition name="fade">
-                    <span v-if="store.isSaving" class="saving-indicator">
-                        <Loader2 :size="16" class="spin" />
-                        Saving…
-                    </span>
-                    <span v-else-if="showDraftSaved" class="saving-indicator text-success">
-                        <Check :size="16" />
-                        Saved
-                    </span>
-                </transition>
+                    <!-- Saving indicator -->
+                    <transition name="fade">
+                        <span v-if="store.isSaving" class="saving-indicator">
+                            <Loader2 :size="16" class="spin" />
+                            Saving…
+                        </span>
+                        <span v-else-if="showDraftSaved" class="saving-indicator text-success">
+                            <Check :size="16" />
+                            Saved
+                        </span>
+                    </transition>
                 </div>
 
                 <!-- Next -->
@@ -705,6 +705,6 @@ const onFinalSubmit = handleSubmit(
 }
 
 .add-new-user-btn {
-    font-size: 18px
+    font-size: 18px;
 }
 </style>
