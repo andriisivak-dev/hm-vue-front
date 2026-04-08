@@ -54,7 +54,7 @@ const ajaxUrl = win.GFConfig?.restUrl
     ? win.GFConfig.restUrl.replace('/wp-json/hemant/v1/', '/wp-admin/admin-ajax.php')
     : '/wp-admin/admin-ajax.php';
 
-// Target IDs as per gravity-populate.php
+// Target IDs
 const TARGETS = {
     HIDDEN_ID: '99',
     CITY_ID: '2',
@@ -289,7 +289,6 @@ const closeDropdown = () => {
 }
 
 .gf-readonly {
-    background: #f1f5f9 !important;
     cursor: not-allowed;
     color: rgb(100, 100, 100);
 }
@@ -381,5 +380,11 @@ const closeDropdown = () => {
 .autocomplete-dropdown::-webkit-scrollbar-thumb {
     background: #262469;
     border-radius: 10px;
+}
+
+.gf-readonly {
+    background:
+        linear-gradient(#f9fafb, #f9fafb) padding-box,
+        linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
 }
 </style>

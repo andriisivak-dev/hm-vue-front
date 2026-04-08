@@ -154,6 +154,17 @@ const toggleAll = () => {
     height: 0;
 }
 
+.gf-checkbox-input:disabled + .gf-checkbox-indicator {
+    background:
+        linear-gradient(#f9fafb, #f9fafb) padding-box,
+        linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
+    cursor: not-allowed;
+}
+
+.gf-checkbox-input:disabled + .gf-checkbox-indicator + .gf-checkbox-text {
+    cursor: not-allowed;
+}
+
 .gf-checkbox-indicator {
     width: 20px;
     height: 20px;

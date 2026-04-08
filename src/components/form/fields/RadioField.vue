@@ -72,6 +72,17 @@ const isReadonly = computed(() => {
     height: 0;
 }
 
+.gf-radio-input:disabled + .gf-radio-indicator {
+    cursor: not-allowed;
+    background:
+        linear-gradient(#f9fafb, #f9fafb) padding-box,
+        linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
+}
+
+.gf-radio-input:disabled + .gf-radio-indicator + .gf-radio-text {
+    cursor: not-allowed;
+}
+
 .gf-radio-indicator {
     width: 20px;
     height: 20px;

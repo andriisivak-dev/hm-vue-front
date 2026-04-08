@@ -61,7 +61,7 @@ const isReadonly = computed(() => {
 
 .gf-readonly {
     background:
-        linear-gradient(#f8fbff, #f8fbff) padding-box,
+        linear-gradient(#f9fafb, #f9fafb) padding-box,
         linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
     cursor: not-allowed;
 }

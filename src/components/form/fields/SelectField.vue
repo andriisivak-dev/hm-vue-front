@@ -90,8 +90,9 @@ const isReadonly = computed(() => {
 }
 
 .gf-select:disabled {
-    background: #f9fafb;
+    background:
+        linear-gradient(#f9fafb, #f9fafb) padding-box,
+        linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
     cursor: not-allowed;
-    opacity: 0.6;
 }
 </style>

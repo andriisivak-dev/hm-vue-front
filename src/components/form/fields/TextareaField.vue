@@ -60,9 +60,10 @@ const isReadonly = computed(() => {
 }
 
 .gf-readonly {
-    background: #f1f5f9 !important;
+    background:
+        linear-gradient(#f9fafb, #f9fafb) padding-box,
+        linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
     cursor: not-allowed;
-    color: rgb(100, 100, 100);
 }
 
 .gf-textarea::placeholder {
