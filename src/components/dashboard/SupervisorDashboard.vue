@@ -30,7 +30,16 @@ const currentTab = computed({
     },
     set(newTab) {
         if (newTab !== route.query.tab) {
-            router.push({ query: { ...route.query, tab: newTab, page: 1 } });
+            const query: Record<string, any> = { ...route.query, tab: newTab, page: 1 };
+            if (newTab !== 'library') {
+                delete query.customer_name;
+                delete query.tool_specification;
+                delete query.insert_specification;
+                delete query.hm_machine_type;
+                delete query.hm_machine_make;
+                delete query.hm_tool_brand;
+            }
+            router.push({ query });
             page.value = 1;
         }
     }
@@ -83,17 +92,16 @@ function fetchPage(p: number) {
     if (route.query.submitted_by) params.submitted_by = route.query.submitted_by;
     if (route.query.date_from) params.date_from = route.query.date_from;
     if (route.query.date_to) params.date_to = route.query.date_to;
-    if (route.query.customer_name) params.customer_name = route.query.customer_name;
-    if (route.query.tool_specification) params.tool_specification = route.query.tool_specification;
-    if (route.query.insert_specification)
-        params.insert_specification = route.query.insert_specification;
-    if (route.query.hm_machine_type) params.hm_machine_type = route.query.hm_machine_type;
-    if (route.query.hm_machine_make) params.hm_machine_make = route.query.hm_machine_make;
-    if (route.query.hm_tool_brand) params.hm_tool_brand = route.query.hm_tool_brand;
-    if (route.query.hm_industry_segment)
-        params.hm_industry_segment = route.query.hm_industry_segment;
-    if (route.query.date_from) params.date_from = route.query.date_from;
-    if (route.query.date_to) params.date_to = route.query.date_to;
+
+    if (currentTab.value === 'library') {
+        if (route.query.customer_name) params.customer_name = route.query.customer_name;
+        if (route.query.tool_specification) params.tool_specification = route.query.tool_specification;
+        if (route.query.insert_specification)
+            params.insert_specification = route.query.insert_specification;
+        if (route.query.hm_machine_type) params.hm_machine_type = route.query.hm_machine_type;
+        if (route.query.hm_machine_make) params.hm_machine_make = route.query.hm_machine_make;
+        if (route.query.hm_tool_brand) params.hm_tool_brand = route.query.hm_tool_brand;
+    }
 
     fetch(params, currentTab.value === 'library');
 }
