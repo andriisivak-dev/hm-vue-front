@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch, onUnmounted } from 'vue';
 
 defineProps({
     id: { type: String, required: true },
@@ -10,14 +10,24 @@ defineProps({
 const emit = defineEmits(['hidden', 'opened']);
 const isOpen = ref(false);
 
+watch(isOpen, (newVal) => {
+    if (newVal) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = 'auto';
+    }
+});
+
+onUnmounted(() => {
+    document.body.style.overflow = 'auto';
+});
+
 function show() {
-    document.body.style.overflow = 'hidden';
     isOpen.value = true;
     emit('opened');
 }
 
 function hide() {
-    document.body.style.overflow = 'auto';
     isOpen.value = false;
 }
 
