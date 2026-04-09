@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue';
 import { useForm } from 'vee-validate';
+import { useRouter } from 'vue-router';
 import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
 import { useUserStore } from '@/stores/user';
 import { useFileUploadQueue } from '@/composables/useFileUploadQueue';
@@ -49,6 +50,13 @@ const props = defineProps<{
      * If true, the form is completely read-only and no save/submit occurs.
      */
     isViewMode?: boolean;
+    /**
+     * If true, the form is in supervisor/admin edit mode:
+     * - All steps unlocked for free navigation
+     * - No per-step auto-validation on Next
+     * - Footer shows "Save Changes" and "Save & Approve"
+     */
+    isEditMode?: boolean;
 }>();
 
 // ── Emits ────────────────────────────────────────────────────────────────────
@@ -66,6 +74,7 @@ const emit = defineEmits<{
 
 const store = useCaseFormStore();
 const userStore = useUserStore();
+const router = useRouter();
 const { handleSubmit, validate, setValues } = useForm();
 const { flushQueue, clearAll } = useFileUploadQueue();
 
@@ -74,6 +83,9 @@ const { flushQueue, clearAll } = useFileUploadQueue();
 const isPageLoading = ref(true);
 const loadError = ref<string | null>(null);
 const showDraftSaved = ref(false);
+const caseStatus = ref<string>(''); // status of the loaded case
+const isSaveApproving = ref(false); // spinner for Save & Approve
+const isApproveSuccessful = ref(false); // show approve success screen
 let autosaveInterval: ReturnType<typeof setInterval> | null = null;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -147,8 +159,10 @@ onMounted(async () => {
         if (props.caseId) {
             store.setCaseId(props.caseId);
 
+            // ── Load case data ─────────────────────────────────────────────
             const caseData = await casesService.get(props.caseId);
             store.authorId = caseData.author?.id ?? null;
+            caseStatus.value = caseData.status;
 
             if (caseData.form_data && Object.keys(caseData.form_data).length > 0) {
                 store.hydrateFromFormData(caseData.form_data);
@@ -172,6 +186,29 @@ onMounted(async () => {
             // In view mode, do not show the success message because they are just viewing, not submitting right now.
             if (store.isViewMode) {
                 store.isSubmitted = false;
+            }
+
+            // ── Edit mode setup ────────────────────────────────────────────
+            if (props.isEditMode) {
+                store.isSubmitted = false;
+                // Unlock ALL steps so supervisor can navigate freely
+                store.setHighestReachedStep(store.totalPages);
+
+                // Access guard: redirect to view if status doesn't allow editing
+                const isAdmin = ['administrator', 'hm_administrator'].includes(
+                    userStore.user?.role ?? ''
+                );
+                const allowedStatuses = isAdmin
+                    ? ['returned', 'in_review', 'approved']
+                    : ['returned', 'in_review'];
+
+                if (!allowedStatuses.includes(caseData.status)) {
+                    router.replace({
+                        path: '/case-study',
+                        query: { cid: String(props.caseId), mode: 'view' }
+                    });
+                    return;
+                }
             }
         } else {
             // 2b. New case — create draft immediately so we always have a caseId
@@ -208,6 +245,13 @@ onBeforeUnmount(() => {
 
 /** Save current step data to the API, then advance to next step. */
 const nextStep = async () => {
+    if (props.isEditMode) {
+        // Edit mode: free navigation, no validation, no per-step save
+        store.nextStep();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+    }
+
     if (!store.isViewMode) {
         // Client-side validation first
         const result = await validate();
@@ -233,8 +277,11 @@ const prevStep = () => {
 const resetAutosaveTimer = () => {
     if (autosaveInterval) {
         clearInterval(autosaveInterval);
+        autosaveInterval = null;
     }
-    if (!store.isViewMode) {
+    // Autosave is only for regular (author) mode.
+    // In edit mode supervisors save explicitly; in view mode nothing is saved.
+    if (!store.isViewMode && !props.isEditMode) {
         autosaveInterval = setInterval(() => {
             if (!store.isSaving && !store.isSubmitted && store.caseId) {
                 saveDraft();
@@ -258,6 +305,79 @@ const saveDraft = async () => {
         setTimeout(() => {
             showDraftSaved.value = false;
         }, 2000);
+    }
+};
+
+// ── Edit mode save actions ────────────────────────────────────────────────
+
+/**
+ * Edit mode: save current form data without changing the case status.
+ */
+const saveEdited = async () => {
+    if (store.isSaving || isSaveApproving.value || !store.caseId) return;
+
+    const saved = await saveFormData(store.currentStep);
+    if (saved) {
+        showDraftSaved.value = true;
+        setTimeout(() => (showDraftSaved.value = false), 2500);
+    }
+};
+
+/**
+ * Edit mode: validate ALL steps by stepping through them, then save + approve.
+ * If any step has errors, jumps to the first failing step and stops.
+ */
+const saveAndApprove = async () => {
+    if (store.isSaving || isSaveApproving.value || !store.caseId) return;
+
+    store.saveError = null;
+    const originalStep = store.currentStep;
+    const failingSteps: number[] = [];
+    let firstErrors: Record<string, string> = {};
+
+    // Traverse all steps to validate each one
+    for (let step = 1; step <= store.totalPages; step++) {
+        store.setStep(step);
+        await nextTick(); // let Vue render this step's fields
+        const result = await validate();
+        if (!result.valid) {
+            failingSteps.push(step);
+            if (failingSteps.length === 1) {
+                firstErrors = result.errors as Record<string, string>;
+            }
+        }
+    }
+
+    if (failingSteps.length > 0) {
+        // Jump to the first step with errors and highlight them
+        store.setStep(failingSteps[0]);
+        await nextTick();
+        await scrollToFirstError(firstErrors);
+        store.saveError = `Please fix the errors on step(s): ${failingSteps.join(', ')} before approving.`;
+        return;
+    }
+
+    // All steps valid — restore original position, save, approve
+    store.setStep(originalStep);
+
+    const saved = await saveFormData(store.currentStep);
+    if (!saved) return;
+
+    isSaveApproving.value = true;
+    store.saveError = null;
+    try {
+        await casesService.approve(store.caseId!);
+        caseStatus.value = 'approved';
+        // Kill autosave immediately — approved case returns 403 on form-data writes
+        if (autosaveInterval) {
+            clearInterval(autosaveInterval);
+            autosaveInterval = null;
+        }
+        isApproveSuccessful.value = true;
+    } catch (err) {
+        store.saveError = formatApiError(err);
+    } finally {
+        isSaveApproving.value = false;
     }
 };
 
@@ -392,6 +512,41 @@ const onFinalSubmit = handleSubmit(
         </div>
     </div>
 
+    <!-- ── Edit mode: Approve success ───────────────────────────────────────── -->
+    <div v-else-if="isApproveSuccessful" class="form-renderer-container glass-panel">
+        <div class="form-body success-state">
+            <div class="success-icon-wrap">
+                <Check :size="40" />
+            </div>
+            <h3>Case Study Approved!</h3>
+            <p>
+                Case <strong>#{{ store.caseId }}</strong> has been approved and added to the Case
+                Library.
+            </p>
+            <div class="d-flex gap-3 justify-content-center" style="margin-top: 1rem">
+                <a
+                    :href="`/case-study/?cid=${store.caseId}&mode=view`"
+                    class="btn-primary"
+                    style="text-decoration: none; display: inline-flex; justify-content: center"
+                >
+                    View Case
+                </a>
+                <router-link
+                    to="/"
+                    class="btn-secondary"
+                    style="
+                        text-decoration: none;
+                        display: inline-flex;
+                        justify-content: center;
+                        padding: 8px 14px;
+                    "
+                >
+                    Go to Dashboard
+                </router-link>
+            </div>
+        </div>
+    </div>
+
     <!-- ── Form ──────────────────────────────────────────────────────────────── -->
     <div v-else-if="store.form" class="form-renderer-container glass-panel">
         <FormStepper :is-view-mode="store.isViewMode" />
@@ -417,12 +572,12 @@ const onFinalSubmit = handleSubmit(
             </transition>
 
             <div class="form-footer">
-                <!-- Previous -->
+                <!-- Previous (both modes) -->
                 <button
                     v-if="store.currentStep > 1"
                     type="button"
                     class="btn-secondary"
-                    :disabled="store.isSaving"
+                    :disabled="store.isSaving || isSaveApproving"
                     @click="prevStep"
                 >
                     <ChevronLeft :size="18" />
@@ -430,9 +585,20 @@ const onFinalSubmit = handleSubmit(
                 </button>
 
                 <div class="d-flex gap-2 align-items-center">
-                    <!-- Save -->
+                    <!-- Edit mode: Save Changes -->
                     <button
-                        v-if="!store.isViewMode"
+                        v-if="props.isEditMode"
+                        type="button"
+                        class="add-new-user-btn btn"
+                        :disabled="store.isSaving || isSaveApproving"
+                        @click="saveEdited"
+                    >
+                        Save Changes
+                    </button>
+
+                    <!-- Regular mode: Save draft -->
+                    <button
+                        v-else-if="!store.isViewMode"
                         type="button"
                         class="add-new-user-btn btn"
                         :disabled="store.isSaving"
@@ -441,9 +607,9 @@ const onFinalSubmit = handleSubmit(
                         Save
                     </button>
 
-                    <!-- Saving indicator -->
+                    <!-- Saving indicator (both modes) -->
                     <transition name="fade">
-                        <span v-if="store.isSaving" class="saving-indicator">
+                        <span v-if="store.isSaving || isSaveApproving" class="saving-indicator">
                             <Loader2 :size="16" class="spin" />
                             Saving…
                         </span>
@@ -454,21 +620,35 @@ const onFinalSubmit = handleSubmit(
                     </transition>
                 </div>
 
-                <!-- Next -->
+                <!-- Next Step (both modes — edit uses free navigation) -->
                 <button
                     v-if="store.currentStep < store.totalPages"
                     type="button"
                     class="btn-primary"
-                    :disabled="store.isSaving"
+                    :disabled="store.isSaving || isSaveApproving"
                     @click="nextStep"
                 >
                     Next Step
                     <ChevronRight :size="18" />
                 </button>
 
-                <!-- Submit -->
+                <!-- Edit mode: Save & Approve (last step, only for in_review / returned) -->
                 <button
-                    v-else-if="!store.isViewMode"
+                    v-else-if="props.isEditMode && ['in_review', 'returned'].includes(caseStatus)"
+                    type="button"
+                    class="btn-primary btn-submit"
+                    :disabled="store.isSaving || isSaveApproving"
+                    @click="saveAndApprove"
+                >
+                    <Loader2 v-if="isSaveApproving" :size="18" class="spin" />
+                    Save &amp; Approve
+                </button>
+
+                <!-- Edit mode last step for 'approved': only Save Changes is available -->
+
+                <!-- Regular mode: Submit -->
+                <button
+                    v-else-if="!store.isViewMode && !props.isEditMode"
                     type="button"
                     class="btn-primary"
                     :disabled="store.isSaving"

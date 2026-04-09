@@ -28,6 +28,7 @@ const caseId = computed<number | undefined>(() => {
  * Determine if we are in read-only view mode
  */
 const isViewMode = computed<boolean>(() => route.query.mode === 'view');
+const isEditMode = computed<boolean>(() => route.query.mode === 'edit');
 
 /**
  * Called by FormRenderer when a brand-new case is created.
@@ -59,6 +60,7 @@ function onCaseSubmitted(_id: number) {
                     :form-id="FORM_ID"
                     :case-id="caseId"
                     :is-view-mode="isViewMode"
+                    :is-edit-mode="isEditMode"
                     @case-created="onCaseCreated"
                     @case-submitted="onCaseSubmitted"
                 />

@@ -23,13 +23,9 @@ const props = defineProps<{
 }>();
 
 // Show 'Approved By' column for modes where a case can be approved
-const showApprovedBy = computed(() =>
-    ['approved', 'library', 'all'].includes(props.viewMode)
-);
+const showApprovedBy = computed(() => ['approved', 'library', 'all'].includes(props.viewMode));
 // Show 'Returned By' column for modes where a case can be returned
-const showReturnedBy = computed(() =>
-    ['returned', 'all'].includes(props.viewMode)
-);
+const showReturnedBy = computed(() => ['returned', 'all'].includes(props.viewMode));
 
 defineEmits<{
     (e: 'success'): void;
@@ -210,7 +206,7 @@ const formatDate = (dateString?: string) => {
                                                 item.status === 'in_review' &&
                                                 ['administrator'].includes(currentUser?.role || '')
                                             "
-                                            href="#"
+                                            :href="`/case-study/?cid=${item.id}&mode=edit`"
                                             class="action-btn"
                                             title="Edit Case Study"
                                         >
@@ -242,11 +238,26 @@ const formatDate = (dateString?: string) => {
                                         >
                                             <IconActionView color="#0dcaf0" />
                                         </a>
+                                        <!-- Subordinate cases: supervisor/admin edit -->
                                         <a
-                                            v-if="item.status === 'in_review'"
-                                            href="#"
+                                            v-if="['in_review', 'returned'].includes(item.status)"
+                                            :href="`/case-study/?cid=${item.id}&mode=edit`"
                                             class="action-btn"
                                             title="Edit Case Study"
+                                        >
+                                            <IconActionEdit color="#262469" />
+                                        </a>
+                                        <!-- Admin can also edit approved cases -->
+                                        <a
+                                            v-if="
+                                                item.status === 'approved' &&
+                                                ['administrator', 'hm_administrator'].includes(
+                                                    currentUser?.role || ''
+                                                )
+                                            "
+                                            :href="`/case-study/?cid=${item.id}&mode=edit`"
+                                            class="action-btn"
+                                            title="Edit Approved Case"
                                         >
                                             <IconActionEdit color="#262469" />
                                         </a>
@@ -288,11 +299,22 @@ const formatDate = (dateString?: string) => {
                                 <template v-else>
                                     <!-- Field Agent Actions -->
                                     <a
-                                        v-if="['draft', 'returned'].includes(item.status)"
+                                        v-if="item.status === 'returned'"
                                         :href="`/case-study/?cid=${item.id}`"
-                                        class="btn btn-sm btn-link text-primary"
-                                        >Continue</a
+                                        class="action-btn"
+                                        title="Edit Case Study"
                                     >
+                                        <IconActionEdit color="#262469" />
+                                    </a>
+                                    <a
+                                        v-else-if="item.status === 'draft'"
+                                        :href="`/case-study/?cid=${item.id}`"
+                                        class="action-btn"
+                                        title="Edit Case Study"
+                                    >
+                                        <IconActionContinue color="#262469" />
+                                    </a>
+
                                     <a
                                         v-else
                                         :href="`/case-study/?cid=${item.id}&mode=view`"
