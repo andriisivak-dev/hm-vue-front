@@ -183,6 +183,23 @@ const formatDate = (dateString?: string) => {
                                     >
                                         <IconActionViewDetails color="#262469" />
                                     </a>
+                                    <!-- Superadmin: edit & delete in library/approved view -->
+                                    <template v-if="currentUser?.role === 'administrator'">
+                                        <a
+                                            :href="`/case-study/?cid=${item.id}&mode=edit`"
+                                            class="action-btn"
+                                            title="Edit Case Study"
+                                        >
+                                            <IconActionEdit color="#262469" />
+                                        </a>
+                                        <button
+                                            class="action-btn"
+                                            @click.prevent="promptDelete(item.id, item.title || '')"
+                                            title="Delete Case Study"
+                                        >
+                                            <IconActionDelete />
+                                        </button>
+                                    </template>
                                 </template>
                                 <template
                                     v-else-if="
@@ -221,7 +238,15 @@ const formatDate = (dateString?: string) => {
                                             <IconActionView color="#0dcaf0" />
                                         </a>
                                         <button
-                                            v-if="item.status === 'draft'"
+                                            v-if="
+                                                item.status === 'draft' ||
+                                                (
+                                                    ['approved', 'rejected'].includes(item.status) &&
+                                                    ['administrator'].includes(
+                                                        currentUser?.role || ''
+                                                    )
+                                                )
+                                            "
                                             class="action-btn"
                                             @click.prevent="promptDelete(item.id, item.title || '')"
                                             title="Delete Case Study"
@@ -251,7 +276,7 @@ const formatDate = (dateString?: string) => {
                                         <a
                                             v-if="
                                                 item.status === 'approved' &&
-                                                ['administrator', 'hm_administrator'].includes(
+                                                ['administrator'].includes(
                                                     currentUser?.role || ''
                                                 )
                                             "
@@ -261,6 +286,20 @@ const formatDate = (dateString?: string) => {
                                         >
                                             <IconActionEdit color="#262469" />
                                         </a>
+                                        <!-- Admin: delete approved / rejected subordinate cases -->
+                                        <button
+                                            v-if="
+                                                ['approved', 'rejected'].includes(item.status) &&
+                                                ['administrator'].includes(
+                                                    currentUser?.role || ''
+                                                )
+                                            "
+                                            class="action-btn"
+                                            @click.prevent="promptDelete(item.id, item.title || '')"
+                                            title="Delete Case Study"
+                                        >
+                                            <IconActionDelete />
+                                        </button>
                                         <template v-if="item.status === 'in_review'">
                                             <button
                                                 class="action-btn"
