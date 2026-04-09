@@ -11,11 +11,13 @@ const emit = defineEmits(['hidden', 'opened']);
 const isOpen = ref(false);
 
 function show() {
+    document.body.style.overflow = 'hidden';
     isOpen.value = true;
     emit('opened');
 }
 
 function hide() {
+    document.body.style.overflow = 'auto';
     isOpen.value = false;
 }
 
@@ -106,7 +108,6 @@ defineExpose({ hide, show });
 
 .modal {
     z-index: 1055;
-    background-color: rgba(0, 0, 0, 1);
 }
 .modal-backdrop {
     z-index: 1050;
