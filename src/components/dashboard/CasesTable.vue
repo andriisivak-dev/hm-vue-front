@@ -240,12 +240,10 @@ const formatDate = (dateString?: string) => {
                                         <button
                                             v-if="
                                                 item.status === 'draft' ||
-                                                (
-                                                    ['approved', 'rejected'].includes(item.status) &&
+                                                (['approved', 'rejected'].includes(item.status) &&
                                                     ['administrator'].includes(
                                                         currentUser?.role || ''
-                                                    )
-                                                )
+                                                    ))
                                             "
                                             class="action-btn"
                                             @click.prevent="promptDelete(item.id, item.title || '')"
@@ -276,9 +274,7 @@ const formatDate = (dateString?: string) => {
                                         <a
                                             v-if="
                                                 item.status === 'approved' &&
-                                                ['administrator'].includes(
-                                                    currentUser?.role || ''
-                                                )
+                                                ['administrator'].includes(currentUser?.role || '')
                                             "
                                             :href="`/case-study/?cid=${item.id}&mode=edit`"
                                             class="action-btn"
@@ -290,9 +286,7 @@ const formatDate = (dateString?: string) => {
                                         <button
                                             v-if="
                                                 ['approved', 'rejected'].includes(item.status) &&
-                                                ['administrator'].includes(
-                                                    currentUser?.role || ''
-                                                )
+                                                ['administrator'].includes(currentUser?.role || '')
                                             "
                                             class="action-btn"
                                             @click.prevent="promptDelete(item.id, item.title || '')"

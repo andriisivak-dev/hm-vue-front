@@ -129,7 +129,8 @@ function fetchCasePage(p: number) {
 
     if (currentCaseTab.value === 'library') {
         if (route.query.customer_name) params.customer_name = route.query.customer_name;
-        if (route.query.tool_specification) params.tool_specification = route.query.tool_specification;
+        if (route.query.tool_specification)
+            params.tool_specification = route.query.tool_specification;
         if (route.query.insert_specification)
             params.insert_specification = route.query.insert_specification;
         if (route.query.hm_machine_type) params.hm_machine_type = route.query.hm_machine_type;
