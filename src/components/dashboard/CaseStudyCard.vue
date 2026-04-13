@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useUserStore } from '@/stores/user';
+import { decodeHtmlEntities, decodeTextOrDash, formatLocation } from '@/utils';
 
 export interface CaseStudyAuthor {
     id: number;
@@ -56,12 +57,10 @@ import CaseActionConfirmModal from './modals/CaseActionConfirmModal.vue';
 
 const confirmModal = ref<InstanceType<typeof CaseActionConfirmModal> | null>(null);
 
-const title = computed(
-    () =>
-        props.caseStudy._case_customer_name ||
-        props.caseStudy.title ||
-        `Case #${props.caseStudy.id}`
-);
+const title = computed(() => {
+    const rawTitle = props.caseStudy._case_customer_name || props.caseStudy.title;
+    return decodeHtmlEntities(rawTitle) || `Case #${props.caseStudy.id}`;
+});
 
 const statusLabel = computed(() => {
     const labels: Record<string, string> = {
@@ -113,7 +112,7 @@ const promptDelete = () => {
         <div class="card-status">{{ statusLabel }}</div>
         <div class="card-title title">{{ title }}</div>
         <div class="card-subtitle subtitle">
-            {{ caseStudy._case_city || '' }}, {{ caseStudy._case_state || '' }}
+            {{ formatLocation(caseStudy._case_city, caseStudy._case_state) }}
         </div>
 
         <div class="card-info info">
@@ -121,33 +120,36 @@ const promptDelete = () => {
                 {{ caseStudy.submitted_at }}
             </p>
             <p class="customer">
-                <span>• Customer:</span> {{ caseStudy._case_customer_name || '—' }}
+                <span>• Customer:</span> {{ decodeTextOrDash(caseStudy._case_customer_name) }}
             </p>
             <p class="industry">
                 <span>• Industry:</span>
-                {{ caseStudy.hm_industry_segment || '—' }}
+                {{ decodeTextOrDash(caseStudy.hm_industry_segment) }}
             </p>
-            <p class="product"><span>• Product:</span> {{ caseStudy.hm_product_type || '—' }}</p>
+            <p class="product"><span>• Product:</span> {{ decodeTextOrDash(caseStudy.hm_product_type) }}</p>
             <p class="machine-make">
-                <span>• Machine Make(Make & Model):</span> {{ caseStudy.hm_machine_make || '—' }}
+                <span>• Machine Make(Make & Model):</span>
+                {{ decodeTextOrDash(caseStudy.hm_machine_make) }}
             </p>
             <p class="machine-type">
-                <span>• Machine Type:</span> {{ caseStudy.hm_machine_type || '—' }}
+                <span>• Machine Type:</span> {{ decodeTextOrDash(caseStudy.hm_machine_type) }}
             </p>
             <p class="tool-spec">
                 <span>• Tool Specification(Tool holder/cutter):</span>
-                {{ caseStudy._case_tool_specification || '—' }}
+                {{ decodeTextOrDash(caseStudy._case_tool_specification) }}
             </p>
             <p class="insert-spec">
                 <span>• Insert specification / Round Tools:</span>
-                {{ caseStudy._case_insert_specification || '—' }}
+                {{ decodeTextOrDash(caseStudy._case_insert_specification) }}
             </p>
         </div>
 
         <div class="metrics" v-if="isFinal">
-            <div class="metric">Tool Life {{ caseStudy.hm_tool_life || '—' }}</div>
+            <div class="metric">Tool Life {{ decodeTextOrDash(caseStudy.hm_tool_life) }}</div>
             <!--            <div class="metric">Savings ₹{{ caseStudy._case_savings || '—' }}</div>-->
-            <div class="metric">Cycle Time {{ caseStudy._case_cycle_time_savings || '—' }}</div>
+            <div class="metric">
+                Cycle Time {{ decodeTextOrDash(caseStudy._case_cycle_time_savings) }}
+            </div>
         </div>
 
         <div class="progress-bar-title subtitle">

@@ -14,6 +14,7 @@ import {
 } from '../SVG';
 import { IconActionContinue, IconActionEdit, IconActionReject } from '@/components/SVG';
 import AppTable from '@/components/common/AppTable.vue';
+import { decodeTextOrDash, formatLocation } from '@/utils';
 
 const userStore = useUserStore();
 const currentUser = computed(() => userStore.user);
@@ -330,46 +331,44 @@ const formatDate = (dateString?: string) => {
                             <span class="value">{{
                                 item.author?.id === currentUser?.id
                                     ? 'You'
-                                    : item.author?.full_name || '—'
+                                    : decodeTextOrDash(item.author?.full_name)
                             }}</span>
                         </div>
                         <div class="mobile-case-row" v-if="showApprovedBy">
                             <span class="label">Approved By</span>
-                            <span class="value">{{ item.approved_by?.full_name || '—' }}</span>
+                            <span class="value">{{
+                                decodeTextOrDash(item.approved_by?.full_name)
+                            }}</span>
                         </div>
                         <div class="mobile-case-row" v-if="showReturnedBy">
                             <span class="label">Returned By</span>
-                            <span class="value">{{ item.returned_by?.full_name || '—' }}</span>
+                            <span class="value">{{
+                                decodeTextOrDash(item.returned_by?.full_name)
+                            }}</span>
                         </div>
                         <div class="mobile-case-row">
                             <span class="label">Company</span>
-                            <span class="value">{{ item._case_customer_name || '—' }}</span>
+                            <span class="value">{{
+                                decodeTextOrDash(item._case_customer_name)
+                            }}</span>
                         </div>
                         <div class="mobile-case-row">
                             <span class="label">Location</span>
-                            <span class="value">
-                                <template v-if="item._case_city || item._case_state">
-                                    {{ item._case_city || ''
-                                    }}{{
-                                        item._case_state
-                                            ? (item._case_city ? ', ' : '') + item._case_state
-                                            : ''
-                                    }}
-                                </template>
-                                <template v-else>—</template>
-                            </span>
+                            <span class="value">{{
+                                formatLocation(item._case_city, item._case_state)
+                            }}</span>
                         </div>
                         <div class="mobile-case-row">
                             <span class="label">Industry</span>
-                            <span class="value">{{ item.hm_industry_segment || '—' }}</span>
+                            <span class="value">{{ decodeTextOrDash(item.hm_industry_segment) }}</span>
                         </div>
                         <div class="mobile-case-row">
                             <span class="label">Product Type</span>
-                            <span class="value">{{ item.hm_product_type || '—' }}</span>
+                            <span class="value">{{ decodeTextOrDash(item.hm_product_type) }}</span>
                         </div>
                         <div class="mobile-case-row">
                             <span class="label">Machine</span>
-                            <span class="value">{{ item.hm_machine_make || '—' }}</span>
+                            <span class="value">{{ decodeTextOrDash(item.hm_machine_make) }}</span>
                         </div>
                         <div class="mobile-case-row">
                             <span class="label">Date</span>
@@ -416,7 +415,7 @@ const formatDate = (dateString?: string) => {
                                     {{
                                         item.author?.id === currentUser?.id
                                             ? 'You'
-                                            : item.author?.full_name || '—'
+                                            : decodeTextOrDash(item.author?.full_name)
                                     }}
                                 </td>
                                 <td
@@ -424,23 +423,31 @@ const formatDate = (dateString?: string) => {
                                     data-label="Approved By"
                                     class="text-muted"
                                 >
-                                    {{ item.approved_by?.full_name || '—' }}
+                                    {{ decodeTextOrDash(item.approved_by?.full_name) }}
                                 </td>
                                 <td
                                     v-if="showReturnedBy"
                                     data-label="Returned By"
                                     class="text-muted"
                                 >
-                                    {{ item.returned_by?.full_name || '—' }}
+                                    {{ decodeTextOrDash(item.returned_by?.full_name) }}
                                 </td>
 
-                                <td data-label="Company">{{ item._case_customer_name || '—' }}</td>
-                                <td data-label="Location">
-                                    {{ item._case_city || '' }}, {{ item._case_state || '' }}
+                                <td data-label="Company">
+                                    {{ decodeTextOrDash(item._case_customer_name) }}
                                 </td>
-                                <td data-label="Industry">{{ item.hm_industry_segment || '—' }}</td>
-                                <td data-label="Product Type">{{ item.hm_product_type || '—' }}</td>
-                                <td data-label="Machine">{{ item.hm_machine_make || '—' }}</td>
+                                <td data-label="Location">
+                                    {{ formatLocation(item._case_city, item._case_state) }}
+                                </td>
+                                <td data-label="Industry">
+                                    {{ decodeTextOrDash(item.hm_industry_segment) }}
+                                </td>
+                                <td data-label="Product Type">
+                                    {{ decodeTextOrDash(item.hm_product_type) }}
+                                </td>
+                                <td data-label="Machine">
+                                    {{ decodeTextOrDash(item.hm_machine_make) }}
+                                </td>
                                 <td data-label="Date" class="text-muted">
                                     {{ formatDate(item.submitted_at) }}
                                 </td>
