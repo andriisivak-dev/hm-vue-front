@@ -2,7 +2,7 @@
 import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import type { GFField } from '@/form-engine/types.ts';
 import { X, UploadCloud, File as FileIcon } from 'lucide-vue-next';
-import { useFileUploadQueue, type PendingFile } from '@/composables/useFileUploadQueue';
+import { useFileUploadQueueStore, type PendingFile } from '@/stores/fileUploadQueue';
 import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
 import BaseField from './BaseField.vue';
 
@@ -34,7 +34,8 @@ const emit = defineEmits<{
 }>();
 
 const fieldId = String(props.field.id);
-const { enqueuePending, dequeuePending, resolvedMap } = useFileUploadQueue();
+const uploadQueue = useFileUploadQueueStore();
+const { enqueuePending, dequeuePending } = uploadQueue;
 
 const isReadonly = computed(() => {
     return store.isFieldReadonly(props.field.id);
@@ -57,7 +58,7 @@ const statusTimers = new Map<string, ReturnType<typeof setTimeout>>();
  * Sync watcher on resolvedMap[fieldId]
  */
 watch(
-    () => resolvedMap[fieldId],
+    () => uploadQueue.resolvedMap[fieldId],
     (resolved) => {
         if (!resolved) return;
         Object.entries(resolved).forEach(([localId, url]) => {

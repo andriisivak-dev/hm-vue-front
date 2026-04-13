@@ -4,7 +4,7 @@ import { useForm } from 'vee-validate';
 import { useRouter } from 'vue-router';
 import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
 import { useUserStore } from '@/stores/user';
-import { useFileUploadQueue } from '@/composables/useFileUploadQueue';
+import { useFileUploadQueueStore } from '@/stores/fileUploadQueue';
 import { formsService, casesService, ApiError } from '@/api';
 import '../../assets/form-design.css';
 import FieldSkeleton from './FieldSkeleton.vue';
@@ -76,7 +76,7 @@ const store = useCaseFormStore();
 const userStore = useUserStore();
 const router = useRouter();
 const { handleSubmit, validate, setValues } = useForm();
-const { flushQueue, clearAll } = useFileUploadQueue();
+const { flushQueue, clearAll } = useFileUploadQueueStore();
 
 // ── Local state ───────────────────────────────────────────────────────────────
 

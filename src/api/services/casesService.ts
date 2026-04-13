@@ -163,7 +163,7 @@ export const casesService = {
      * POST /wp/v2/media
      * Uploads a file natively to the WP Media library.
      *
-     * NOTE: Prefer calling this only from useFileUploadQueue.flushQueue() so
+     * NOTE: Prefer calling this only from useFileUploadQueueStore().flushQueue() so
      * that uploads are deferred until the user actually saves a step.  Direct
      * calls from UI components lead to orphaned media when the user removes a
      * file before submitting the form.
