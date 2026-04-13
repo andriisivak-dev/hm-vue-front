@@ -181,7 +181,7 @@ export const casesService = {
      */
     async uploadMedia(
         file: File,
-        onProgress?: (percent: number) => void
+        _onProgress?: (percent: number) => void
     ): Promise<{ id: number; source_url: string }> {
         const client = useHttpClient();
         const { baseUrl, nonce } = client as unknown as { baseUrl: string; nonce: string };
@@ -189,61 +189,42 @@ export const casesService = {
         // Derive the WP core media endpoint from our custom namespace URL.
         // e.g. https://example.com/wp-json/csp/v1  -->  https://example.com/wp-json/wp/v2/media
         const parsedBase = new URL(baseUrl);
-        // Strip everything from the trailing path segment of our namespace onward.
-        // pathname is e.g. /wp-json/csp/v1  →  keep /wp-json, append /wp/v2/media
         const wpJsonPath = parsedBase.pathname.replace(/\/csp\/v1\/?$/, '');
         const mediaUrl = new URL(`${wpJsonPath}/wp/v2/media?hmctx=case_media`, parsedBase.origin);
 
-        return new Promise((resolve, reject) => {
-            /**
-             * XHR is used instead of fetch because fetch doesn't expose upload
-             * progress events.
-             *
-             * We send the file as a raw binary body (not FormData/multipart) and
-             * set Content-Type + Content-Disposition explicitly.  This is the
-             * approach the WP REST API documentation recommends and it works
-             * consistently across all server configurations.
-             */
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', mediaUrl.toString());
-            xhr.setRequestHeader('X-WP-Nonce', nonce);
-            xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-            xhr.setRequestHeader(
-                'Content-Disposition',
-                `attachment; filename="${encodeURIComponent(file.name)}"`
-            );
-
-            xhr.upload.addEventListener('progress', (e) => {
-                if (e.lengthComputable && onProgress) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    onProgress(percent);
-                }
-            });
-
-            xhr.onload = () => {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        resolve(response);
-                    } catch {
-                        reject(new Error('Invalid JSON response from WP API'));
-                    }
-                } else {
-                    let message = `Upload failed (HTTP ${xhr.status})`;
-                    try {
-                        const errBody = JSON.parse(xhr.responseText);
-                        if (errBody?.message) message = errBody.message;
-                    } catch { /* ignore */ }
-                    reject(new Error(message));
-                }
-            };
-
-            xhr.onerror = () => reject(new Error('Network error during file upload'));
-            xhr.ontimeout = () => reject(new Error('File upload timed out'));
-
-            // Send raw binary — do NOT wrap into FormData when Content-Disposition is set
-            xhr.send(file);
+        /**
+         * Using fetch instead of XHR.
+         *
+         * We send the file as a raw binary body (not FormData/multipart) together
+         * with Content-Type + Content-Disposition — this is the WP REST API
+         * canonical upload method and works consistently on all server configs.
+         *
+         * Progress tracking is omitted because the progress bar in FileUploadField
+         * is animated client-side and does not rely on real upload events.
+         */
+        const response = await fetch(mediaUrl.toString(), {
+            method: 'POST',
+            headers: {
+                'X-WP-Nonce': nonce,
+                'Content-Type': file.type || 'application/octet-stream',
+                'Content-Disposition': `attachment; filename="${encodeURIComponent(file.name)}"`,
+            },
+            body: file,
         });
+
+        let json: unknown;
+        try {
+            json = await response.json();
+        } catch {
+            throw new Error(`Upload failed: invalid JSON response (HTTP ${response.status})`);
+        }
+
+        if (!response.ok) {
+            const err = json as { message?: string };
+            throw new Error(err?.message ?? `Upload failed (HTTP ${response.status})`);
+        }
+
+        return json as { id: number; source_url: string };
     },
 
     // ── Status transitions ────────────────────────────────────────────────────
