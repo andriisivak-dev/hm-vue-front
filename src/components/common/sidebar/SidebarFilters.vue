@@ -152,7 +152,7 @@ const resetFilters = () => {
         <div v-else-if="error" class="text-danger small mb-3">{{ error }}</div>
 
         <template v-else>
-            <div class="mb-2">
+            <div class="mb-2" v-if="!isMarketing">
                 <label class="form-label small mb-1" for="cases-filter-status">STATUS</label>
                 <select
                     v-model="selectedStatus"
