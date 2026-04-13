@@ -83,19 +83,19 @@ export function useUserHierarchy() {
 }
 
 export function useRecentActivity(perPage = 10) {
-    const items     = ref<ActivityItem[]>([]);
-    const loading   = ref(false);
+    const items = ref<ActivityItem[]>([]);
+    const loading = ref(false);
     const loadingMore = ref(false);
-    const error     = ref<ApiError | null>(null);
-    const page      = ref(1);
-    const hasMore   = ref(false);
+    const error = ref<ApiError | null>(null);
+    const page = ref(1);
+    const hasMore = ref(false);
     const controller = useAbortController();
 
     async function fetchRecentActivity() {
         loading.value = true;
-        error.value   = null;
-        page.value    = 1;
-        items.value   = [];
+        error.value = null;
+        page.value = 1;
+        items.value = [];
         try {
             const result = await dashboardService.getRecentActivity(
                 { page: 1, per_page: perPage },
@@ -121,8 +121,8 @@ export function useRecentActivity(perPage = 10) {
                 { page: nextPage, per_page: perPage },
                 { signal: controller.signal }
             );
-            items.value  = [...items.value, ...result.items];
-            page.value   = nextPage;
+            items.value = [...items.value, ...result.items];
+            page.value = nextPage;
             hasMore.value = nextPage < result.meta.total_pages;
         } catch (err) {
             if (err instanceof ApiError && !err.isAborted) {
@@ -140,6 +140,6 @@ export function useRecentActivity(perPage = 10) {
         activitiesError: error,
         activitiesHasMore: hasMore,
         fetchRecentActivity,
-        loadMore,
+        loadMore
     };
 }

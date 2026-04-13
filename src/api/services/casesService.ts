@@ -207,9 +207,9 @@ export const casesService = {
             headers: {
                 'X-WP-Nonce': nonce,
                 'Content-Type': file.type || 'application/octet-stream',
-                'Content-Disposition': `attachment; filename="${encodeURIComponent(file.name)}"`,
+                'Content-Disposition': `attachment; filename="${encodeURIComponent(file.name)}"`
             },
-            body: file,
+            body: file
         });
 
         let json: unknown;

@@ -46,7 +46,7 @@ export const useFileUploadQueueStore = defineStore('fileUploadQueue', {
          * resolvedMap[fieldId][localId] = uploadedUrl
          * Populated by flushQueue as each file upload completes.
          */
-        resolvedMap: {} as Record<string, Record<string, string>>,
+        resolvedMap: {} as Record<string, Record<string, string>>
     }),
 
     actions: {
@@ -151,6 +151,6 @@ export const useFileUploadQueueStore = defineStore('fileUploadQueue', {
             });
             this.queue = {};
             this.resolvedMap = {};
-        },
-    },
+        }
+    }
 });

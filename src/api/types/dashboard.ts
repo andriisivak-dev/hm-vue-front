@@ -94,4 +94,3 @@ export interface ActivityFeedParams {
     page?: number;
     per_page?: number;
 }
-

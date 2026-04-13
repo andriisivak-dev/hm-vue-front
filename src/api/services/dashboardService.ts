@@ -4,7 +4,7 @@ import type {
     DashboardFilters,
     UserHierarchy,
     ActivityItem,
-    ActivityFeedParams,
+    ActivityFeedParams
 } from '@/api/types';
 import type { PaginatedResult, PaginationMeta, ApiSuccessResponse } from '@/api/types/common';
 
@@ -42,18 +42,20 @@ export const dashboardService = {
         const { baseUrl, nonce } = client as unknown as { baseUrl: string; nonce: string };
 
         const url = new URL(`${baseUrl}/dashboard/recent-activity`);
-        if (params.page)     url.searchParams.set('page',     String(params.page));
+        if (params.page) url.searchParams.set('page', String(params.page));
         if (params.per_page) url.searchParams.set('per_page', String(params.per_page));
 
         const response = await fetch(url.toString(), {
             headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': nonce },
-            signal: options?.signal,
+            signal: options?.signal
         });
 
-        const envelope = (await response.json()) as ApiSuccessResponse<ActivityItem[]> & { meta?: PaginationMeta };
+        const envelope = (await response.json()) as ApiSuccessResponse<ActivityItem[]> & {
+            meta?: PaginationMeta;
+        };
         return {
             items: envelope.data ?? [],
-            meta:  envelope.meta ?? { total: 0, total_pages: 1, page: 1, per_page: 10 },
+            meta: envelope.meta ?? { total: 0, total_pages: 1, page: 1, per_page: 10 }
         };
     }
 };
