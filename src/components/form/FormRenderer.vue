@@ -518,7 +518,10 @@ const onFinalSubmit = handleSubmit(
             </p>
             <div>
                 <router-link
-                    :to="{ path: '/case-study', query: { cid: String(store.caseId), mode: 'view' } }"
+                    :to="{
+                        path: '/case-study',
+                        query: { cid: String(store.caseId), mode: 'view' }
+                    }"
                     class="btn-primary"
                     style="text-decoration: none; display: inline-flex; justify-content: center"
                 >
@@ -541,7 +544,10 @@ const onFinalSubmit = handleSubmit(
             </p>
             <div class="d-flex gap-3 justify-content-center" style="margin-top: 1rem">
                 <router-link
-                    :to="{ path: '/case-study', query: { cid: String(store.caseId), mode: 'view' } }"
+                    :to="{
+                        path: '/case-study',
+                        query: { cid: String(store.caseId), mode: 'view' }
+                    }"
                     class="btn-primary"
                     style="text-decoration: none; display: inline-flex; justify-content: center"
                 >

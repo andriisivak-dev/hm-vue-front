@@ -360,7 +360,9 @@ const formatDate = (dateString?: string) => {
                         </div>
                         <div class="mobile-case-row">
                             <span class="label">Industry</span>
-                            <span class="value">{{ decodeTextOrDash(item.hm_industry_segment) }}</span>
+                            <span class="value">{{
+                                decodeTextOrDash(item.hm_industry_segment)
+                            }}</span>
                         </div>
                         <div class="mobile-case-row">
                             <span class="label">Product Type</span>

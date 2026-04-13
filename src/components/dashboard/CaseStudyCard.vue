@@ -126,7 +126,9 @@ const promptDelete = () => {
                 <span>• Industry:</span>
                 {{ decodeTextOrDash(caseStudy.hm_industry_segment) }}
             </p>
-            <p class="product"><span>• Product:</span> {{ decodeTextOrDash(caseStudy.hm_product_type) }}</p>
+            <p class="product">
+                <span>• Product:</span> {{ decodeTextOrDash(caseStudy.hm_product_type) }}
+            </p>
             <p class="machine-make">
                 <span>• Machine Make(Make & Model):</span>
                 {{ decodeTextOrDash(caseStudy.hm_machine_make) }}
