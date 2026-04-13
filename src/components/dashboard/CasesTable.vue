@@ -4,6 +4,7 @@ import { useUserStore } from '@/stores/user';
 import type { CaseStudy } from './CaseStudyCard.vue';
 import CaseActionReasonModal from './modals/CaseActionReasonModal.vue';
 import CaseActionConfirmModal from './modals/CaseActionConfirmModal.vue';
+import CaseViewDetailsModal from './modals/CaseViewDetailsModal.vue';
 import {
     IconActionApprove,
     IconActionView,
@@ -33,6 +34,11 @@ defineEmits<{
 
 const reasonModal = ref<InstanceType<typeof CaseActionReasonModal> | null>(null);
 const confirmModal = ref<InstanceType<typeof CaseActionConfirmModal> | null>(null);
+const mediaModal = ref<InstanceType<typeof CaseViewDetailsModal> | null>(null);
+
+const promptViewMedia = (caseId: number, caseTitle: string) => {
+    mediaModal.value?.open({ caseId, caseTitle });
+};
 
 const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
@@ -134,14 +140,14 @@ const formatDate = (dateString?: string) => {
                                 >
                                     <IconActionView color="#0dcaf0" />
                                 </router-link>
-                                <a
-                                    href="#"
-                                    @click.prevent
+                                <button
+                                    type="button"
                                     class="action-btn"
                                     title="View Case Study Details"
+                                    @click="promptViewMedia(item.id, item.title || `Case #${item.id}`)"
                                 >
                                     <IconActionViewDetails color="#262469" />
-                                </a>
+                                </button>
                                 <template v-if="currentUser?.role === 'administrator'">
                                     <router-link
                                         :to="`/case-study/?cid=${item.id}&mode=edit`"
@@ -455,14 +461,14 @@ const formatDate = (dateString?: string) => {
                                             >
                                                 <IconActionView color="#0dcaf0" />
                                             </router-link>
-                                            <a
-                                                href="#"
-                                                @click.prevent
+                                            <button
+                                                type="button"
                                                 class="action-btn"
                                                 title="View Case Study Details"
+                                                @click="promptViewMedia(item.id, item.title || `Case #${item.id}`)"
                                             >
                                                 <IconActionViewDetails color="#262469" />
-                                            </a>
+                                            </button>
                                             <!-- Superadmin: edit & delete in library/approved view -->
                                             <template v-if="currentUser?.role === 'administrator'">
                                                 <router-link
@@ -684,6 +690,7 @@ const formatDate = (dateString?: string) => {
 
         <CaseActionReasonModal ref="reasonModal" @success="$emit('success')" />
         <CaseActionConfirmModal ref="confirmModal" @success="$emit('success')" />
+        <CaseViewDetailsModal ref="mediaModal" />
     </div>
 </template>
 
