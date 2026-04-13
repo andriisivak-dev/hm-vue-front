@@ -74,6 +74,7 @@ defineProps<{
 
     .icon {
         position: absolute;
+        display: block;
         bottom: 20px;
         right: 20px;
     }
