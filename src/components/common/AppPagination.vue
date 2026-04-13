@@ -102,3 +102,111 @@ function goToPage(p: number) {
         </div>
     </nav>
 </template>
+
+<style scoped>
+.users-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 4px 0;
+}
+
+.users-pagination__meta {
+    order: 1;
+    font-size: 1rem;
+    color: var(--bs-secondary-color, #6c757d);
+    min-width: 120px;
+}
+
+.users-pagination__controls {
+    justify-content: center;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    order: 3;
+}
+
+.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 6px;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 6px;
+    background: var(--bs-body-bg, #fff);
+    color: var(--bs-body-color, #212529);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+        background 0.15s,
+        border-color 0.15s,
+        color 0.15s,
+        box-shadow 0.15s;
+    line-height: 1;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #262469;
+    border-color: #262469;
+    color: #fff;
+}
+
+.pagination-btn.is-active {
+    background: #262469;
+    border-color: #262469;
+    color: #fff;
+    pointer-events: none;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+}
+
+.pagination-btn--nav {
+    color: var(--bs-secondary-color, #6c757d);
+}
+
+.pagination-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    color: var(--bs-secondary-color, #6c757d);
+    font-size: 0.85rem;
+}
+
+.users-pagination__perpage {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 120px;
+    order: 2;
+}
+
+.users-pagination__perpage .form-select {
+    width: auto;
+    padding-right: 28px;
+}
+
+.users-pagination__perpage-label {
+    font-size: 1rem;
+    flex-shrink: 0;
+    color: var(--bs-secondary-color, #6c757d);
+    white-space: nowrap;
+}
+
+@media (min-width: 767px) {
+    .users-pagination__controls {
+        width: auto;
+        order: 2;
+    }
+}
+</style>

@@ -168,13 +168,13 @@ const formatDate = (dateString?: string) => {
                         <td data-label="Actions" class="text-center">
                             <div class="d-flex align-items-center justify-content-center">
                                 <template v-if="viewMode === 'library' || viewMode === 'approved'">
-                                    <a
-                                        :href="`/case-study/?cid=${item.id}&mode=view`"
+                                    <router-link
+                                        :to="`/case-study/?cid=${item.id}&mode=view`"
                                         class="action-btn"
                                         title="View Case Study"
                                     >
                                         <IconActionView color="#0dcaf0" />
-                                    </a>
+                                    </router-link>
                                     <a
                                         href="#"
                                         @click.prevent
@@ -185,13 +185,13 @@ const formatDate = (dateString?: string) => {
                                     </a>
                                     <!-- Superadmin: edit & delete in library/approved view -->
                                     <template v-if="currentUser?.role === 'administrator'">
-                                        <a
-                                            :href="`/case-study/?cid=${item.id}&mode=edit`"
+                                        <router-link
+                                            :to="`/case-study/?cid=${item.id}&mode=edit`"
                                             class="action-btn"
                                             title="Edit Case Study"
                                         >
                                             <IconActionEdit color="#262469" />
-                                        </a>
+                                        </router-link>
                                         <button
                                             class="action-btn"
                                             @click.prevent="promptDelete(item.id, item.title || '')"
@@ -210,33 +210,33 @@ const formatDate = (dateString?: string) => {
                                 >
                                     <template v-if="item.author?.id === currentUser?.id">
                                         <!-- Own cases -->
-                                        <a
+                                        <router-link
                                             v-if="['draft', 'returned'].includes(item.status)"
-                                            :href="`/case-study/?cid=${item.id}`"
+                                            :to="`/case-study/?cid=${item.id}`"
                                             class="action-btn"
                                             title="Continue Case Study"
                                         >
                                             <IconActionContinue color="#262469" />
-                                        </a>
-                                        <a
+                                        </router-link>
+                                        <router-link
                                             v-else-if="
                                                 item.status === 'in_review' &&
                                                 ['administrator'].includes(currentUser?.role || '')
                                             "
-                                            :href="`/case-study/?cid=${item.id}&mode=edit`"
+                                            :to="`/case-study/?cid=${item.id}&mode=edit`"
                                             class="action-btn"
                                             title="Edit Case Study"
                                         >
                                             <IconActionEdit color="#262469" />
-                                        </a>
-                                        <a
+                                        </router-link>
+                                        <router-link
                                             v-else
-                                            :href="`/case-study/?cid=${item.id}&mode=view`"
+                                            :to="`/case-study/?cid=${item.id}&mode=view`"
                                             class="action-btn"
                                             title="View Case Study"
                                         >
                                             <IconActionView color="#0dcaf0" />
-                                        </a>
+                                        </router-link>
                                         <button
                                             v-if="
                                                 item.status === 'draft' ||
@@ -254,34 +254,34 @@ const formatDate = (dateString?: string) => {
                                     </template>
                                     <template v-else>
                                         <!-- Subordinate cases -->
-                                        <a
-                                            :href="`/case-study/?cid=${item.id}&mode=view`"
+                                        <router-link
+                                            :to="`/case-study/?cid=${item.id}&mode=view`"
                                             class="action-btn"
                                             title="View Case Study"
                                         >
                                             <IconActionView color="#0dcaf0" />
-                                        </a>
+                                        </router-link>
                                         <!-- Subordinate cases: supervisor/admin edit -->
-                                        <a
+                                        <router-link
                                             v-if="['in_review', 'returned'].includes(item.status)"
-                                            :href="`/case-study/?cid=${item.id}&mode=edit`"
+                                            :to="`/case-study/?cid=${item.id}&mode=edit`"
                                             class="action-btn"
                                             title="Edit Case Study"
                                         >
                                             <IconActionEdit color="#262469" />
-                                        </a>
+                                        </router-link>
                                         <!-- Admin can also edit approved cases -->
-                                        <a
+                                        <router-link
                                             v-if="
                                                 item.status === 'approved' &&
                                                 ['administrator'].includes(currentUser?.role || '')
                                             "
-                                            :href="`/case-study/?cid=${item.id}&mode=edit`"
+                                            :to="`/case-study/?cid=${item.id}&mode=edit`"
                                             class="action-btn"
                                             title="Edit Approved Case"
                                         >
                                             <IconActionEdit color="#262469" />
-                                        </a>
+                                        </router-link>
                                         <!-- Admin: delete approved / rejected subordinate cases -->
                                         <button
                                             v-if="
@@ -321,41 +321,41 @@ const formatDate = (dateString?: string) => {
                                 </template>
                                 <template v-else-if="currentUser?.role === 'hm_marketing'">
                                     <!-- Marketing Actions -->
-                                    <a
-                                        :href="`/case-study/?cid=${item.id}&mode=view`"
+                                    <router-link
+                                        :to="`/case-study/?cid=${item.id}&mode=view`"
                                         class="action-btn"
                                         title="View Case Study"
                                     >
                                         <IconActionView color="#0dcaf0" />
-                                    </a>
+                                    </router-link>
                                 </template>
                                 <template v-else>
                                     <!-- Field Agent Actions -->
-                                    <a
+                                    <router-link
                                         v-if="item.status === 'returned'"
-                                        :href="`/case-study/?cid=${item.id}`"
+                                        :to="`/case-study/?cid=${item.id}`"
                                         class="action-btn"
                                         title="Edit Case Study"
                                     >
                                         <IconActionEdit color="#262469" />
-                                    </a>
-                                    <a
+                                    </router-link>
+                                    <router-link
                                         v-else-if="item.status === 'draft'"
-                                        :href="`/case-study/?cid=${item.id}`"
+                                        :to="`/case-study/?cid=${item.id}`"
                                         class="action-btn"
                                         title="Edit Case Study"
                                     >
                                         <IconActionContinue color="#262469" />
-                                    </a>
+                                    </router-link>
 
-                                    <a
+                                    <router-link
                                         v-else
-                                        :href="`/case-study/?cid=${item.id}&mode=view`"
+                                        :to="`/case-study/?cid=${item.id}&mode=view`"
                                         class="action-btn"
                                         title="View Case Study"
                                     >
                                         <IconActionView color="#0dcaf0" />
-                                    </a>
+                                    </router-link>
                                     <button
                                         v-if="item.status === 'draft'"
                                         class="action-btn"
@@ -382,7 +382,6 @@ const formatDate = (dateString?: string) => {
 
 <style scoped>
 .app-case-table {
-    min-height: 400px;
     position: relative;
 }
 

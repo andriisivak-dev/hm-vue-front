@@ -50,8 +50,8 @@ const isReadonly = computed(() => {
 
 <style scoped>
 .gf-radio-group {
-    display: flex;
-    gap: 20px;
+    display: grid;
+    gap: 10px;
 }
 
 .gf-radio-label {
@@ -120,5 +120,12 @@ const isReadonly = computed(() => {
     font-size: 14px;
     font-weight: 400;
     color: #112337;
+}
+
+@media (min-width: 767px) {
+    .gf-radio-group {
+        display: flex;
+        gap: 20px;
+    }
 }
 </style>

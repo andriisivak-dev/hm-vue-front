@@ -73,14 +73,24 @@ function onCaseSubmitted(_id: number) {
 
 <style scoped>
 .form-page {
-    padding: 2rem;
+    padding: 2rem 1rem;
     max-width: 1200px;
 }
 
 .header-section h1 {
     margin: 0;
     font-weight: 700;
-    font-size: 32px;
+    font-size: 24px;
     color: #262469;
+}
+
+@media (min-width: 767px) {
+    .form-page {
+        padding: 2rem;
+    }
+
+    .header-section h1 {
+        font-size: 32px;
+    }
 }
 </style>

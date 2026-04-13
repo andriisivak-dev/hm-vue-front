@@ -66,3 +66,35 @@ const isSuperAdmin = computed(() =>
         <AppFooter />
     </AppLayout>
 </template>
+
+<style scoped>
+.app-content {
+    padding: 0;
+}
+
+.row {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+}
+
+.row .col-sm-6 {
+    flex-shrink: unset;
+    width: auto;
+    padding: 0;
+}
+
+.app-main .app-content-header .breadcrumb {
+    line-height: 1.2;
+}
+
+.breadcrumb {
+    font-size: 16px;
+}
+
+@media (min-width: 767px) {
+}
+</style>

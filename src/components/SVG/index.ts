@@ -22,3 +22,4 @@ export { default as IconActionApprove } from './IconActionApprove.vue';
 export { default as IconActionReject } from './IconActionReject.vue';
 export { default as IconActionEdit } from './IconActionEdit.vue';
 export { default as IconActionContinue } from './IconActionContinue.vue';
+export { default as IconCaseLibraryFilters } from './IconCaseLibraryFilters.vue';

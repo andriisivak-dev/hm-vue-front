@@ -50,12 +50,12 @@ const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)
 
 .gf-label {
     font-weight: 700;
-    font-size: 17px;
+    font-size: 16px;
     color: #262469;
     display: flex;
     align-items: center;
-    gap: 4px;
-    margin-bottom: 8px;
+    gap: 2px;
+    margin-bottom: 4px;
 }
 
 .gf-required {
@@ -82,5 +82,13 @@ const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)
 .has-error :deep(textarea) {
     border-color: #ef4444;
     background: #fef2f2;
+}
+
+@media (min-width: 767px) {
+    .gf-label {
+        font-size: 17px;
+        margin-bottom: 8px;
+        gap: 4px;
+    }
 }
 </style>

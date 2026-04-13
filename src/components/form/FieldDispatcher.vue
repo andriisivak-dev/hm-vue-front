@@ -146,14 +146,14 @@ const onCheckboxUpdate = (payload: { id: string; value: CheckboxPayload }) => {
 }
 
 .gf-section {
-    margin-top: 2rem;
-    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
     border-bottom: 1px solid rgb(17, 35, 55);
     padding-bottom: 0.5rem;
 }
 
 .gf-section-title {
-    font-size: 1.75rem;
+    font-size: 1.4rem;
     font-weight: 500;
     color: rgb(17, 35, 55);
     margin: 0;
@@ -163,5 +163,16 @@ const onCheckboxUpdate = (payload: { id: string; value: CheckboxPayload }) => {
     font-size: 0.9rem;
     color: rgb(17, 35, 55);
     margin-top: 4px;
+}
+
+@media (min-width: 767px) {
+    .gf-section-title {
+        font-size: 1.75rem;
+    }
+
+    .gf-section {
+        margin-top: 2rem;
+        margin-bottom: 1.5rem;
+    }
 }
 </style>

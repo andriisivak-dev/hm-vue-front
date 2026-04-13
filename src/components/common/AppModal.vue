@@ -118,9 +118,65 @@ defineExpose({ hide, show });
 
 .modal {
     z-index: 1055;
+    background: rgba(0, 0, 0, 0.5);
 }
 .modal-backdrop {
     z-index: 1050;
     opacity: 0.5;
+}
+
+.modal-dialog {
+    margin-top: 100px;
+    padding: 20px 14px 28px;
+}
+
+.modal-content {
+    max-width: 808px;
+    margin: 0 auto;
+    border: none;
+    box-shadow: none;
+}
+
+.modal-header-top {
+    display: flex;
+    align-items: center;
+    /* justify-content: ; */
+}
+
+.modal-header,
+.modal-footer {
+    border: none;
+}
+
+.modal-body {
+    margin-top: 16px;
+    padding: 14px;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.modal-subtitle {
+    font-size: 18px;
+    font-weight: 300;
+}
+
+.modal .btn-close:focus {
+    box-shadow: 0 0 0 0.25rem rgba(111, 1, 255, 0.15);
+}
+
+@media (min-width: 767px) {
+    .modal-dialog {
+        margin-top: 130px;
+        max-width: 864px;
+        padding: 20px 28px 28px;
+    }
+
+    .modal-body {
+        margin-top: 28px;
+        padding: 16px;
+    }
 }
 </style>

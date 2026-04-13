@@ -79,10 +79,13 @@ const caseUrl = (caseId: number) => `/case-study/?cid=${caseId}`;
                     Close
                 </button>
 
-                <a :href="`${caseUrl(notification.case_id)}&mode=view`" class="btn btn-primary">
+                <router-link
+                    :to="`${caseUrl(notification.case_id)}&mode=view`"
+                    class="btn btn-primary"
+                >
                     <i class="bi bi-box-arrow-up-right me-1" />
                     View Case
-                </a>
+                </router-link>
             </div>
         </template>
     </AppModal>

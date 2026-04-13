@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { useUserList } from '@/api';
 import type { User } from '@/api/types';
 import { IconRetry, NoUsersFound } from '@/components/SVG';
 import AppPagination from '@/components/common/AppPagination.vue';
 import AppTable from '@/components/common/AppTable.vue';
+import SelectField from '@/components/form/fields/SelectField.vue';
 import { useUserStore } from '@/stores/user';
 
 defineEmits(['edit', 'delete', 'recover']);
@@ -22,6 +23,37 @@ const filters = reactive({
     order: '',
     include_inactive: false
 });
+
+const roleFieldProps = computed(
+    () =>
+        ({
+            id: 'userRoleFilter',
+            type: 'select',
+            label: '',
+            choices: [
+                { value: '', text: 'All roles' },
+                { value: 'hm_manager', text: 'Supervisor' },
+                { value: 'hm_marketing', text: 'Marketing' },
+                { value: 'hm_field_agent', text: 'Agent' }
+            ],
+            is_required: false
+        }) as any
+);
+
+const orderFieldProps = computed(
+    () =>
+        ({
+            id: 'userDateSortFilter',
+            type: 'select',
+            label: '',
+            choices: [
+                { value: '', text: 'Sort by date' },
+                { value: 'desc', text: 'Newest first' },
+                { value: 'asc', text: 'Oldest first' }
+            ],
+            is_required: false
+        }) as any
+);
 
 watch(
     () => [filters.role, filters.order, filters.include_inactive, perPage.value],
@@ -133,29 +165,10 @@ console.log(users);
                 </div>
 
                 <div class="users-toolbar__filters_select">
-                    <select
-                        id="userRoleFilter"
-                        v-model="filters.role"
-                        class="form-select users-toolbar__role-filter"
-                        aria-label="Filter by role"
-                    >
-                        <option value="">All roles</option>
-                        <option value="hm_manager">Supervisor</option>
-                        <option value="hm_marketing">Marketing</option>
-                        <option value="hm_field_agent">Agent</option>
-                    </select>
+                    <SelectField v-model="filters.role" :field="roleFieldProps" />
                 </div>
                 <div class="users-toolbar__filters_select">
-                    <select
-                        id="userDateSortFilter"
-                        v-model="filters.order"
-                        class="form-select users-toolbar__date-sort-filter"
-                        aria-label="Sort by joined date"
-                    >
-                        <option value="">Sort by date</option>
-                        <option value="desc">Newest first</option>
-                        <option value="asc">Oldest first</option>
-                    </select>
+                    <SelectField v-model="filters.order" :field="orderFieldProps" />
                 </div>
             </div>
         </div>
@@ -296,7 +309,74 @@ console.log(users);
 
 <style scoped>
 .app-users-table {
-    min-height: 400px;
     position: relative;
+}
+
+.form-check-label {
+    white-space: nowrap;
+}
+
+td[data-label='Name'],
+td[data-label='Assignment'] {
+    white-space: nowrap;
+}
+
+.users-toolbar {
+    margin-bottom: 20px;
+}
+
+.users-toolbar__search-input {
+    min-width: 300px;
+}
+
+.users-toolbar__filters {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.form-check.users-toolbar__filters_checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-right: 12px;
+}
+
+.users-toolbar__filters_checkbox .form-check-input[type='checkbox'] {
+    display: block;
+    padding: 10px;
+    min-height: unset;
+    margin-left: 0;
+    margin-top: 0;
+}
+
+label[for='userSearchInput'] {
+    display: block;
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+@media (min-width: 767px) {
+    .users-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .users-toolbar__search-input {
+        max-width: 350px;
+    }
+
+    label[for='userSearchInput'] {
+        margin-bottom: 0;
+    }
+
+    .users-toolbar__filters_select {
+        min-width: 150px;
+    }
 }
 </style>

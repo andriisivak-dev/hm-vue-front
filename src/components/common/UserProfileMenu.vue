@@ -144,3 +144,15 @@ const handleFileChange = async (event: Event) => {
         </ul>
     </li>
 </template>
+
+<style scoped>
+.nav-link.dropdown-toggle {
+    padding: 8px 12px 8px 8px;
+}
+
+@media (min-width: 767px) {
+    .nav-link.dropdown-toggle {
+        padding: 8px 16px;
+    }
+}
+</style>

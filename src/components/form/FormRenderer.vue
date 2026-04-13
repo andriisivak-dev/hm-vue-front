@@ -500,14 +500,14 @@ const onFinalSubmit = handleSubmit(
             <p class="case-id-note">
                 Case ID: <strong>#{{ store.caseId }}</strong>
             </p>
-            <div style="margin-top: 1rem">
-                <a
-                    :href="`/case-study/?cid=${store.caseId}&mode=view`"
+            <div>
+                <router-link
+                    :to="`/case-study/?cid=${store.caseId}&mode=view`"
                     class="btn-primary"
                     style="text-decoration: none; display: inline-flex; justify-content: center"
                 >
                     View Case
-                </a>
+                </router-link>
             </div>
         </div>
     </div>
@@ -524,13 +524,13 @@ const onFinalSubmit = handleSubmit(
                 Library.
             </p>
             <div class="d-flex gap-3 justify-content-center" style="margin-top: 1rem">
-                <a
-                    :href="`/case-study/?cid=${store.caseId}&mode=view`"
+                <router-link
+                    :to="`/case-study/?cid=${store.caseId}&mode=view`"
                     class="btn-primary"
                     style="text-decoration: none; display: inline-flex; justify-content: center"
                 >
                     View Case
-                </a>
+                </router-link>
                 <router-link
                     to="/"
                     class="btn-secondary"
@@ -584,7 +584,7 @@ const onFinalSubmit = handleSubmit(
                     Previous
                 </button>
 
-                <div class="d-flex gap-2 align-items-center">
+                <div class="save-btn-wrap">
                     <!-- Edit mode: Save Changes -->
                     <button
                         v-if="props.isEditMode"
@@ -665,7 +665,7 @@ const onFinalSubmit = handleSubmit(
 <style scoped>
 .form-renderer-container {
     max-width: 810px;
-    margin: 2rem 0;
+    margin: 1rem 0;
     background:
         linear-gradient(white, white) padding-box,
         linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
@@ -677,7 +677,7 @@ const onFinalSubmit = handleSubmit(
 }
 
 .form-body {
-    padding: 18px;
+    padding: 12px 12px 22px;
     min-height: 400px;
 }
 
@@ -689,14 +689,19 @@ const onFinalSubmit = handleSubmit(
     align-items: center;
     justify-content: center;
     text-align: center;
-    gap: 1rem;
+    gap: 0.5rem;
     min-height: 360px;
+}
+
+.error-state p,
+.success-state p {
+    margin: 0;
 }
 
 .form-step-content {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    gap: 1.5rem;
+    gap: 10px;
     align-items: start;
 }
 
@@ -721,8 +726,9 @@ const onFinalSubmit = handleSubmit(
 }
 
 .success-icon-wrap {
-    width: 80px;
-    height: 80px;
+    padding: 8px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: linear-gradient(135deg, #10b981, #059669);
     display: flex;
@@ -821,9 +827,9 @@ const onFinalSubmit = handleSubmit(
     transition: all 0.2s;
     border: none;
     color: #fff;
-    padding: 8px 14px;
     border-radius: 5px;
-    font-size: 18px;
+    font-size: 16px;
+    min-height: 40px;
 }
 
 .btn-primary:disabled,
@@ -835,8 +841,7 @@ const onFinalSubmit = handleSubmit(
 
 .btn-primary {
     background-color: #262469;
-    min-width: 132px;
-    min-height: 43px;
+    padding: 6px 8px 6px 12px;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -849,6 +854,7 @@ const onFinalSubmit = handleSubmit(
     color: #262469;
     border-radius: 5px;
     border: 1px solid #262469;
+    padding: 6px 12px 6px 8px;
 }
 
 .btn-submit {
@@ -900,6 +906,59 @@ const onFinalSubmit = handleSubmit(
 }
 
 .add-new-user-btn {
-    font-size: 18px;
+    font-size: 16px;
+    min-height: 40px;
+}
+
+.save-btn-wrap {
+    position: relative;
+}
+
+.saving-indicator {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 100%;
+}
+
+@media (min-width: 767px) {
+    .form-renderer-container {
+        margin: 2rem 0;
+    }
+
+    .form-step-content {
+        gap: 1.5rem;
+    }
+
+    .form-body {
+        padding: 18px 18px 24px;
+    }
+
+    .btn-primary {
+        min-width: 132px;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        font-size: 18px;
+        padding: 8px 14px;
+        min-height: 43px;
+    }
+
+    .success-icon-wrap {
+        width: 80px;
+        height: 80px;
+        padding: 0;
+    }
+
+    .error-state,
+    .success-state {
+        gap: 1rem;
+    }
+
+    .add-new-user-btn {
+        font-size: 18px;
+        min-height: 43px;
+    }
 }
 </style>

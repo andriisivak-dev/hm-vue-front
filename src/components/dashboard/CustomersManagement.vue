@@ -33,13 +33,13 @@ function onSuccess() {
 
 <template>
     <div>
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="customers-management-header">
             <div>
                 <h3 class="mb-0 title">Customer Management</h3>
                 <p class="subtitle">Manage all customers and their details</p>
             </div>
             <div class="actions-btn">
-                <button class="btn btn-blue" @click="openAdd">
+                <button class="btn btn-blue add-new-customer-btn" @click="openAdd">
                     <i class="bi bi-plus-lg me-2" />
                     Add New Customer
                 </button>
@@ -54,3 +54,49 @@ function onSuccess() {
         <DeleteCustomerModal ref="deleteModalRef" @success="onSuccess" />
     </div>
 </template>
+
+<style scoped>
+.customers-management-header {
+    margin-bottom: 16px;
+}
+
+.title {
+    color: #262469;
+    font-weight: 700;
+    font-size: 24px;
+}
+
+.subtitle {
+    color: #262469;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.actions-btn {
+    display: block;
+}
+
+.add-new-customer-btn {
+    font-size: 16px;
+}
+
+@media (min-width: 767px) {
+    .customers-management-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .title {
+        font-size: 32px;
+    }
+
+    .subtitle {
+        font-size: 22px;
+    }
+
+    .add-new-customer-btn {
+        font-size: 20px;
+    }
+}
+</style>

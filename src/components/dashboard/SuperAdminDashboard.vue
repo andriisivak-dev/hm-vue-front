@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useDashboard, useCaseList, useCaseMutations, useCustomerStats } from '@/api';
 import DashboardStatisticCard from './DashboardStatisticCard.vue';
@@ -10,9 +10,15 @@ import CasesTable from './CasesTable.vue';
 import CaseStudyCard from './CaseStudyCard.vue';
 import CaseLibraryFilters from './CaseLibraryFilters.vue';
 import type { CaseStudy } from './CaseStudyCard.vue';
+import AppModal from '@/components/common/AppModal.vue';
 import AppPagination from '@/components/common/AppPagination.vue';
 import { useActivitiesStore } from '@/stores/activities';
-import { IconTotalUsers, IconTotalCustomers, IconPendingReports } from '@/components/SVG';
+import {
+    IconTotalUsers,
+    IconTotalCustomers,
+    IconPendingReports,
+    IconCaseLibraryFilters
+} from '@/components/SVG';
 
 const { stats, fetchStats, statsLoading } = useDashboard();
 const { total: customersTotal, fetch: fetchCustomerStats } = useCustomerStats();
@@ -148,8 +154,8 @@ const handleCaseDelete = async (caseId: number) => {
     const success = await removeCase(caseId);
     if (success) {
         fetchCasePage(page.value);
-        activitiesStore.fetchActivities();
-        fetchStats(true);
+        await activitiesStore.fetchActivities();
+        await fetchStats(true);
     }
 };
 
@@ -161,11 +167,30 @@ const handleCaseSuccess = () => {
     fetchStats(true);
 };
 
+// --- Mobile Filters Modal Logic ---
+const caseLibraryFiltersModal = ref<InstanceType<typeof AppModal> | null>(null);
+const isMobile = ref(false);
+let mediaQueryFilters: MediaQueryList | null = null;
+
+const updateMobileStateFilters = (e: MediaQueryListEvent | MediaQueryList) => {
+    isMobile.value = e.matches;
+};
+
 onMounted(() => {
     fetchStats();
     fetchCustomerStats();
     if (currentTab.value === 'sa-casestudy') {
         fetchCasePage(page.value);
+    }
+
+    mediaQueryFilters = window.matchMedia('(max-width: 767px)');
+    isMobile.value = mediaQueryFilters.matches;
+    mediaQueryFilters.addEventListener('change', updateMobileStateFilters);
+});
+
+onUnmounted(() => {
+    if (mediaQueryFilters) {
+        mediaQueryFilters.removeEventListener('change', updateMobileStateFilters);
     }
 });
 </script>
@@ -227,9 +252,16 @@ onMounted(() => {
         </div>
         <div class="tab-content" v-if="currentTab === 'sa-casestudy'">
             <!-- Case study content -->
-            <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
-                <div>
+            <div class="case-study-tabs">
+                <div class="case-study-tabs-title-wrap">
                     <h3 class="mb-0 title">Case Studies</h3>
+                    <div
+                        class="filter-icon"
+                        v-if="currentCaseTab === 'library'"
+                        @click="caseLibraryFiltersModal?.show()"
+                    >
+                        <IconCaseLibraryFilters />
+                    </div>
                 </div>
                 <DashboardTabs
                     v-model="currentCaseTab"
@@ -238,7 +270,7 @@ onMounted(() => {
                 />
             </div>
 
-            <div class="fa-tab-content active" style="display: block">
+            <div class="fa-tab-content">
                 <template v-if="currentCaseTab === 'draft'">
                     <div
                         class="fa-case-study-cards case-study-cards js-fa-case-studies position-relative mt-4"
@@ -260,8 +292,20 @@ onMounted(() => {
                     </div>
                 </template>
                 <template v-else>
+                    <AppModal
+                        v-if="isMobile && currentCaseTab === 'library'"
+                        ref="caseLibraryFiltersModal"
+                        id="caseLibraryFiltersModal"
+                        title="Filters"
+                    >
+                        <CaseLibraryFilters
+                            @change="fetchCasePage(1)"
+                            @close="caseLibraryFiltersModal?.hide()"
+                        />
+                    </AppModal>
+
                     <CaseLibraryFilters
-                        v-if="currentCaseTab === 'library'"
+                        v-if="!isMobile && currentCaseTab === 'library'"
                         @change="fetchCasePage(1)"
                     />
                     <div v-if="casesLoading" class="card shadow-sm border-0 text-center py-5">
@@ -280,9 +324,66 @@ onMounted(() => {
                     v-model:per-page="perPage"
                     @change="fetchCasePage"
                     aria-label="Case studies pagination"
-                    class="mt-4"
                 />
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.statistic-cards {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    color: #262469;
+}
+
+.case-study-tabs {
+    display: grid;
+    margin: 16px 0;
+}
+
+.filter-icon {
+    display: block;
+}
+
+.case-study-tabs-title-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.title {
+    color: #262469;
+    font-weight: 700;
+    font-size: 24px;
+}
+
+@media (min-width: 767px) {
+    .statistic-cards {
+        margin: 35px 0;
+        gap: 28px;
+    }
+
+    .filter-icon {
+        display: none;
+    }
+
+    .case-study-tabs-title-wrap {
+        display: block;
+        width: auto;
+    }
+
+    .title {
+        font-size: 32px;
+    }
+
+    .case-study-tabs {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 24px 0;
+    }
+}
+</style>

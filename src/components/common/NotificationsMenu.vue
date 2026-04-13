@@ -188,4 +188,8 @@ const handleMarkAllAsRead = async () => {
     opacity: 0;
     transform: translateY(8px);
 }
+
+.dropdown-menu-end[data-bs-popper] {
+    right: 0;
+}
 </style>

@@ -20,7 +20,7 @@ const isLocked = (num: number) => !store.isViewMode && num > store.highestReache
 <template>
     <div class="stepper-wrapper">
         <p class="steps-form-title">Case Study</p>
-        <div class="d-flex align-items-center justify-content-between" v-if="!isViewMode">
+        <div class="form-info" v-if="!isViewMode">
             <p class="steps-require-note">
                 "<span style="color: #c02b0a">*</span>" indicates required fields
             </p>
@@ -54,21 +54,29 @@ const isLocked = (num: number) => !store.isViewMode && num > store.highestReache
 <style scoped>
 .stepper-wrapper {
     position: relative;
-    padding: 18px 18px 0;
+    padding: 12px 12px 0;
 }
 
 .steps-form-title {
-    margin: 0 0 0.5rem;
-    font-size: 2rem;
+    margin: 0;
+    font-size: 1.4rem;
     line-height: 1.2;
     font-weight: 500;
 }
 
+.form-info {
+    margin: 16px 0 20px;
+}
+
+.form-info p {
+    margin: 0;
+}
+
 .steps-container {
-    margin-top: 20px;
+    margin-top: 10px;
     display: flex;
     justify-content: space-between;
-    gap: 8px 24px;
+    column-gap: 4px;
 }
 
 .step-item {
@@ -82,8 +90,8 @@ const isLocked = (num: number) => !store.isViewMode && num > store.highestReache
 }
 
 .step-badge {
-    width: 50px;
-    height: 50px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background:
         linear-gradient(white, white) padding-box,
@@ -94,7 +102,7 @@ const isLocked = (num: number) => !store.isViewMode && num > store.highestReache
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 20px;
+    font-size: 16px;
     transition: all 0.3s;
     z-index: 10;
     position: relative;
@@ -105,6 +113,7 @@ const isLocked = (num: number) => !store.isViewMode && num > store.highestReache
     color: #262469;
     font-weight: 300;
     font-size: 14px;
+    line-height: 1.2;
     text-align: center;
     transition: all 0.3s;
     text-transform: uppercase;
@@ -123,16 +132,53 @@ const isLocked = (num: number) => !store.isViewMode && num > store.highestReache
     z-index: 20;
     color: #fff;
     background-color: #204ce5;
-    width: 32px;
-    height: 32px;
+    width: 20px;
+    height: 20px;
     top: -4px;
-    left: -16px;
+    left: -10px;
     border-radius: 50%;
-    padding: 4px 8px;
+    padding: 2px 4px;
 }
 
 .step-item.locked {
     cursor: not-allowed;
     opacity: 0.85;
+}
+
+@media (min-width: 767px) {
+    .stepper-wrapper {
+        padding: 18px 18px 0;
+    }
+
+    .steps-form-title {
+        font-size: 2rem;
+        margin: 0 0 0.5rem;
+    }
+
+    .form-info {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+    }
+
+    .steps-container {
+        margin-top: 20px;
+        column-gap: 12px;
+    }
+
+    .step-badge {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+
+    .step-completed-icon {
+        width: 32px;
+        height: 32px;
+        padding: 4px 8px;
+        left: -16px;
+    }
 }
 </style>

@@ -269,3 +269,53 @@ const resetFilters = () => {
         </template>
     </div>
 </template>
+
+<style scoped>
+.filters-title {
+    font-weight: 700;
+    font-size: 18px;
+    color: #efefef;
+}
+
+.form-label {
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.sidebar-filters .form-select,
+.sidebar-filters :deep(.form-control) {
+    font-size: 16px;
+    font-weight: 300;
+    color: #000;
+    width: 100%;
+}
+
+.btn-warning {
+    font-size: 16px;
+    width: 100%;
+    min-height: unset;
+    height: auto;
+}
+
+@media (min-width: 767px) {
+    .filters-title {
+        font-size: 28px;
+    }
+
+    .form-label {
+        font-size: 16px;
+    }
+
+    .sidebar-filters .form-select,
+    .sidebar-filters :deep(.form-control) {
+        font-size: 20px;
+    }
+
+    .btn-warning {
+        font-size: 20px;
+        min-height: 43px;
+    }
+}
+</style>

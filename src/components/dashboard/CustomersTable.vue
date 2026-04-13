@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useCustomerList } from '@/api';
 import type { Customer } from '@/api/types';
 import { IconRetry, NoUsersFound } from '@/components/SVG';
 import AppPagination from '@/components/common/AppPagination.vue';
 import AppTable from '@/components/common/AppTable.vue';
+import SelectField from '@/components/form/fields/SelectField.vue';
 
 defineEmits<{
     edit: [customer: Customer];
@@ -21,6 +22,20 @@ let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 // Billing center options loaded from the first successful fetch
 const billingCenterOptions = ref<string[]>([]);
+
+const billingCenterFieldProps = computed(
+    () =>
+        ({
+            id: 'customerBillingCenterFilter',
+            type: 'select',
+            label: '',
+            choices: [
+                { value: '', text: 'All billing centers' },
+                ...billingCenterOptions.value.map((center) => ({ value: center, text: center }))
+            ],
+            is_required: false
+        }) as any
+);
 
 watch(
     () => [billingCenterFilter.value, perPage.value],
@@ -87,21 +102,7 @@ function safe(value: string | null | undefined): string {
 
             <div class="users-toolbar__filters">
                 <div class="users-toolbar__filters_select">
-                    <select
-                        id="customerBillingCenterFilter"
-                        v-model="billingCenterFilter"
-                        class="form-select users-toolbar__role-filter"
-                        aria-label="Filter by billing center"
-                    >
-                        <option value="">All billing centers</option>
-                        <option
-                            v-for="center in billingCenterOptions"
-                            :key="center"
-                            :value="center"
-                        >
-                            {{ center }}
-                        </option>
-                    </select>
+                    <SelectField v-model="billingCenterFilter" :field="billingCenterFieldProps" />
                 </div>
             </div>
         </div>
@@ -232,7 +233,32 @@ function safe(value: string | null | undefined): string {
 
 <style scoped>
 .app-customers-table {
-    min-height: 400px;
     position: relative;
+}
+
+.users-toolbar {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.users-toolbar__search-input {
+    min-width: 220px;
+}
+
+.users-toolbar__filters_select {
+    min-width: 250px;
+}
+
+@media (min-width: 767px) {
+    .users-toolbar__search-input {
+        min-width: 300px;
+    }
+
+    .users-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
 }
 </style>

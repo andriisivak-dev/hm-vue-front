@@ -26,7 +26,13 @@ const spanStyle = computed(() => ({
 
 <style scoped>
 .gf-layout-field {
-    grid-column: span var(--field-col-span, 12);
-    min-width: 0;
+    grid-column: 1 / -1;
+}
+
+@media (min-width: 767px) {
+    .gf-layout-field {
+        grid-column: span var(--field-col-span, 12);
+        min-width: 0;
+    }
 }
 </style>

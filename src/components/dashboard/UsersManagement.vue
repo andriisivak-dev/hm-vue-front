@@ -53,7 +53,7 @@ function openRecoverUser(user: User) {
 
 <template>
     <div>
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="user-management-header">
             <div>
                 <h3 class="mb-0 title">Users Management</h3>
                 <p class="subtitle">Manage all system users and their assignments</p>
@@ -80,3 +80,49 @@ function openRecoverUser(user: User) {
         <RecoverUserModal ref="recoverModalRef" @success="refreshTable" />
     </div>
 </template>
+
+<style scoped>
+.user-management-header {
+    margin-bottom: 16px;
+}
+
+.title {
+    color: #262469;
+    font-weight: 700;
+    font-size: 24px;
+}
+
+.subtitle {
+    color: #262469;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.actions-btn {
+    display: block;
+}
+
+.add-new-user-btn {
+    font-size: 16px;
+}
+
+@media (min-width: 767px) {
+    .user-management-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .title {
+        font-size: 32px;
+    }
+
+    .subtitle {
+        font-size: 22px;
+    }
+
+    .add-new-user-btn {
+        font-size: 20px;
+    }
+}
+</style>

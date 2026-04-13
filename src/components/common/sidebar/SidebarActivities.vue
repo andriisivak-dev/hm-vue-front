@@ -66,3 +66,61 @@ const activityItems: ActivityItem[] = [
         </div>
     </div>
 </template>
+
+<style scoped>
+.filters-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #efefef;
+}
+
+.border-act {
+    background:
+        linear-gradient(#262469, #262469) padding-box,
+        linear-gradient(225deg, #f7931d 0%, white 56%, transparent 100%) border-box;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    padding: 10px 17px;
+    max-width: 260px;
+    height: 69px;
+}
+
+.sidebar-activities {
+    padding: 14px 0 20px;
+}
+
+.activity-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.activity-label {
+    font-weight: 300;
+    font-size: 16px;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.activity-value {
+    font-weight: 700;
+    font-size: 28px;
+    text-transform: uppercase;
+    line-height: 1;
+    color: #fff;
+}
+
+@media (min-width: 767px) {
+    .filters-title {
+        font-size: 28px;
+    }
+
+    .activity-value {
+        font-size: 32px;
+    }
+
+    .sidebar-activities {
+        padding: 18px 0 30px;
+    }
+}
+</style>
