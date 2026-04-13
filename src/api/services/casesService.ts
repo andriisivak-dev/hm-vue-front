@@ -167,6 +167,17 @@ export const casesService = {
      * that uploads are deferred until the user actually saves a step.  Direct
      * calls from UI components lead to orphaned media when the user removes a
      * file before submitting the form.
+     *
+     * Implementation notes:
+     * - URL is derived from the configured baseUrl by replacing the custom
+     *   namespace segment so the code works on any domain without hard-coding.
+     * - The ?hmctx=case_media query param is forwarded so the PHP backend can
+     *   route the attachment into a dedicated sub-folder and suppress thumbnails.
+     * - We send a raw binary body + Content-Type + Content-Disposition header.
+     *   This is the WP REST API canonical upload method and avoids server-side
+     *   issues caused by mixing multipart FormData with Content-Disposition
+     *   (the two approaches are mutually exclusive — sending both simultaneously
+     *   breaks uploads on production NGINX configs).
      */
     async uploadMedia(
         file: File,
@@ -174,21 +185,34 @@ export const casesService = {
     ): Promise<{ id: number; source_url: string }> {
         const client = useHttpClient();
         const { baseUrl, nonce } = client as unknown as { baseUrl: string; nonce: string };
-        const wpApiUrl = baseUrl.replace('/csp/v1', '/wp/v2/media');
+
+        // Derive the WP core media endpoint from our custom namespace URL.
+        // e.g. https://example.com/wp-json/csp/v1  -->  https://example.com/wp-json/wp/v2/media
+        const parsedBase = new URL(baseUrl);
+        // Strip everything from the trailing path segment of our namespace onward.
+        // pathname is e.g. /wp-json/csp/v1  →  keep /wp-json, append /wp/v2/media
+        const wpJsonPath = parsedBase.pathname.replace(/\/csp\/v1\/?$/, '');
+        const mediaUrl = new URL(`${wpJsonPath}/wp/v2/media?hmctx=case_media`, parsedBase.origin);
 
         return new Promise((resolve, reject) => {
             /**
-             * use xhr instead of fetch because fetch doesn't support progress events
+             * XHR is used instead of fetch because fetch doesn't expose upload
+             * progress events.
+             *
+             * We send the file as a raw binary body (not FormData/multipart) and
+             * set Content-Type + Content-Disposition explicitly.  This is the
+             * approach the WP REST API documentation recommends and it works
+             * consistently across all server configurations.
              */
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', wpApiUrl);
+            xhr.open('POST', mediaUrl.toString());
             xhr.setRequestHeader('X-WP-Nonce', nonce);
+            xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
             xhr.setRequestHeader(
                 'Content-Disposition',
                 `attachment; filename="${encodeURIComponent(file.name)}"`
             );
 
-            // FormData is easiest and prevents issues
             xhr.upload.addEventListener('progress', (e) => {
                 if (e.lengthComputable && onProgress) {
                     const percent = Math.round((e.loaded / e.total) * 100);
@@ -205,16 +229,20 @@ export const casesService = {
                         reject(new Error('Invalid JSON response from WP API'));
                     }
                 } else {
-                    reject(new Error(`Upload failed: ${xhr.statusText}`));
+                    let message = `Upload failed (HTTP ${xhr.status})`;
+                    try {
+                        const errBody = JSON.parse(xhr.responseText);
+                        if (errBody?.message) message = errBody.message;
+                    } catch { /* ignore */ }
+                    reject(new Error(message));
                 }
             };
 
             xhr.onerror = () => reject(new Error('Network error during file upload'));
+            xhr.ontimeout = () => reject(new Error('File upload timed out'));
 
-            // XHR with FormData
-            const formData = new FormData();
-            formData.append('file', file);
-            xhr.send(formData);
+            // Send raw binary — do NOT wrap into FormData when Content-Disposition is set
+            xhr.send(file);
         });
     },
 
