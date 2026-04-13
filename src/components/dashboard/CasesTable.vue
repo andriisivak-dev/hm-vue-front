@@ -144,7 +144,9 @@ const formatDate = (dateString?: string) => {
                                     type="button"
                                     class="action-btn"
                                     title="View Case Study Details"
-                                    @click="promptViewMedia(item.id, item.title || `Case #${item.id}`)"
+                                    @click="
+                                        promptViewMedia(item.id, item.title || `Case #${item.id}`)
+                                    "
                                 >
                                     <IconActionViewDetails color="#262469" />
                                 </button>
@@ -465,7 +467,12 @@ const formatDate = (dateString?: string) => {
                                                 type="button"
                                                 class="action-btn"
                                                 title="View Case Study Details"
-                                                @click="promptViewMedia(item.id, item.title || `Case #${item.id}`)"
+                                                @click="
+                                                    promptViewMedia(
+                                                        item.id,
+                                                        item.title || `Case #${item.id}`
+                                                    )
+                                                "
                                             >
                                                 <IconActionViewDetails color="#262469" />
                                             </button>
