@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue';
 import { useUserHierarchy } from '@/api';
 import type { HierarchyManager } from '@/api';
+import { IconShield, IconToggle, IconUsers } from '@/components/SVG';
 
 const { hierarchy, hierarchyLoading, fetchHierarchy } = useUserHierarchy();
 
@@ -53,10 +54,7 @@ onMounted(async () => {
             <!-- Super Admin row -->
             <div class="sa-row">
                 <div class="sa-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L3 7V12C3 16.55 6.84 20.74 12 22C17.16 20.74 21 16.55 21 12V7L12 2Z"
-                            stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none" />
-                    </svg>
+                    <IconShield />
                 </div>
                 <div class="sa-info">
                     <span class="sa-name">Super Admin</span>
@@ -66,11 +64,7 @@ onMounted(async () => {
 
             <!-- Managers list -->
             <div class="managers-list">
-                <div
-                    v-for="manager in hierarchy.managers"
-                    :key="manager.id"
-                    class="manager-block"
-                >
+                <div v-for="manager in hierarchy.managers" :key="manager.id" class="manager-block">
                     <!-- Manager row (clickable to expand) -->
                     <button
                         class="manager-row"
@@ -80,21 +74,22 @@ onMounted(async () => {
                     >
                         <div class="manager-left">
                             <span class="manager-icon">
-                                <!-- dual-person icon -->
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M16 11C17.66 11 18.99 9.66 18.99 8C18.99 6.34 17.66 5 16 5C14.34 5 13 6.34 13 8C13 9.66 14.34 11 16 11ZM8 11C9.66 11 10.99 9.66 10.99 8C10.99 6.34 9.66 5 8 5C6.34 5 5 6.34 5 8C5 9.66 6.34 11 8 11ZM8 13C5.67 13 1 14.17 1 16.5V19H15V16.5C15 14.17 10.33 13 8 13ZM16 13C15.71 13 15.38 13.02 15.03 13.05C16.19 13.89 17 15.02 17 16.5V19H23V16.5C23 14.17 18.33 13 16 13Z"
-                                        fill="currentColor" />
-                                </svg>
+                                <IconUsers />
                             </span>
                             <div class="manager-info">
                                 <span class="manager-name">{{ manager.full_name }}</span>
-                                <span class="manager-meta">Supervisor &bull; {{ manager.agents_count }} field agent{{ manager.agents_count !== 1 ? 's' : '' }}</span>
+                                <span class="manager-meta"
+                                    >Supervisor &bull; {{ manager.agents_count }} field agent{{
+                                        manager.agents_count !== 1 ? 's' : ''
+                                    }}</span
+                                >
                             </div>
                         </div>
-                        <span class="toggle-icon" :class="{ 'toggle-icon--open': isExpanded(manager.id) }">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
+                        <span
+                            class="toggle-icon"
+                            :class="{ 'toggle-icon--open': isExpanded(manager.id) }"
+                        >
+                            <IconToggle />
                         </span>
                     </button>
 
@@ -104,17 +99,12 @@ onMounted(async () => {
                         :id="`agents-${manager.id}`"
                         class="agents-list"
                     >
-                        <div
-                            v-for="agent in manager.agents"
-                            :key="agent.id"
-                            class="agent-row"
-                        >
-                            <span class="agent-dot">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="12" cy="12" r="9" stroke="#D4A017" stroke-width="2" />
-                                </svg>
-                            </span>
-                            <span class="agent-name">{{ agent.full_name }} <span class="agent-role">(Field Agent)</span></span>
+                        <div v-for="agent in manager.agents" :key="agent.id" class="agent-row">
+                            <span class="agent-dot" />
+                            <span class="agent-name"
+                                >{{ agent.full_name }}
+                                <span class="agent-role">(Field Agent)</span></span
+                            >
                         </div>
 
                         <div v-if="manager.agents.length === 0" class="no-agents">
@@ -139,16 +129,18 @@ onMounted(async () => {
 
 <style scoped>
 .system-hierarchy {
-    background: #fff;
-    border: 1px solid #e5e7f0;
-    border-radius: 16px;
-    padding: 28px 28px 32px;
+    background:
+        linear-gradient(white, white) padding-box,
+        linear-gradient(185deg, #f7931d 0%, #262469 50%) border-box;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    padding: 12px 20px 24px;
     max-width: 720px;
 }
 
 /* Header */
 .hierarchy-header {
-    margin-bottom: 24px;
+    margin-bottom: 12px;
 }
 
 .hierarchy-title {
@@ -159,27 +151,25 @@ onMounted(async () => {
 }
 
 .hierarchy-subtitle {
-    font-size: 14px;
-    color: #7b82a8;
+    font-size: 18px;
     margin: 0;
 }
 
 /* Super Admin row */
 .sa-row {
     display: flex;
-    align-items: center;
-    gap: 14px;
-    background: linear-gradient(90deg, #1a1f5e 0%, #8a4f10 100%);
-    border-radius: 10px;
-    padding: 18px 22px;
+    align-items: flex-start;
+    gap: 10px;
+    background: linear-gradient(225deg, #f7931d 10px, #262469 242px);
+    border-radius: 5px;
+    padding: 8px 16px 6px;
     color: #fff;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .sa-icon {
     flex-shrink: 0;
     color: #fff;
-    opacity: 0.9;
 }
 
 .sa-info {
@@ -189,14 +179,14 @@ onMounted(async () => {
 }
 
 .sa-name {
-    font-size: 17px;
+    font-size: 20px;
     font-weight: 700;
     color: #fff;
     line-height: 1.3;
 }
 
 .sa-desc {
-    font-size: 13px;
+    font-size: 16px;
     color: rgba(255, 255, 255, 0.75);
 }
 
@@ -209,7 +199,7 @@ onMounted(async () => {
 }
 
 .manager-block {
-    border-radius: 10px;
+    border-radius: 5px;
     overflow: hidden;
     border: 1px solid #e8eaf2;
     background: #f7f8fc;
@@ -222,7 +212,7 @@ onMounted(async () => {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 16px 18px;
+    padding: 8px 18px 6px 16px;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -236,37 +226,34 @@ onMounted(async () => {
 
 .manager-left {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
 }
 
 .manager-icon {
-    color: #262469;
     flex-shrink: 0;
 }
 
 .manager-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
 }
 
 .manager-name {
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 700;
     color: #1a1f5e;
     line-height: 1.3;
 }
 
 .manager-meta {
-    font-size: 13px;
-    color: #7b82a8;
+    font-size: 16px;
+    color: #1a1f5e;
 }
 
 /* Toggle chevron */
 .toggle-icon {
     flex-shrink: 0;
-    color: #262469;
     transition: transform 0.2s ease;
     display: flex;
     align-items: center;
@@ -278,10 +265,10 @@ onMounted(async () => {
 
 /* Agents list */
 .agents-list {
-    padding: 8px 18px 16px 46px;
+    padding: 14px 18px 14px 20px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 4px;
     border-top: 1px solid #e8eaf2;
     background: #fff;
 }
@@ -289,23 +276,27 @@ onMounted(async () => {
 .agent-row {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
 }
 
 .agent-dot {
     flex-shrink: 0;
-    color: #D4A017;
+    width: 15px;
+    height: 15px;
+    background:
+        linear-gradient(white, white) padding-box,
+        linear-gradient(185deg, #f7931d 0%, #262469 100%) border-box;
+    border: 1px solid transparent;
+    border-radius: 50%;
 }
 
 .agent-name {
-    font-size: 14px;
+    font-size: 16px;
     color: #2d3580;
-    font-weight: 500;
 }
 
 .agent-role {
-    font-weight: 400;
-    color: #7b82a8;
+    color: #2d3580;
 }
 
 /* Empty / error states */
@@ -347,8 +338,12 @@ onMounted(async () => {
 }
 
 @keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
 }
 
 @media (max-width: 767px) {
