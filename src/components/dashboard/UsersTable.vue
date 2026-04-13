@@ -333,15 +333,16 @@ td[data-label='Assignment'] {
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .form-check.users-toolbar__filters_checkbox {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding-right: 12px;
+    padding-right: 0;
+    padding-left: 0;
 }
 
 .users-toolbar__filters_checkbox .form-check-input[type='checkbox'] {
@@ -377,6 +378,10 @@ label[for='userSearchInput'] {
 
     .users-toolbar__filters_select {
         min-width: 150px;
+    }
+
+    .users-toolbar__filters {
+        justify-content: flex-end;
     }
 }
 </style>

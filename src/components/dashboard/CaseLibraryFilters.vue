@@ -114,7 +114,7 @@ const appliedSidebarFilters = computed(() => {
             <AutocompleteField
                 :field="{
                     id: 'sa-case-library-customer-name',
-                    label: '',
+                    label: 'Customer name',
                     placeholder: 'Customer name',
                     inputType: 'search'
                 }"
@@ -127,7 +127,7 @@ const appliedSidebarFilters = computed(() => {
             <SelectField
                 :field="{
                     id: 'sa-case-library-industry-segment',
-                    label: '',
+                    label: 'Industry segment',
                     choices: [
                         { text: 'All Industry Segment', value: '' },
                         ...(filters?.industry_segments || []).map((t) => ({
@@ -142,7 +142,7 @@ const appliedSidebarFilters = computed(() => {
             <SelectField
                 :field="{
                     id: 'sa-case-library-tool-brand',
-                    label: '',
+                    label: 'Tool brand',
                     choices: [
                         { text: 'All tool brands', value: '' },
                         ...(filters?.tool_brands || []).map((t) => ({
@@ -157,7 +157,7 @@ const appliedSidebarFilters = computed(() => {
             <SelectField
                 :field="{
                     id: 'sa-case-library-submitted-by',
-                    label: '',
+                    label: 'Submitted by',
                     choices: [
                         { text: 'Submited by', value: '' },
                         ...(filters?.submitted_by || []).map((u) => ({
@@ -172,7 +172,7 @@ const appliedSidebarFilters = computed(() => {
             <SelectField
                 :field="{
                     id: 'sa-case-library-machine-type',
-                    label: '',
+                    label: 'Machine type',
                     choices: [
                         { text: 'All machine types', value: '' },
                         ...(filters?.machine_types || []).map((t) => ({
@@ -187,7 +187,7 @@ const appliedSidebarFilters = computed(() => {
             <SelectField
                 :field="{
                     id: 'sa-case-library-machine-makes',
-                    label: '',
+                    label: 'Machine makes',
                     choices: [
                         { text: 'All machine makes', value: '' },
                         ...(filters?.machine_makes || []).map((t) => ({
@@ -202,7 +202,7 @@ const appliedSidebarFilters = computed(() => {
             <AutocompleteField
                 :field="{
                     id: 'sa-case-library-tool-specification',
-                    label: '',
+                    label: 'Tool specification',
                     placeholder: 'Tool Specification',
                     inputType: 'search'
                 }"
@@ -215,7 +215,7 @@ const appliedSidebarFilters = computed(() => {
             <AutocompleteField
                 :field="{
                     id: 'sa-case-library-insert-specification',
-                    label: '',
+                    label: 'Insert specification',
                     placeholder: 'Insert Specification',
                     inputType: 'search'
                 }"
