@@ -24,6 +24,8 @@ const isSuperAdmin = computed(() =>
 );
 const isSupervisor = computed(() => userStore.user?.role === 'hm_manager');
 const isMarketing = computed(() => userStore.user?.role === 'hm_marketing');
+const defaultStatus = computed(() => (isSupervisor.value ? 'draft' : 'all'));
+const shouldMapLibraryToApproved = computed(() => isSuperAdmin.value || isSupervisor.value);
 
 const statusQueryParam = computed(() => {
     return isSuperAdmin.value || isMarketing.value ? 'status' : 'tab';
@@ -38,14 +40,29 @@ const selectedStatus = computed({
         const param = statusQueryParam.value;
         const statusVal = route.query[param] as string;
         if (!statusVal) {
-            return isSupervisor.value || isSuperAdmin.value || isMarketing.value ? 'draft' : 'all';
+            return defaultStatus.value;
+        }
+        if (shouldMapLibraryToApproved.value && statusVal === 'library') {
+            return 'approved';
         }
         return statusVal;
     },
     set(newStatus) {
         const param = statusQueryParam.value;
-        if (newStatus !== route.query[param]) {
-            const query: Record<string, any> = { ...route.query, [param]: newStatus, page: 1 };
+        const routeStatusRaw = route.query[param] as string | undefined;
+        const routeStatusNormalized =
+            shouldMapLibraryToApproved.value && routeStatusRaw === 'library'
+                ? 'approved'
+                : routeStatusRaw;
+        if (newStatus !== routeStatusNormalized) {
+            const query: Record<string, any> = { ...route.query, page: 1 };
+            if (newStatus === defaultStatus.value) {
+                delete query[param];
+            } else {
+                const nextStatus =
+                    isSuperAdmin.value && newStatus === 'approved' ? 'library' : newStatus;
+                query[param] = nextStatus;
+            }
             if (isSuperAdmin.value) {
                 query.tab = 'sa-casestudy';
             } else if (isMarketing.value) {
@@ -130,10 +147,10 @@ const resetFilters = () => {
     delete query.date_to;
 
     if (isSuperAdmin.value) {
-        query.status = 'all';
+        delete query.status;
         query.tab = 'sa-casestudy';
     } else if (isMarketing.value) {
-        query.status = 'all';
+        delete query.status;
         query.tab = 'mk-casestudy';
     } else {
         query.tab = 'all';

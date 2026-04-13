@@ -61,11 +61,12 @@ const caseTabs = [
     { id: 'rejected', label: 'Rejected' },
     { id: 'library', label: 'Case Library (Approved)' }
 ];
+const DEFAULT_CASE_TAB = caseTabs[0].id;
 
 const currentCaseTab = computed({
     get() {
         const queryTab = route.query.status as string;
-        return caseTabs.some((t) => t.id === queryTab) ? queryTab : 'draft';
+        return caseTabs.some((t) => t.id === queryTab) ? queryTab : DEFAULT_CASE_TAB;
     },
     set(newTab) {
         if (newTab !== route.query.status) {
