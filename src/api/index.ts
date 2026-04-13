@@ -79,6 +79,7 @@ export {
     useUserList,
     useNotifications,
     useDashboard,
+    useUserHierarchy,
     useUserMutations,
     useCustomerList,
     useCustomerMutations,
@@ -126,6 +127,10 @@ export type {
     // Dashboard
     DashboardStats,
     DashboardFilters,
+    UserHierarchy,
+    HierarchyManager,
+    HierarchyAgent,
+    HierarchySuperAdmin,
     // Customers
     Customer,
     CustomerListParams,

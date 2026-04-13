@@ -1,7 +1,7 @@
 // import { ref } from 'vue';
 import { ApiError } from '@/api';
 import { dashboardService } from '@/api/services/dashboardService';
-import type { DashboardStats, DashboardFilters } from '@/api/types';
+import type { DashboardStats, DashboardFilters, UserHierarchy } from '@/api/types';
 import { createAsyncState, useAbortController } from './shared';
 
 export function useDashboard() {
@@ -51,5 +51,33 @@ export function useDashboard() {
         filtersLoading: filtersState.loading,
         filtersError: filtersState.error,
         fetchFilters
+    };
+}
+
+export function useUserHierarchy() {
+    const state = createAsyncState<UserHierarchy>();
+    const controller = useAbortController();
+
+    async function fetchHierarchy() {
+        state.loading.value = true;
+        state.error.value = null;
+        try {
+            state.data.value = await dashboardService.getHierarchy({
+                signal: controller.signal
+            });
+        } catch (err) {
+            if (err instanceof ApiError && !err.isAborted) {
+                state.error.value = err;
+            }
+        } finally {
+            state.loading.value = false;
+        }
+    }
+
+    return {
+        hierarchy: state.data,
+        hierarchyLoading: state.loading,
+        hierarchyError: state.error,
+        fetchHierarchy
     };
 }

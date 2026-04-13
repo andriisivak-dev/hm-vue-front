@@ -1,5 +1,5 @@
 import { useHttpClient, type RequestOptions } from '@/api/core/httpClient';
-import type { DashboardStats, DashboardFilters } from '@/api/types';
+import type { DashboardStats, DashboardFilters, UserHierarchy } from '@/api/types';
 
 export const dashboardService = {
     async getStats(options?: RequestOptions): Promise<DashboardStats> {
@@ -20,5 +20,11 @@ export const dashboardService = {
                 ...options
             }
         );
+    },
+
+    async getHierarchy(options?: RequestOptions): Promise<UserHierarchy> {
+        const client = useHttpClient();
+        return client.get<UserHierarchy>('/dashboard/hierarchy', undefined, options);
     }
 };
+

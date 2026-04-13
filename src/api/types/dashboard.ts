@@ -31,3 +31,34 @@ export interface DashboardFilters {
     solution_types: TaxonomyTerm[];
     submitted_by: FilterOption[];
 }
+
+export interface HierarchyAgent {
+    id: number;
+    full_name: string;
+    role: 'hm_field_agent';
+    status: 'active' | 'inactive';
+    avatar_url: string;
+}
+
+export interface HierarchyManager {
+    id: number;
+    full_name: string;
+    role: 'hm_manager';
+    status: 'active' | 'inactive';
+    avatar_url: string;
+    agents: HierarchyAgent[];
+    agents_count: number;
+}
+
+export interface HierarchySuperAdmin {
+    id: number;
+    full_name: string;
+    role: 'administrator';
+    avatar_url: string;
+}
+
+export interface UserHierarchy {
+    super_admin: HierarchySuperAdmin;
+    managers: HierarchyManager[];
+}
+

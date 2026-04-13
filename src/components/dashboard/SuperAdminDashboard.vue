@@ -9,6 +9,7 @@ import CustomersManagement from './CustomersManagement.vue';
 import CasesTable from './CasesTable.vue';
 import CaseStudyCard from './CaseStudyCard.vue';
 import CaseLibraryFilters from './CaseLibraryFilters.vue';
+import SystemHierarchy from './SystemHierarchy.vue';
 import type { CaseStudy } from './CaseStudyCard.vue';
 import AppModal from '@/components/common/AppModal.vue';
 import AppPagination from '@/components/common/AppPagination.vue';
@@ -242,7 +243,7 @@ onUnmounted(() => {
 
         <!-- Tab content placeholders -->
         <div class="tab-content" v-if="currentTab === 'sa-overview'">
-            <!-- Overview content -->
+            <SystemHierarchy />
         </div>
         <div class="sa-tab-content" v-if="currentTab === 'sa-users'">
             <UsersManagement @users-changed="() => fetchStats(true)" />
