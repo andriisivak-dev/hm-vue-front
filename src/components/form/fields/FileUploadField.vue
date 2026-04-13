@@ -35,7 +35,7 @@ const emit = defineEmits<{
 
 const fieldId = String(props.field.id);
 const uploadQueue = useFileUploadQueueStore();
-const { enqueuePending, dequeuePending } = uploadQueue;
+const { enqueuePending, dequeuePending, uploadPendingFile } = uploadQueue;
 
 const isReadonly = computed(() => {
     return store.isFieldReadonly(props.field.id);
@@ -46,13 +46,7 @@ const uploadWarnings = ref<string[]>([]);
 const isDragging = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
 
-const progressTimers = new Map<string, ReturnType<typeof setInterval>>();
-
-/**
- * Tracks setTimeout IDs for the 400ms status-transition delay.
- * Cleared on file removal and unmount to avoid mutating a removed file.
- */
-const statusTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const uploadControllers = new Map<string, AbortController>();
 
 /**
  * Sync watcher on resolvedMap[fieldId]
@@ -66,9 +60,10 @@ watch(
             if (f && !f.uploadedUrl) {
                 f.uploadedUrl = url;
                 f.progress = 100;
-                statusTimers.delete(localId);
+                f.status = 'uploaded';
             }
         });
+        updateModelValue();
     },
     { deep: true, flush: 'sync' }
 );
@@ -120,13 +115,11 @@ watch(
 );
 
 onBeforeUnmount(() => {
-    progressTimers.forEach(clearInterval);
-    progressTimers.clear();
-    statusTimers.forEach(clearTimeout);
-    statusTimers.clear();
+    uploadControllers.forEach((controller) => controller.abort());
+    uploadControllers.clear();
     // Revoke any remaining blob URLs that weren't flushed
     files.value.forEach((f) => {
-        if (f.previewUrl && f.status === 'pending') {
+        if (f.previewUrl?.startsWith('blob:')) {
             URL.revokeObjectURL(f.previewUrl);
         }
     });
@@ -188,6 +181,61 @@ const validateFile = (file: File): { valid: boolean; error?: string } => {
     return { valid: true };
 };
 
+const startUpload = async (localId: string) => {
+    const target = files.value.find((f) => f.id === localId);
+    if (!target || target.status === 'error') return;
+    if (uploadControllers.has(localId)) return;
+
+    const controller = new AbortController();
+    uploadControllers.set(localId, controller);
+    target.status = 'pending';
+    target.progress = Math.max(target.progress, 1);
+    target.errorMessage = undefined;
+
+    try {
+        const uploadedUrl = await uploadPendingFile(fieldId, localId, {
+            signal: controller.signal,
+            onProgress: (percent) => {
+                const file = files.value.find((f) => f.id === localId);
+                if (!file || file.status === 'error') return;
+                file.progress = Math.max(file.progress, percent);
+            }
+        });
+
+        const file = files.value.find((f) => f.id === localId);
+        if (!file) return;
+
+        file.uploadedUrl = uploadedUrl;
+        if (file.file?.type.startsWith('image/')) {
+            file.previewUrl = uploadedUrl;
+        }
+        file.progress = 100;
+        file.status = 'uploaded';
+        file.errorMessage = undefined;
+        updateModelValue();
+    } catch (error: unknown) {
+        const file = files.value.find((f) => f.id === localId);
+        if (!file) return;
+
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            return;
+        }
+
+        file.status = 'error';
+        file.progress = 0;
+        file.errorMessage = error instanceof Error ? error.message : 'Upload failed';
+        updateModelValue();
+    } finally {
+        uploadControllers.delete(localId);
+    }
+};
+
+const retryUpload = async (id: string) => {
+    const file = files.value.find((f) => f.id === id);
+    if (!file || !file.file) return;
+    await startUpload(id);
+};
+
 const handleFiles = (newFiles: File[]) => {
     uploadWarnings.value = [];
 
@@ -240,8 +288,8 @@ const handleFiles = (newFiles: File[]) => {
 
         files.value.push(localFile);
 
-        // Register in the upload queue only if the file passed validation.
-        // The actual HTTP request will happen when FormRenderer calls flushQueue().
+        // Register in the queue and upload immediately.
+        // flushQueue() still acts as a final safety net before step save.
         if (validation.valid) {
             const pending: PendingFile = {
                 localId,
@@ -249,24 +297,7 @@ const handleFiles = (newFiles: File[]) => {
                 previewUrl: localFile.previewUrl
             };
             enqueuePending(fieldId, pending);
-
-            const animateTo100 = setInterval(() => {
-                const f = files.value.find((f) => f.id === localId);
-                if (!f) {
-                    clearInterval(animateTo100);
-                    return;
-                }
-
-                f.progress = Math.min(f.progress + Math.random() * 15 + 10, 100);
-
-                if (f.progress >= 100) {
-                    clearInterval(animateTo100);
-                    progressTimers.delete(localId);
-                    f.progress = 100;
-                    f.status = 'uploaded';
-                }
-            }, 50);
-            progressTimers.set(localId, animateTo100);
+            void startUpload(localId);
         }
     });
 
@@ -279,20 +310,13 @@ const removeFile = (id: string) => {
 
     const localFile = files.value[index];
 
-    if (localFile.status === 'pending') {
-        // Clear fake progress timer before dequeuing
-        const timer = progressTimers.get(localFile.id);
-        if (timer) {
-            clearInterval(timer);
-            progressTimers.delete(localFile.id);
-        }
-        // Cancel any pending status-transition timeout
-        const st = statusTimers.get(localFile.id);
-        if (st) {
-            clearTimeout(st);
-            statusTimers.delete(localFile.id);
-        }
-        // Dequeue from upload queue (also revokes blob URL)
+    const controller = uploadControllers.get(localFile.id);
+    if (controller) {
+        controller.abort();
+        uploadControllers.delete(localFile.id);
+    }
+
+    if (localFile.file && !localFile.uploadedUrl) {
         dequeuePending(fieldId, localFile.id);
     }
 
@@ -308,8 +332,9 @@ const updateModelValue = () => {
         .filter((f) => f.status !== 'error')
         .map((f) => {
             if (f.status === 'uploaded' && f.uploadedUrl) return f.uploadedUrl;
-            // Provisional: keeps vee-validate happy until flushQueue() resolves
-            return f.previewUrl ?? (f.file ? `pending:${f.file.name}` : null);
+            // Keep required validation satisfied while upload is in-flight.
+            if (f.file) return `pending:${f.file.name}`;
+            return null;
         })
         .filter((v): v is string => v !== null);
 
@@ -416,6 +441,18 @@ const updateModelValue = () => {
                                 </template>
                                 <template v-else> {{ Math.round(file.progress) }}% </template>
                             </div>
+                        </div>
+
+                        <div v-if="file.status === 'error'" class="upload-error">
+                            {{ file.errorMessage || 'Upload failed' }}
+                            <button
+                                v-if="!isReadonly && file.file"
+                                type="button"
+                                class="retry-btn"
+                                @click.stop="retryUpload(file.id)"
+                            >
+                                Retry
+                            </button>
                         </div>
                     </div>
 
@@ -624,6 +661,30 @@ const updateModelValue = () => {
 
 .progress-label--done {
     color: #10b981;
+}
+
+.upload-error {
+    margin-top: 6px;
+    font-size: 0.75rem;
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.retry-btn {
+    border: none;
+    background: transparent;
+    color: #2563eb;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.retry-btn:hover {
+    color: #1d4ed8;
 }
 
 .file-status--error {

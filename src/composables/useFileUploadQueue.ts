@@ -92,9 +92,10 @@ export function useFileUploadQueue() {
                 // Upload all files for this field concurrently
                 const newUrls = await Promise.all(
                     pendingList.map(async (pending) => {
-                        const response = await casesService.uploadMedia(pending.file, (percent) =>
-                            onProgress?.(fieldId, pending.localId, percent)
-                        );
+                        const response = await casesService.uploadMedia(pending.file, {
+                            onProgress: (percent: number) =>
+                                onProgress?.(fieldId, pending.localId, percent)
+                        });
 
                         if (!resolvedMap[fieldId]) resolvedMap[fieldId] = {};
                         resolvedMap[fieldId][pending.localId] = response.source_url;

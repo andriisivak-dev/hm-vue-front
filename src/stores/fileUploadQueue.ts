@@ -46,7 +46,13 @@ export const useFileUploadQueueStore = defineStore('fileUploadQueue', {
          * resolvedMap[fieldId][localId] = uploadedUrl
          * Populated by flushQueue as each file upload completes.
          */
-        resolvedMap: {} as Record<string, Record<string, string>>
+        resolvedMap: {} as Record<string, Record<string, string>>,
+
+        /**
+         * In-flight upload promises keyed by fieldId/localId.
+         * Prevents duplicate uploads when UI upload and flushQueue overlap.
+         */
+        inFlight: {} as Record<string, Record<string, Promise<string>>>
     }),
 
     actions: {
@@ -82,6 +88,62 @@ export const useFileUploadQueueStore = defineStore('fileUploadQueue', {
         },
 
         /**
+         * Uploads a single pending file by local ID.
+         * Reuses an existing in-flight promise if upload is already running.
+         */
+        async uploadPendingFile(
+            fieldId: string,
+            localId: string,
+            options?: {
+                onProgress?: (percent: number) => void;
+                signal?: AbortSignal;
+            }
+        ): Promise<string> {
+            const existingPromise = this.inFlight[fieldId]?.[localId];
+            if (existingPromise) return existingPromise;
+
+            const list = this.queue[fieldId];
+            const pending = list?.find((p) => p.localId === localId);
+            if (!pending) {
+                const resolvedUrl = this.resolvedMap[fieldId]?.[localId];
+                if (resolvedUrl) return resolvedUrl;
+                throw new Error('Pending file not found in upload queue.');
+            }
+
+            if (!this.inFlight[fieldId]) {
+                this.inFlight[fieldId] = {};
+            }
+
+            const uploadPromise = (async () => {
+                const response = await casesService.uploadMedia(pending.file, {
+                    onProgress: options?.onProgress,
+                    signal: options?.signal
+                });
+
+                if (!this.resolvedMap[fieldId]) {
+                    this.resolvedMap[fieldId] = {};
+                }
+                this.resolvedMap[fieldId][localId] = response.source_url;
+
+                this.dequeuePending(fieldId, localId);
+                return response.source_url;
+            })();
+
+            this.inFlight[fieldId][localId] = uploadPromise;
+
+            try {
+                return await uploadPromise;
+            } finally {
+                if (this.inFlight[fieldId]) {
+                    delete this.inFlight[fieldId][localId];
+                    if (Object.keys(this.inFlight[fieldId]).length === 0) {
+                        delete this.inFlight[fieldId];
+                    }
+                }
+            }
+        },
+
+        /**
          * Called by FormRenderer right before it persists form data to the
          * backend.
          *
@@ -112,30 +174,17 @@ export const useFileUploadQueueStore = defineStore('fileUploadQueue', {
             await Promise.all(
                 entries.map(async ([fieldId, pendingList]) => {
                     const newUrls = await Promise.all(
-                        pendingList.map(async (pending) => {
-                            const response = await casesService.uploadMedia(
-                                pending.file,
-                                (percent) => onProgress?.(fieldId, pending.localId, percent)
-                            );
-
-                            if (!this.resolvedMap[fieldId]) {
-                                this.resolvedMap[fieldId] = {};
-                            }
-                            this.resolvedMap[fieldId][pending.localId] = response.source_url;
-
-                            // Revoke blob preview — we now have the real URL
-                            if (pending.previewUrl) URL.revokeObjectURL(pending.previewUrl);
-
-                            return response.source_url;
-                        })
+                        pendingList.map((pending) =>
+                            this.uploadPendingFile(fieldId, pending.localId, {
+                                onProgress: (percent) =>
+                                    onProgress?.(fieldId, pending.localId, percent)
+                            })
+                        )
                     );
 
                     const existingRemote = toRemoteArray(formStore.values[fieldId]);
-                    const merged = [...existingRemote, ...newUrls];
+                    const merged = Array.from(new Set([...existingRemote, ...newUrls]));
                     formStore.updateValue(fieldId, merged.length === 1 ? merged[0] : merged);
-
-                    // Clear the queue for this field
-                    delete this.queue[fieldId];
                 })
             );
         },
@@ -144,6 +193,7 @@ export const useFileUploadQueueStore = defineStore('fileUploadQueue', {
          * Resets the entire queue (called on FormRenderer unmount).
          */
         clearAll(): void {
+            this.inFlight = {};
             Object.values(this.queue).forEach((list) => {
                 list.forEach((p) => {
                     if (p.previewUrl) URL.revokeObjectURL(p.previewUrl);

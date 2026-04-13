@@ -163,10 +163,8 @@ export const casesService = {
      * POST /wp/v2/media
      * Uploads a file natively to the WP Media library.
      *
-     * NOTE: Prefer calling this only from useFileUploadQueueStore().flushQueue() so
-     * that uploads are deferred until the user actually saves a step.  Direct
-     * calls from UI components lead to orphaned media when the user removes a
-     * file before submitting the form.
+     * Called by FileUploadField for immediate uploads and by flushQueue() as a
+     * safety net before step-save if any pending uploads remain.
      *
      * Implementation notes:
      * - URL is derived from the configured baseUrl by replacing the custom
@@ -175,13 +173,15 @@ export const casesService = {
      *   route the attachment into a dedicated sub-folder and suppress thumbnails.
      * - We send a raw binary body + Content-Type + Content-Disposition header.
      *   This is the WP REST API canonical upload method and avoids server-side
-     *   issues caused by mixing multipart FormData with Content-Disposition
-     *   (the two approaches are mutually exclusive — sending both simultaneously
-     *   breaks uploads on production NGINX configs).
+     *   issues caused by mixing multipart FormData with Content-Disposition.
+     * - XMLHttpRequest is used to expose real upload progress events.
      */
     async uploadMedia(
         file: File,
-        _onProgress?: (percent: number) => void
+        options?: {
+            onProgress?: (percent: number) => void;
+            signal?: AbortSignal;
+        }
     ): Promise<{ id: number; source_url: string }> {
         const client = useHttpClient();
         const { baseUrl, nonce } = client as unknown as { baseUrl: string; nonce: string };
@@ -192,39 +192,63 @@ export const casesService = {
         const wpJsonPath = parsedBase.pathname.replace(/\/csp\/v1\/?$/, '');
         const mediaUrl = new URL(`${wpJsonPath}/wp/v2/media?hmctx=case_media`, parsedBase.origin);
 
-        /**
-         * Using fetch instead of XHR.
-         *
-         * We send the file as a raw binary body (not FormData/multipart) together
-         * with Content-Type + Content-Disposition — this is the WP REST API
-         * canonical upload method and works consistently on all server configs.
-         *
-         * Progress tracking is omitted because the progress bar in FileUploadField
-         * is animated client-side and does not rely on real upload events.
-         */
-        const response = await fetch(mediaUrl.toString(), {
-            method: 'POST',
-            headers: {
-                'X-WP-Nonce': nonce,
-                'Content-Type': file.type || 'application/octet-stream',
-                'Content-Disposition': `attachment; filename="${encodeURIComponent(file.name)}"`
-            },
-            body: file
+        const { onProgress, signal } = options || {};
+
+        return new Promise<{ id: number; source_url: string }>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', mediaUrl.toString(), true);
+            xhr.responseType = 'json';
+            xhr.setRequestHeader('X-WP-Nonce', nonce);
+            xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+            xhr.setRequestHeader(
+                'Content-Disposition',
+                `attachment; filename="${encodeURIComponent(file.name)}"`
+            );
+
+            const abortUpload = () => {
+                xhr.abort();
+            };
+
+            if (signal) {
+                if (signal.aborted) {
+                    reject(new DOMException('Upload aborted', 'AbortError'));
+                    return;
+                }
+                signal.addEventListener('abort', abortUpload, { once: true });
+            }
+
+            xhr.upload.onprogress = (event) => {
+                if (!onProgress || !event.lengthComputable || event.total <= 0) return;
+                const percent = Math.round((event.loaded / event.total) * 100);
+                onProgress(Math.min(100, Math.max(0, percent)));
+            };
+
+            xhr.onerror = () => {
+                reject(new Error('Upload failed: network error'));
+            };
+
+            xhr.onabort = () => {
+                reject(new DOMException('Upload aborted', 'AbortError'));
+            };
+
+            xhr.onload = () => {
+                const response = xhr.response ?? {};
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(response as { id: number; source_url: string });
+                    return;
+                }
+                const err = response as { message?: string };
+                reject(new Error(err?.message ?? `Upload failed (HTTP ${xhr.status})`));
+            };
+
+            xhr.onloadend = () => {
+                if (signal) {
+                    signal.removeEventListener('abort', abortUpload);
+                }
+            };
+
+            xhr.send(file);
         });
-
-        let json: unknown;
-        try {
-            json = await response.json();
-        } catch {
-            throw new Error(`Upload failed: invalid JSON response (HTTP ${response.status})`);
-        }
-
-        if (!response.ok) {
-            const err = json as { message?: string };
-            throw new Error(err?.message ?? `Upload failed (HTTP ${response.status})`);
-        }
-
-        return json as { id: number; source_url: string };
     },
 
     // ── Status transitions ────────────────────────────────────────────────────
