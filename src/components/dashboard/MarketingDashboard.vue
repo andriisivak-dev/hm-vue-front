@@ -1,17 +1,22 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCaseList } from '@/api';
 import CasesTable from './CasesTable.vue';
 import CaseLibraryFilters from './CaseLibraryFilters.vue';
 import AppPagination from '@/components/common/AppPagination.vue';
+import AppModal from '@/components/common/AppModal.vue';
 import type { CaseStudy } from './CaseStudyCard.vue';
+import { IconCaseLibraryFilters } from '@/components/SVG';
 
 const route = useRoute();
 const router = useRouter();
 
 const page = ref(Number(route.query.page) || 1);
 const perPage = ref(10);
+const caseLibraryFiltersModal = ref<InstanceType<typeof AppModal> | null>(null);
+const isMobile = ref(false);
+let mediaQueryFilters: MediaQueryList | null = null;
 
 const { data: casesData, meta: caseMeta, loading: casesLoading, fetch: fetchCases } = useCaseList();
 
@@ -63,8 +68,22 @@ function fetchCasePage(p: number) {
 
 const casesForCurrentTab = computed(() => (casesData.value as unknown as CaseStudy[]) || []);
 
+const updateMobileStateFilters = (e: MediaQueryListEvent | MediaQueryList) => {
+    isMobile.value = e.matches;
+};
+
 onMounted(() => {
     fetchCasePage(page.value);
+
+    mediaQueryFilters = window.matchMedia('(max-width: 767px)');
+    isMobile.value = mediaQueryFilters.matches;
+    mediaQueryFilters.addEventListener('change', updateMobileStateFilters);
+});
+
+onUnmounted(() => {
+    if (mediaQueryFilters) {
+        mediaQueryFilters.removeEventListener('change', updateMobileStateFilters);
+    }
 });
 </script>
 
@@ -74,10 +93,25 @@ onMounted(() => {
             <div>
                 <h3 class="mb-0 title">Case Library</h3>
             </div>
+            <div class="filter-icon" @click="caseLibraryFiltersModal?.show()">
+                <IconCaseLibraryFilters />
+            </div>
         </div>
 
         <div class="fa-tab-content active" style="display: block">
-            <CaseLibraryFilters @change="fetchCasePage(1)" />
+            <AppModal
+                v-if="isMobile"
+                ref="caseLibraryFiltersModal"
+                id="marketingCaseLibraryFiltersModal"
+                title="Filters"
+            >
+                <CaseLibraryFilters
+                    @change="fetchCasePage(1)"
+                    @close="caseLibraryFiltersModal?.hide()"
+                />
+            </AppModal>
+
+            <CaseLibraryFilters v-if="!isMobile" @change="fetchCasePage(1)" />
 
             <div v-if="casesLoading" class="card shadow-sm border-0 text-center py-5">
                 <p class="text-muted">Loading case studies...</p>
@@ -96,3 +130,15 @@ onMounted(() => {
         </div>
     </div>
 </template>
+
+<style scoped>
+.filter-icon {
+    display: block;
+}
+
+@media (min-width: 767px) {
+    .filter-icon {
+        display: none;
+    }
+}
+</style>

@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import DashboardTabs from './DashboardTabs.vue';
 import CaseStudyCard from './CaseStudyCard.vue';
 import CasesTable from './CasesTable.vue';
 import CaseLibraryFilters from './CaseLibraryFilters.vue';
 import AppPagination from '@/components/common/AppPagination.vue';
+import AppModal from '@/components/common/AppModal.vue';
 import { useCaseList, useCaseMutations } from '@/api';
 import type { CaseStudy } from './CaseStudyCard.vue';
-import { IconPlus } from '@/components/SVG';
+import { IconPlus, IconCaseLibraryFilters } from '@/components/SVG';
 
 const route = useRoute();
 const router = useRouter();
@@ -49,6 +50,9 @@ const currentTab = computed({
 
 const page = ref(Number(route.query.page) || 1);
 const perPage = ref(10);
+const caseLibraryFiltersModal = ref<InstanceType<typeof AppModal> | null>(null);
+const isMobile = ref(false);
+let mediaQueryFilters: MediaQueryList | null = null;
 
 const { data: casesData, meta, loading, fetch } = useCaseList();
 const { remove } = useCaseMutations();
@@ -95,9 +99,23 @@ function fetchPage(p: number) {
 
 onMounted(() => {
     fetchPage(page.value);
+
+    mediaQueryFilters = window.matchMedia('(max-width: 767px)');
+    isMobile.value = mediaQueryFilters.matches;
+    mediaQueryFilters.addEventListener('change', updateMobileStateFilters);
+});
+
+onUnmounted(() => {
+    if (mediaQueryFilters) {
+        mediaQueryFilters.removeEventListener('change', updateMobileStateFilters);
+    }
 });
 
 const casesForCurrentTab = computed(() => (casesData.value as unknown as CaseStudy[]) || []);
+
+const updateMobileStateFilters = (e: MediaQueryListEvent | MediaQueryList) => {
+    isMobile.value = e.matches;
+};
 
 // CaseStudyCard (draft cards) emits @delete(caseId) — API call lives here.
 const handleDelete = async (caseId: number) => {
@@ -135,11 +153,18 @@ const handleCaseSuccess = () => {
 
         <h3 class="subtitle mt-3 mb-4">Recent Case Studies</h3>
 
-        <div class="divider"></div>
+        <div class="divider" />
 
         <DashboardTabs v-model="currentTab" :tabs="tabs" containerId="fa-dashboard-tabs" />
 
-        <div class="divider"></div>
+        <div class="divider" />
+
+        <div class="case-library-heading-wrap" v-if="currentTab === 'library'">
+            <h3 class="mb-0 title">Case Library</h3>
+            <div class="filter-icon" @click="caseLibraryFiltersModal?.show()">
+                <IconCaseLibraryFilters />
+            </div>
+        </div>
 
         <div class="fa-tab-content active" style="display: block">
             <!-- Cards View for Drafts -->
@@ -166,7 +191,22 @@ const handleCaseSuccess = () => {
             </template>
 
             <template v-else>
-                <CaseLibraryFilters v-if="currentTab === 'library'" @change="fetchPage(1)" />
+                <AppModal
+                    v-if="isMobile && currentTab === 'library'"
+                    ref="caseLibraryFiltersModal"
+                    id="fieldAgentCaseLibraryFiltersModal"
+                    title="Filters"
+                >
+                    <CaseLibraryFilters
+                        @change="fetchPage(1)"
+                        @close="caseLibraryFiltersModal?.hide()"
+                    />
+                </AppModal>
+
+                <CaseLibraryFilters
+                    v-if="!isMobile && currentTab === 'library'"
+                    @change="fetchPage(1)"
+                />
                 <div v-if="loading" class="card shadow-sm border-0 text-center py-5">
                     <p class="text-muted">Loading case studies...</p>
                 </div>
@@ -190,3 +230,33 @@ const handleCaseSuccess = () => {
         </div>
     </div>
 </template>
+
+<style scoped>
+.case-library-heading-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin: 12px 0;
+}
+
+.title {
+    color: #262469;
+    font-weight: 700;
+    font-size: 24px;
+}
+
+.filter-icon {
+    display: block;
+}
+
+@media (min-width: 767px) {
+    .title {
+        font-size: 32px;
+    }
+
+    .filter-icon {
+        display: none;
+    }
+}
+</style>
