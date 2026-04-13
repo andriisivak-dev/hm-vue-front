@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue';
+import { onMounted, onBeforeUnmount, ref, nextTick, watch } from 'vue';
 import { useForm } from 'vee-validate';
 import { useRouter } from 'vue-router';
 import { useCaseFormStore } from '@/form-engine/useFormStore.ts';
@@ -186,6 +186,7 @@ onMounted(async () => {
             // In view mode, do not show the success message because they are just viewing, not submitting right now.
             if (store.isViewMode) {
                 store.isSubmitted = false;
+                store.setStep(1);
             }
 
             // ── Edit mode setup ────────────────────────────────────────────
@@ -289,6 +290,21 @@ const resetAutosaveTimer = () => {
         }, 30000);
     }
 };
+
+watch(
+    () => props.isViewMode,
+    (isViewMode) => {
+        store.setViewMode(!!isViewMode);
+
+        if (isViewMode) {
+            // Switching from submit-success to view mode should always open step 1.
+            store.isSubmitted = false;
+            store.setStep(1);
+        }
+
+        resetAutosaveTimer();
+    }
+);
 
 const saveDraft = async () => {
     // Only attempt save if not viewing, not submitting, and form is loaded
@@ -502,7 +518,7 @@ const onFinalSubmit = handleSubmit(
             </p>
             <div>
                 <router-link
-                    :to="`/case-study/?cid=${store.caseId}&mode=view`"
+                    :to="{ path: '/case-study', query: { cid: String(store.caseId), mode: 'view' } }"
                     class="btn-primary"
                     style="text-decoration: none; display: inline-flex; justify-content: center"
                 >
@@ -525,7 +541,7 @@ const onFinalSubmit = handleSubmit(
             </p>
             <div class="d-flex gap-3 justify-content-center" style="margin-top: 1rem">
                 <router-link
-                    :to="`/case-study/?cid=${store.caseId}&mode=view`"
+                    :to="{ path: '/case-study', query: { cid: String(store.caseId), mode: 'view' } }"
                     class="btn-primary"
                     style="text-decoration: none; display: inline-flex; justify-content: center"
                 >
