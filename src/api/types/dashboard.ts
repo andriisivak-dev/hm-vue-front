@@ -62,3 +62,36 @@ export interface UserHierarchy {
     managers: HierarchyManager[];
 }
 
+// ── Recent Activity ──────────────────────────────────────────────────────────
+
+export type ActivityType =
+    | 'case_approved'
+    | 'case_submitted'
+    | 'case_rejected'
+    | 'case_returned'
+    | 'user_registered';
+
+/** A single event in the admin Recent Activity feed. */
+export interface ActivityItem {
+    id: string;
+    type: ActivityType | string;
+    created_at: string;
+    // Case events
+    case_id?: number;
+    case_title?: string;
+    case_url?: string;
+    case_author_name?: string;
+    actor_name?: string;
+    message?: string;
+    // User registration events
+    user_id?: number;
+    user_name?: string;
+    user_role?: string;
+    manager_name?: string;
+}
+
+export interface ActivityFeedParams {
+    page?: number;
+    per_page?: number;
+}
+

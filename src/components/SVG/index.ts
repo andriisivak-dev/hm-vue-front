@@ -26,3 +26,4 @@ export { default as IconCaseLibraryFilters } from './IconCaseLibraryFilters.vue'
 export { default as IconShield } from './IconShield.vue';
 export { default as IconUsers } from './IconUsers.vue';
 export { default as IconToggle } from './IconToggle.vue';
+export { default as IconTime } from './IconTime.vue';

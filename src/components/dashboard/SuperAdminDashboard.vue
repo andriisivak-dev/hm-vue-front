@@ -10,6 +10,7 @@ import CasesTable from './CasesTable.vue';
 import CaseStudyCard from './CaseStudyCard.vue';
 import CaseLibraryFilters from './CaseLibraryFilters.vue';
 import SystemHierarchy from './SystemHierarchy.vue';
+import RecentActivity from './RecentActivity.vue';
 import type { CaseStudy } from './CaseStudyCard.vue';
 import AppModal from '@/components/common/AppModal.vue';
 import AppPagination from '@/components/common/AppPagination.vue';
@@ -243,7 +244,10 @@ onUnmounted(() => {
 
         <!-- Tab content placeholders -->
         <div class="tab-content" v-if="currentTab === 'sa-overview'">
-            <SystemHierarchy />
+            <div class="tab-overview">
+                <SystemHierarchy />
+                <RecentActivity />
+            </div>
         </div>
         <div class="sa-tab-content" v-if="currentTab === 'sa-users'">
             <UsersManagement @users-changed="() => fetchStats(true)" />
@@ -385,6 +389,20 @@ onUnmounted(() => {
         justify-content: space-between;
         align-items: center;
         margin: 24px 0;
+    }
+}
+
+/* ── Overview tab two-column grid ─────────────────────────────────────────── */
+.tab-overview {
+    margin-top: 34px;
+    display: grid;
+    align-items: start;
+    gap: 24px;
+}
+
+@media (min-width: 1100px) {
+    .tab-overview {
+        grid-template-columns: 1fr 1fr;
     }
 }
 </style>

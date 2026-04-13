@@ -80,6 +80,7 @@ export {
     useNotifications,
     useDashboard,
     useUserHierarchy,
+    useRecentActivity,
     useUserMutations,
     useCustomerList,
     useCustomerMutations,
@@ -131,6 +132,9 @@ export type {
     HierarchyManager,
     HierarchyAgent,
     HierarchySuperAdmin,
+    ActivityItem,
+    ActivityType,
+    ActivityFeedParams,
     // Customers
     Customer,
     CustomerListParams,
