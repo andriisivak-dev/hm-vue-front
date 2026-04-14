@@ -34,13 +34,13 @@ const isSuperAdmin = computed(() =>
                             <h3 class="mb-0 page-title">Welcome, {{ user?.name }}</h3>
                         </div>
 
-                        <div class="col-sm-6" v-if="user?.role !== 'field_agent'">
-                            <ol class="breadcrumb float-sm-end">
-                                <li class="breadcrumb-item">
-                                    <router-link to="./"> Dashboard </router-link>
-                                </li>
-                            </ol>
-                        </div>
+                        <!--                        <div class="col-sm-6" v-if="user?.role !== 'field_agent'">-->
+                        <!--                            <ol class="breadcrumb float-sm-end">-->
+                        <!--                                <li class="breadcrumb-item">-->
+                        <!--                                    <router-link to="./"> Dashboard </router-link>-->
+                        <!--                                </li>-->
+                        <!--                            </ol>-->
+                        <!--                        </div>-->
                     </div>
                 </div>
             </div>
