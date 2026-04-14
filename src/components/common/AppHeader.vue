@@ -2,8 +2,14 @@
 import NotificationsMenu from '@/components/common/NotificationsMenu.vue';
 import UserProfileMenu from '@/components/common/UserProfileMenu.vue';
 import { useLayoutStore } from '@/stores/layout';
+import { IconWP } from '@/components/SVG';
+import { computed } from 'vue';
+import { useUserStore } from '@/stores/user.ts';
 
 const layoutStore = useLayoutStore();
+const userStore = useUserStore();
+const siteUrl = computed(() => userStore.siteUrl);
+const user = computed(() => userStore.user);
 </script>
 
 <template>
@@ -39,6 +45,11 @@ const layoutStore = useLayoutStore();
                             class="bi bi-fullscreen-exit"
                             style="display: none"
                         ></i>
+                    </a>
+                </li>
+                <li class="nav-item hm-wp-admin" v-if="user?.role === 'administrator'">
+                    <a :href="`${siteUrl}/wp-admin/`" class="hm-wp-admin-link">
+                        <IconWP />
                     </a>
                 </li>
             </ul>
@@ -85,6 +96,23 @@ a[data-lte-toggle='fullscreen'] {
     display: none;
 }
 
+.hm-wp-admin {
+    display: block;
+    padding: 10px 14px 8px 3px;
+    margin-top: 3px;
+}
+
+.hm-wp-admin-link {
+    width: 24px;
+    display: block;
+}
+
+.hm-wp-admin-link svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
 @media (min-width: 767px) {
     .app-header-container {
     }
@@ -100,6 +128,10 @@ a[data-lte-toggle='fullscreen'] {
 
     a[data-lte-toggle='fullscreen'] {
         display: block;
+    }
+
+    .hm-wp-admin {
+        display: none;
     }
 }
 </style>

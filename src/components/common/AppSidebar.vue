@@ -152,9 +152,17 @@ body.sidebar-expand-lg.layout-fixed .app-sidebar {
 }
 
 body.admin-bar.sidebar-expand-lg.layout-fixed .app-sidebar {
-    top: 32px;
-    height: calc(100vh - 32px);
-    max-height: calc(100vh - 32px);
+    top: 0;
+    height: 100dvh;
+    max-height: 100dvh;
+}
+
+@media (min-width: 782px) {
+    body.admin-bar.sidebar-expand-lg.layout-fixed .app-sidebar {
+        top: 32px;
+        height: calc(100vh - 32px);
+        max-height: calc(100vh - 32px);
+    }
 }
 </style>
 

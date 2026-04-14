@@ -14,6 +14,7 @@ interface UserState {
     user: UserProfile | null;
     isLoggedIn: boolean;
     logoutUrl: string;
+    siteUrl: string;
 }
 
 export const useUserStore = defineStore('user', {
@@ -24,7 +25,8 @@ export const useUserStore = defineStore('user', {
         return {
             user: apiData?.user || null,
             isLoggedIn: apiData?.isLoggedIn || false,
-            logoutUrl: apiData?.logoutUrl || '/logout'
+            logoutUrl: apiData?.logoutUrl || '/logout',
+            siteUrl: apiData?.siteUrl || '/'
         };
     },
     actions: {
