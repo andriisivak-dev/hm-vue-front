@@ -6,6 +6,7 @@ import type { DashboardFilters } from '@/api/types/dashboard';
 import { VueDatePicker } from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import { useUserStore } from '@/stores/user';
+import { decodeHtmlEntities } from '@/utils';
 
 defineProps<{
     showFilters?: boolean;
@@ -198,7 +199,7 @@ const resetFilters = () => {
                         :key="type.term_id"
                         :value="type.slug"
                     >
-                        {{ type.name }}
+                        {{ decodeHtmlEntities(type.name) }}
                     </option>
                 </select>
             </div>
@@ -218,7 +219,7 @@ const resetFilters = () => {
                         :key="segment.term_id"
                         :value="segment.slug"
                     >
-                        {{ segment.name }}
+                        {{ decodeHtmlEntities(segment.name) }}
                     </option>
                 </select>
             </div>
@@ -234,7 +235,7 @@ const resetFilters = () => {
                 >
                     <option value="">All</option>
                     <option v-for="user in filters?.submitted_by" :key="user.id" :value="user.id">
-                        {{ user.name }}
+                        {{ decodeHtmlEntities(user.name) }}
                     </option>
                 </select>
             </div>
