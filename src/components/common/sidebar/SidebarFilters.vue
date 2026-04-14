@@ -25,7 +25,7 @@ const isSuperAdmin = computed(() =>
 );
 const isSupervisor = computed(() => userStore.user?.role === 'hm_manager');
 const isMarketing = computed(() => userStore.user?.role === 'hm_marketing');
-const defaultStatus = computed(() => (isSupervisor.value ? 'draft' : 'all'));
+const defaultStatus = computed(() => 'all');
 const shouldMapLibraryToApproved = computed(() => isSuperAdmin.value || isSupervisor.value);
 
 const statusQueryParam = computed(() => {

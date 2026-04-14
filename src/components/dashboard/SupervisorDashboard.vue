@@ -28,7 +28,7 @@ const tabs = [
 const currentTab = computed({
     get() {
         const queryTab = route.query.tab as string;
-        return tabs.some((t) => t.id === queryTab) ? queryTab : 'draft';
+        return tabs.some((t) => t.id === queryTab) ? queryTab : 'all';
     },
     set(newTab) {
         if (newTab !== route.query.tab) {
