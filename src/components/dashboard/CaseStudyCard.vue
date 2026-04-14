@@ -115,7 +115,7 @@ const promptDelete = () => {
             {{ formatLocation(caseStudy._case_city, caseStudy._case_state) }}
         </div>
 
-        <div class="card-info info">
+        <div class="card-info info case-draft-info">
             <p class="submitted" v-if="caseStudy.submitted_at">
                 {{ caseStudy.submitted_at }}
             </p>
@@ -177,3 +177,96 @@ const promptDelete = () => {
         <CaseActionConfirmModal ref="confirmModal" @success="$emit('success')" />
     </div>
 </template>
+
+<style scoped>
+.case-study-card {
+    padding: 16px 14px;
+    background:
+        linear-gradient(white, white) padding-box,
+        linear-gradient(185deg, #f7931d 0%, #262469 50%) border-box;
+    border: 1px solid transparent;
+    border-radius: 5px;
+}
+
+.title {
+    font-size: 18px;
+    line-height: normal;
+    padding-right: 60px;
+}
+
+.subtitle {
+    font-size: 16px;
+    font-weight: 300;
+    margin-bottom: 10px;
+}
+
+.card-status {
+    padding: 2px 16px;
+    top: 17px;
+    right: 16px;
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.33;
+    color: #fff;
+    background-color: #262469;
+    border-radius: 5px;
+    position: absolute;
+}
+
+.progress-bar-title span {
+    font-weight: 700;
+}
+
+.progress-bar-title {
+    margin: 10px 0;
+}
+
+.progress-bar-line {
+    background: linear-gradient(
+        90deg,
+        #262469 0%,
+        #f7931d var(--progress),
+        #e9ecef var(--progress)
+    );
+    border-radius: 5px;
+    max-width: 100%;
+    min-width: 300px;
+    height: 10px;
+}
+
+.case-draft-info {
+    gap: 10px;
+    display: grid;
+    color: #262469;
+}
+
+@media (min-width: 767px) {
+    .case-study-card {
+        padding: 24px 28px;
+    }
+
+    .title {
+        font-size: 22px;
+        padding-right: 0;
+    }
+
+    .subtitle {
+        font-size: 18px;
+    }
+
+    .card-status {
+        padding: 2px 30px;
+        top: 16px;
+        right: 16px;
+        font-size: 18px;
+    }
+
+    .progress-bar-title {
+        margin: 30px 0 10px;
+    }
+
+    .case-draft-info {
+        gap: 6px;
+    }
+}
+</style>
