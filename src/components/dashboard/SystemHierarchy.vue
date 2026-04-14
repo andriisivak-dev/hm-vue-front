@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue';
 import { useUserHierarchy } from '@/api';
 import type { HierarchyManager } from '@/api';
-import { IconShield, IconToggle, IconUsers } from '@/components/SVG';
+import { IconAddNewUser, IconShield, IconToggle, IconUsers } from '@/components/SVG';
 
 const { hierarchy, hierarchyLoading, fetchHierarchy } = useUserHierarchy();
 
@@ -59,6 +59,26 @@ onMounted(async () => {
                 <div class="sa-info">
                     <span class="sa-name">Super Admin</span>
                     <span class="sa-desc">Full system access and control</span>
+                </div>
+            </div>
+
+            <!-- Marketings list -->
+            <div class="managers-list marketing-list mb-3">
+                <div
+                    v-for="marketing in hierarchy.marketing"
+                    :key="marketing.id"
+                    class="manager-block"
+                >
+                    <div class="manager-row">
+                        <div class="manager-left">
+                            <span class="manager-icon">
+                                <IconAddNewUser />
+                            </span>
+                            <div class="manager-info">
+                                <span class="manager-name">{{ marketing.full_name }}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -187,6 +207,22 @@ onMounted(async () => {
 .sa-desc {
     font-size: 16px;
     color: rgba(255, 255, 255, 0.75);
+}
+
+/* Marketing list */
+.marketing-list .manager-icon {
+    margin-top: 3px;
+    width: 20px;
+}
+
+.marketing-list .manager-block {
+    background-color: #fff;
+}
+
+.marketing-list .manager-icon svg {
+    display: block;
+    width: 100%;
+    height: auto;
 }
 
 /* Managers list */
@@ -378,5 +414,11 @@ onMounted(async () => {
     .agents-list {
         padding: 14px 18px 14px 20px;
     }
+}
+</style>
+
+<style>
+.marketing-list .manager-icon svg line {
+    display: none;
 }
 </style>

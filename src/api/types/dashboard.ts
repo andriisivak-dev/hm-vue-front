@@ -57,9 +57,18 @@ export interface HierarchySuperAdmin {
     avatar_url: string;
 }
 
+export interface HierarchyMarketing {
+    id: number;
+    full_name: string;
+    role: 'hm_marketing';
+    status: 'active' | 'inactive';
+    avatar_url: string;
+}
+
 export interface UserHierarchy {
     super_admin: HierarchySuperAdmin;
     managers: HierarchyManager[];
+    marketing: HierarchyMarketing[];
 }
 
 // ── Recent Activity ──────────────────────────────────────────────────────────
