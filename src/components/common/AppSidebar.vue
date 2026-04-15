@@ -5,6 +5,7 @@ import { useLayoutStore } from '@/stores/layout';
 import SidebarFilters from './sidebar/SidebarFilters.vue';
 import SidebarActivities from './sidebar/SidebarActivities.vue';
 import { useRoute } from 'vue-router';
+import { AppLogo } from '@/components/SVG';
 
 const props = defineProps<{
     showFilters?: boolean;
@@ -89,9 +90,9 @@ watch(
         :class="{ 'sidebar-mobile-open': isMobile && layoutStore.sidebarOpen }"
         data-bs-theme="dark"
     >
-        <div class="sidebar-brand with-bottom-line">
-            <router-link to="/" class="brand-link">
-                <img src="/Logo.svg" alt="Hemant" class="brand-image" />
+        <div class="sidebar-top with-bottom-line">
+            <router-link to="/" class="sidebar-logo">
+                <AppLogo />
             </router-link>
         </div>
 
@@ -168,10 +169,22 @@ body.admin-bar.sidebar-expand-lg.layout-fixed .app-sidebar {
 
 <style scoped>
 .app-sidebar {
-    background: linear-gradient(225deg, #f7931d 10px, #262469 242px);
+    background: linear-gradient(
+        45deg,
+        #2c2962 62%,
+        #2e2a60 72%,
+        #362f5d 77%,
+        #443757 81%,
+        #58434f 85%,
+        #725245 88%,
+        #926438 91%,
+        #b77a29 94%,
+        #da8e1b 100%
+    );
     width: var(--lte-sidebar-width);
     transition: transform 0.3s ease;
     z-index: 1055;
+    border-top-right-radius: 80px;
 }
 
 @media (max-width: 1049px) {
@@ -265,5 +278,15 @@ body.admin-bar.sidebar-expand-lg.layout-fixed .app-sidebar {
     width: 100%;
     height: 1px;
     background-color: #fff;
+}
+
+.sidebar-top {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding-top: 73px;
+    padding-left: 53px;
+    padding-bottom: 20px;
 }
 </style>
