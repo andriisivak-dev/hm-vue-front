@@ -53,12 +53,12 @@ const getStatusLabel = (status: string) => {
 };
 
 const getStatusClass = (status: string) => {
-    if (status === 'draft') return 'bg-secondary';
-    if (status === 'in_review') return 'bg-info';
-    if (status === 'returned') return 'bg-warning text-dark';
-    if (status === 'approved') return 'bg-success';
-    if (status === 'rejected') return 'bg-danger';
-    return 'bg-secondary';
+    if (status === 'draft') return 'bg-gray';
+    if (status === 'in_review') return 'bg-review';
+    if (status === 'returned') return 'bg-returned';
+    if (status === 'approved') return 'bg-approved';
+    if (status === 'rejected') return 'bg-rejected';
+    return 'bg-gray';
 };
 
 const promptDelete = (caseId: number, caseTitle: string) => {
@@ -711,6 +711,26 @@ const formatDate = (dateString?: string) => {
 </template>
 
 <style scoped>
+.badge.bg-gray {
+    background-color: var(--hm-gray);
+}
+
+.badge.bg-approved {
+    background-color: var(--hm-blue);
+}
+
+.badge.bg-review {
+    background-color: var(--hm-purple);
+}
+
+.badge.bg-returned {
+    background-color: var(--hm-yellow);
+}
+
+.badge.bg-rejected {
+    background-color: var(--hm-red);
+}
+
 .app-case-table {
     position: relative;
 }

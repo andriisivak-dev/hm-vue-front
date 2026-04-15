@@ -208,7 +208,7 @@ const promptDelete = () => {
     font-weight: 300;
     line-height: 1.33;
     color: #fff;
-    background-color: #262469;
+    background-color: var(--hm-gray);
     border-radius: 5px;
     position: absolute;
 }
