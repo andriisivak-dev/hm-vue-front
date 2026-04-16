@@ -82,7 +82,7 @@ const activityItems: ActivityItem[] = [
     border-radius: 5px;
     padding: 10px 17px;
     max-width: 260px;
-    height: 69px;
+    height: auto;
 }
 
 .sidebar-activities {

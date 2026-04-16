@@ -58,6 +58,12 @@ const user = computed(() => userStore.user);
 </template>
 
 <style scoped>
+@media (min-width: 1110px) {
+    .app-header {
+        z-index: 10000;
+    }
+}
+
 .app-header-container {
     display: flex;
     align-items: center;

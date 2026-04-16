@@ -81,7 +81,7 @@ const handleMarkAllAsRead = async () => {
             </span>
         </a>
 
-        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+        <div class="dropdown-menu dropdown-menu-xl dropdown-menu-end">
             <span class="dropdown-item dropdown-header">
                 {{ unreadCount }} Unread Notifications
             </span>
@@ -109,19 +109,19 @@ const handleMarkAllAsRead = async () => {
                                     @click.prevent="handleNotifClick(notif)"
                                 >
                                     <div class="d-flex w-100 justify-content-between">
-                                        <span
-                                            class="d-block text-truncate"
-                                            style="max-width: 200px"
-                                        >
+                                        <span class="d-flex">
                                             <i
-                                                class="bi me-2"
+                                                class="bi me-2 mt-0.5"
                                                 :class="
                                                     notif.is_read
-                                                        ? 'bi-envelope-open text-muted'
-                                                        : 'bi-envelope-fill text-primary'
+                                                        ? 'bi-envelope-open'
+                                                        : 'bi-envelope-fill'
                                                 "
                                             />
-                                            <span :class="{ 'fw-bold': !notif.is_read }">
+                                            <span
+                                                class="notif-message"
+                                                :class="{ 'fw-bold': !notif.is_read }"
+                                            >
                                                 {{ notif.message }}
                                             </span>
                                         </span>
@@ -190,6 +190,25 @@ const handleMarkAllAsRead = async () => {
 }
 
 .dropdown-menu-end[data-bs-popper] {
-    right: 0;
+    right: -45px;
+}
+
+.bi {
+    color: var(--hm-primary);
+}
+
+.notif-message {
+    font-size: 14px;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: normal;
+}
+
+@media (min-width: 767px) {
+    .dropdown-menu-end[data-bs-popper] {
+        right: 0;
+    }
 }
 </style>

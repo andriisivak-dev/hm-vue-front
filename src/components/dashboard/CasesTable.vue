@@ -751,6 +751,18 @@ td[data-label='Date'] {
     white-space: nowrap;
 }
 
+td[data-label='Company'] {
+    min-width: 250px;
+}
+
+td[data-label='Industry'] {
+    min-width: 120px;
+}
+
+td[data-label='Location'] {
+    min-width: 150px;
+}
+
 /* Mobile Card View Styles */
 .mobile-case-card {
     overflow: hidden;

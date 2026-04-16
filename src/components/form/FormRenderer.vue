@@ -686,7 +686,7 @@ const onFinalSubmit = handleSubmit(
 
 <style scoped>
 .form-renderer-container {
-    max-width: 810px;
+    max-width: 830px;
     margin: 1rem 0;
     background:
         linear-gradient(white, white) padding-box,

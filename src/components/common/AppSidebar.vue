@@ -44,7 +44,7 @@ const updateMobileState = (e: MediaQueryListEvent | MediaQueryList) => {
 };
 
 onMounted(() => {
-    mediaQuery = window.matchMedia('(max-width: 1049px)');
+    mediaQuery = window.matchMedia('(max-width: 1110px)');
 
     isMobile.value = mediaQuery.matches;
     if (isMobile.value && layoutStore.sidebarOpen) {
@@ -90,37 +90,39 @@ watch(
         :class="{ 'sidebar-mobile-open': isMobile && layoutStore.sidebarOpen }"
         data-bs-theme="dark"
     >
-        <div class="sidebar-top with-bottom-line">
-            <router-link to="/" class="sidebar-logo">
-                <AppLogo />
-            </router-link>
-        </div>
+        <div class="app-sidebar-wrap">
+            <div class="sidebar-top with-bottom-line">
+                <router-link to="/" class="sidebar-logo">
+                    <AppLogo />
+                </router-link>
+            </div>
 
-        <div class="sidebar-user with-bottom-line d-flex align-items-center px-2 py-3">
-            <img
-                v-if="user?.avatar"
-                :src="user.avatar"
-                class="avatar avatar-53 photo user-image rounded-circle me-3 js-current-user-avatar"
-                alt="User Avatar"
-            />
-            <span class="sidebar-username fw-semibold"
-                >Hello,
-                {{ user?.name }}
-            </span>
-        </div>
+            <div class="sidebar-user with-bottom-line d-flex align-items-center px-2 py-3">
+                <img
+                    v-if="user?.avatar"
+                    :src="user.avatar"
+                    class="avatar avatar-53 photo user-image rounded-circle me-3 js-current-user-avatar"
+                    alt="User Avatar"
+                />
+                <span class="sidebar-username fw-semibold"
+                    >Hello,
+                    {{ user?.name }}
+                </span>
+            </div>
 
-        <div class="sidebar-wrapper">
-            <router-link
-                v-if="showNewCaseStudyButton"
-                to="/case-study"
-                class="btn btn-warning w-100 mt-2 mb-2 fw-bold"
-            >
-                + New Case Study
-            </router-link>
+            <div class="sidebar-wrapper">
+                <router-link
+                    v-if="showNewCaseStudyButton"
+                    to="/case-study"
+                    class="btn btn-warning w-100 mt-2 mb-2 fw-bold"
+                >
+                    + New Case Study
+                </router-link>
 
-            <SidebarFilters :showFilters="showFilters" />
-            <div class="sidebar-divider" v-if="showActivities" />
-            <SidebarActivities :show-activities="showActivities" />
+                <SidebarFilters :showFilters="showFilters" />
+                <div class="sidebar-divider" v-if="showActivities" />
+                <SidebarActivities :show-activities="showActivities" />
+            </div>
         </div>
     </aside>
 </template>
@@ -169,6 +171,20 @@ body.admin-bar.sidebar-expand-lg.layout-fixed .app-sidebar {
 
 <style scoped>
 .app-sidebar {
+    background: transparent !important;
+    width: var(--lte-sidebar-width);
+    transition: transform 0.3s ease;
+    z-index: 1055;
+}
+
+@media (min-width: 1110px) {
+    .app-sidebar {
+        background: #fff !important;
+    }
+}
+
+.app-sidebar-wrap {
+    min-height: 100%;
     background: linear-gradient(
         45deg,
         #2c2962 62%,
@@ -181,10 +197,8 @@ body.admin-bar.sidebar-expand-lg.layout-fixed .app-sidebar {
         #b77a29 94%,
         #da8e1b 100%
     );
-    width: var(--lte-sidebar-width);
-    transition: transform 0.3s ease;
-    z-index: 1055;
     border-top-right-radius: 80px;
+    position: relative;
 }
 
 @media (max-width: 1049px) {

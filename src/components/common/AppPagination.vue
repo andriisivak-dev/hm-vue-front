@@ -187,13 +187,13 @@ function goToPage(p: number) {
     display: flex;
     align-items: center;
     gap: 8px;
-    width: 120px;
+    width: auto;
     order: 2;
 }
 
 .users-pagination__perpage .form-select {
     width: auto;
-    padding-right: 28px;
+    padding-right: 32px;
 }
 
 .users-pagination__perpage-label {

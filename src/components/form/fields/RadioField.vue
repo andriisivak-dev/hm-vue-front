@@ -117,9 +117,9 @@ const isReadonly = computed(() => {
 }
 
 .gf-radio-text {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 400;
-    color: #112337;
+    color: var(--hm-primary);
 }
 
 @media (min-width: 767px) {

@@ -27,26 +27,31 @@ const isLocked = (num: number) => !store.isViewMode && num > store.highestReache
             <p>Your changes are saved automatically every 30 seconds.</p>
         </div>
 
-        <div class="steps-container">
-            <template v-if="store.form?.steps">
-                <div
-                    v-for="step in store.form?.steps"
-                    :key="step.step_number"
-                    class="step-item"
-                    :class="[getStatus(step.step_number), { locked: isLocked(step.step_number) }]"
-                    @click="store.setStep(step.step_number)"
-                >
-                    <div class="step-badge">
-                        <Check
-                            v-if="getStatus(step.step_number) === 'completed'"
-                            class="step-completed-icon"
-                            :size="14"
-                        />
-                        <span>{{ step.step_number }}</span>
+        <div class="steps-wrap">
+            <div class="steps-container">
+                <template v-if="store.form?.steps">
+                    <div
+                        v-for="step in store.form?.steps"
+                        :key="step.step_number"
+                        class="step-item"
+                        :class="[
+                            getStatus(step.step_number),
+                            { locked: isLocked(step.step_number) }
+                        ]"
+                        @click="store.setStep(step.step_number)"
+                    >
+                        <div class="step-badge">
+                            <Check
+                                v-if="getStatus(step.step_number) === 'completed'"
+                                class="step-completed-icon"
+                                :size="14"
+                            />
+                            <span>{{ step.step_number }}</span>
+                        </div>
+                        <div class="step-label">{{ step.label }}</div>
                     </div>
-                    <div class="step-label">{{ step.label }}</div>
-                </div>
-            </template>
+                </template>
+            </div>
         </div>
     </div>
 </template>
@@ -72,11 +77,17 @@ const isLocked = (num: number) => !store.isViewMode && num > store.highestReache
     margin: 0;
 }
 
+.steps-wrap {
+    position: relative;
+    width: 100%;
+    overflow-y: hidden;
+    overflow-x: auto;
+}
+
 .steps-container {
     margin-top: 10px;
     display: flex;
     justify-content: space-between;
-    column-gap: 4px;
 }
 
 .step-item {
@@ -87,6 +98,7 @@ const isLocked = (num: number) => !store.isViewMode && num > store.highestReache
     flex: 1;
     cursor: pointer;
     transition: all 0.3s;
+    min-width: 80px;
 }
 
 .step-badge {
@@ -111,7 +123,7 @@ const isLocked = (num: number) => !store.isViewMode && num > store.highestReache
 
 .step-label {
     color: #262469;
-    font-weight: 300;
+    font-weight: 400;
     font-size: 14px;
     line-height: 1.2;
     text-align: center;
@@ -165,7 +177,6 @@ const isLocked = (num: number) => !store.isViewMode && num > store.highestReache
 
     .steps-container {
         margin-top: 20px;
-        column-gap: 12px;
     }
 
     .step-badge {

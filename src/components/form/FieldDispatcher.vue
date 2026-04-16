@@ -155,7 +155,7 @@ const onCheckboxUpdate = (payload: { id: string; value: CheckboxPayload }) => {
 .gf-section-title {
     font-size: 1.4rem;
     font-weight: 500;
-    color: rgb(17, 35, 55);
+    color: var(--hm-primary);
     margin: 0;
 }
 

@@ -366,6 +366,15 @@ onUnmounted(() => {
     font-size: 24px;
 }
 
+@media (min-width: 1320px) {
+    .case-study-tabs {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 24px 0;
+    }
+}
+
 @media (min-width: 767px) {
     .statistic-cards {
         margin: 35px 0;
@@ -383,13 +392,6 @@ onUnmounted(() => {
 
     .title {
         font-size: 32px;
-    }
-
-    .case-study-tabs {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 24px 0;
     }
 }
 

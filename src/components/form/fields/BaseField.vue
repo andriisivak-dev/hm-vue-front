@@ -23,8 +23,7 @@ const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)
         :data-is-suggested="isSuggestedField"
     >
         <label v-if="field.type !== 'section'" :for="`input_${field.id}`" class="gf-label">
-            {{ displayedLabel }}
-            <span v-if="isRequired" class="gf-required">*</span>
+            {{ displayedLabel }}&nbsp;<span v-if="isRequired" class="gf-required">*</span>
         </label>
 
         <div class="gf-input-container">
@@ -52,8 +51,7 @@ const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)
     font-weight: 700;
     font-size: 16px;
     color: #262469;
-    display: flex;
-    align-items: center;
+    display: inline-block;
     gap: 2px;
     margin-bottom: 4px;
 }
