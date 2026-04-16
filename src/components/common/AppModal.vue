@@ -117,7 +117,7 @@ defineExpose({ hide, show });
 }
 
 .modal {
-    z-index: 1055;
+    z-index: 10550;
     background: rgba(0, 0, 0, 0.5);
 }
 .modal-backdrop {

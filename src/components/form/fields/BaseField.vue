@@ -49,7 +49,7 @@ const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)
 
 .gf-label {
     font-weight: 700;
-    font-size: 16px;
+    font-size: 14px;
     color: #262469;
     display: inline-block;
     gap: 2px;
@@ -84,7 +84,7 @@ const isSuggestedField = computed(() => props.field.label?.includes('(Suggested)
 
 @media (min-width: 767px) {
     .gf-label {
-        font-size: 17px;
+        font-size: 16px;
         margin-bottom: 8px;
         gap: 4px;
     }
