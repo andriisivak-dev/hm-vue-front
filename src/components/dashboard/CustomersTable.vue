@@ -2,7 +2,7 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import { useCustomerList } from '@/api';
 import type { Customer } from '@/api/types';
-import { IconRetry, NoUsersFound } from '@/components/SVG';
+import { IconActionDelete, IconActionEdit, IconRetry, NoUsersFound } from '@/components/SVG';
 import AppPagination from '@/components/common/AppPagination.vue';
 import AppTable from '@/components/common/AppTable.vue';
 import SelectField from '@/components/form/fields/SelectField.vue';
@@ -168,7 +168,7 @@ function safe(value: string | null | undefined): string {
                                         title="Edit customer details"
                                         @click="$emit('edit', customer)"
                                     >
-                                        <i class="bi bi-pencil"></i>
+                                        <IconActionEdit />
                                     </button>
                                     <button
                                         class="btn btn-sm btn-link text-danger js-delete-customer"
@@ -176,7 +176,7 @@ function safe(value: string | null | undefined): string {
                                         title="Delete customer"
                                         @click="$emit('delete', customer)"
                                     >
-                                        <i class="bi bi-trash"></i>
+                                        <IconActionDelete />
                                     </button>
                                 </div>
                             </td>

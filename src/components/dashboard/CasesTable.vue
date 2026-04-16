@@ -139,7 +139,7 @@ const formatDate = (dateString?: string) => {
                                     class="action-btn"
                                     title="View Case Study"
                                 >
-                                    <IconActionView color="#0dcaf0" />
+                                    <IconActionView />
                                 </router-link>
                                 <button
                                     type="button"
@@ -241,7 +241,7 @@ const formatDate = (dateString?: string) => {
                                         class="action-btn"
                                         title="Edit Approved Case"
                                     >
-                                        <IconActionEdit color="#262469" />
+                                        <IconActionEdit />
                                     </router-link>
                                     <button
                                         v-if="

@@ -54,6 +54,7 @@ defineEmits<{
 
 import { ref } from 'vue';
 import CaseActionConfirmModal from './modals/CaseActionConfirmModal.vue';
+import { IconActionDelete } from '@/components/SVG';
 
 const confirmModal = ref<InstanceType<typeof CaseActionConfirmModal> | null>(null);
 
@@ -170,7 +171,7 @@ const promptDelete = () => {
                 aria-label="Delete draft case"
                 title="Delete draft case"
             >
-                <i class="bi bi-trash"></i>
+                <IconActionDelete />
             </button>
         </div>
 
