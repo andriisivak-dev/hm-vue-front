@@ -406,7 +406,7 @@ const formatDate = (dateString?: string) => {
                                 <th>Product Type</th>
                                 <th>Machine</th>
                                 <th>Date</th>
-                                <th v-if="viewMode === 'all'">Status</th>
+                                <th class="text-center" v-if="viewMode === 'all'">Status</th>
                                 <th class="text-center">Actions</th>
                             </tr>
                         </template>
@@ -711,6 +711,10 @@ const formatDate = (dateString?: string) => {
 </template>
 
 <style scoped>
+.badge {
+    min-width: 78px;
+}
+
 .badge.bg-gray {
     background-color: var(--hm-gray);
 }
