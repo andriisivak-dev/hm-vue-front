@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useRecentActivity, type ActivityItem } from '@/api';
+import { decodeTextOrDash } from '@/utils';
 import {
     IconActionApprove,
     IconActionReject,
@@ -172,7 +173,7 @@ const isCaseEvent = (type: string) =>
                                             target="_blank"
                                             rel="noopener"
                                         >
-                                            {{ item.case_title }}
+                                            {{ decodeTextOrDash(item.case_title) }}
                                         </a>
                                         <template v-if="item.case_author_name">
                                             (by {{ item.case_author_name }})
@@ -186,7 +187,7 @@ const isCaseEvent = (type: string) =>
                                             target="_blank"
                                             rel="noopener"
                                         >
-                                            {{ item.case_title }}
+                                            {{ decodeTextOrDash(item.case_title) }}
                                         </a>
                                         <template v-if="item.case_author_name">
                                             (by {{ item.case_author_name }})
@@ -201,7 +202,7 @@ const isCaseEvent = (type: string) =>
                                             target="_blank"
                                             rel="noopener"
                                         >
-                                            {{ item.case_title }}
+                                            {{ decodeTextOrDash(item.case_title) }}
                                         </a>
                                         for review
                                     </template>
@@ -212,7 +213,7 @@ const isCaseEvent = (type: string) =>
                                             target="_blank"
                                             rel="noopener"
                                         >
-                                            {{ item.case_title }}
+                                            {{ decodeTextOrDash(item.case_title) }}
                                         </a>
                                         <template v-if="item.case_author_name">
                                             (by {{ item.case_author_name }})
