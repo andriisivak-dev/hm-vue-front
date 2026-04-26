@@ -23,10 +23,8 @@ const userStore = useUserStore();
 const isSuperAdmin = computed(() =>
     ['administrator', 'hm_administrator'].includes(userStore.user?.role || '')
 );
-const isSupervisor = computed(() => userStore.user?.role === 'hm_manager');
 const isMarketing = computed(() => userStore.user?.role === 'hm_marketing');
 const defaultStatus = computed(() => 'all');
-const shouldMapLibraryToApproved = computed(() => isSuperAdmin.value || isSupervisor.value);
 
 const statusQueryParam = computed(() => {
     return isSuperAdmin.value || isMarketing.value ? 'status' : 'tab';
@@ -43,26 +41,26 @@ const selectedStatus = computed({
         if (!statusVal) {
             return defaultStatus.value;
         }
-        if (shouldMapLibraryToApproved.value && statusVal === 'library') {
-            return 'approved';
-        }
         return statusVal;
     },
     set(newStatus) {
         const param = statusQueryParam.value;
-        const routeStatusRaw = route.query[param] as string | undefined;
-        const routeStatusNormalized =
-            shouldMapLibraryToApproved.value && routeStatusRaw === 'library'
-                ? 'approved'
-                : routeStatusRaw;
-        if (newStatus !== routeStatusNormalized) {
+        const currentStatus = route.query[param] as string | undefined;
+        if (newStatus !== currentStatus) {
             const query: Record<string, any> = { ...route.query, page: 1 };
             if (newStatus === defaultStatus.value) {
                 delete query[param];
             } else {
-                const nextStatus =
-                    isSuperAdmin.value && newStatus === 'approved' ? 'library' : newStatus;
-                query[param] = nextStatus;
+                query[param] = newStatus;
+            }
+            // When leaving 'library', clear library-specific filter params
+            if (newStatus !== 'library') {
+                delete query.customer_name;
+                delete query.tool_specification;
+                delete query.insert_specification;
+                delete query.hm_machine_type;
+                delete query.hm_machine_make;
+                delete query.hm_tool_brand;
             }
             if (isSuperAdmin.value) {
                 query.tab = 'sa-casestudy';
@@ -72,6 +70,18 @@ const selectedStatus = computed({
             router.push({ query });
         }
     }
+});
+
+/**
+ * SuperAdmin has no 'approved' tab — only 'library'.
+ * Filter out 'approved' from the status list for SuperAdmin.
+ */
+const visibleStatuses = computed(() => {
+    const all = filters.value?.statuses ?? [];
+    if (isSuperAdmin.value) {
+        return all.filter((s) => s.id !== 'approved');
+    }
+    return all;
 });
 
 function createQuerySync(queryParam: string, defaultValue = '') {
@@ -146,6 +156,13 @@ const resetFilters = () => {
     delete query.submitted_by;
     delete query.date_from;
     delete query.date_to;
+    // Also clear library-specific filters
+    delete query.customer_name;
+    delete query.tool_specification;
+    delete query.insert_specification;
+    delete query.hm_machine_type;
+    delete query.hm_machine_make;
+    delete query.hm_tool_brand;
 
     if (isSuperAdmin.value) {
         delete query.status;
@@ -178,7 +195,7 @@ const resetFilters = () => {
                     id="cases-filter-status"
                 >
                     <option value="all">All</option>
-                    <option v-for="status in filters?.statuses" :key="status.id" :value="status.id">
+                    <option v-for="status in visibleStatuses" :key="status.id" :value="status.id">
                         {{ status.name }}
                     </option>
                 </select>
